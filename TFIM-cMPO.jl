@@ -28,8 +28,8 @@ function myprod(O::cMPO, S::cMPS)
 end
 
 function myinnerprod(sl::cMPS, sr::cMPS, β::Real)
-    li = Matrix(1.0I,size(sl.Q))    
-    ri = Matrix(1.0I,size(sr.Q))    
+    li = Matrix(1.0I,size(sl.Q))
+    ri = Matrix(1.0I,size(sr.Q))
     prod = kron(li , sr.Q) + kron(sl.Q , ri) + kron(sl.R, sr.R)
     vals = eigvals(prod)
     res = 0.
@@ -43,12 +43,12 @@ function F(ψ::cMPS, W::cMPO, β::Real)
     Hψ = myprod(W,ψ)
     res = log(myinnerprod(ψ, Hψ ,β))- log(myinnerprod(ψ,ψ,β))
     return -1/β * res
-end 
+end
 
 """Setups"""
 J = 1.0; Γ = 1.0
 X = [0. 1.; 1. 0.]
-Z = [1. 0.; -1. 0.]
+Z = [1. 0.; 0. -1.]
 β = 1.
 
 W = cMPO(Γ*X, √J*Z, √J*Z, zeros(2,2))
@@ -58,5 +58,3 @@ R = rand(2,2);
 
 # test
 gradient(ψ -> F(ψ, W, β), ψ)
-
-
