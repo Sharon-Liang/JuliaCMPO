@@ -15,4 +15,8 @@ function FreeEnergy(ψ::cmps, W::cmps, β::Real)
     return -1/β * res
 end
 
+function OptimFreeEnergy(x::Array{Float64,3})
+    ψ = cmps(x[:,:,1], x[:,:,2])
+    return FreeEnergy(ψ,W,β)
+end
 #end  # module PhysicalObservables

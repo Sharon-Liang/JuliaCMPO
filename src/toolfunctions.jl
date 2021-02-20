@@ -1,14 +1,14 @@
 module ToolFunctions
 
-using LinearAlgebra
+using LinearAlgebra: eigvals
 
-export symmetrize, tr_exp
+export symmetrize, TrExp
 
 function symmetrize(A::AbstractArray)
     return (A + A')/2
 end
 
-function tr_exp(A::AbstractMatrix, β::Real)
+function TrExp(A::AbstractMatrix, β::Real)
     vals = eigvals(A) # vals could be complex ty
     res = 0.
     for i = 1:length(vals)
@@ -21,5 +21,4 @@ function tr_exp(A::AbstractMatrix, β::Real)
     return res
 end
 
-println("ToolFunctions")
 end  # module ToolFunctions

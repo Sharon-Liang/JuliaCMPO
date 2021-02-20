@@ -1,10 +1,9 @@
 module SetupStruct
 
 using LinearAlgebra
-using Reexport: @reexport
 
 include("ToolFunctions.jl")
-@reexport using .ToolFunctions
+using .ToolFunctions:TrExp
 
 export cmps, cmpo
 export toarray, myprod, myinnerprod
@@ -66,8 +65,8 @@ end
 function myinnerprod(sl::cmps, sr::cmps, β::Real)
     li = Matrix(1.0I,size(sl.Q))
     ri = Matrix(1.0I,size(sr.Q))
-    prod -= kron(li , sr.Q) + kron(sl.Q , ri) + kron(sl.R, sr.R)
-    return tr_exp(prod)
+    K = kron(li , sr.Q) + kron(sl.Q , ri) + kron(sl.R, sr.R)
+    return TrExp(-K, β)
 end
 
 
