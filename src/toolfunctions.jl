@@ -1,4 +1,7 @@
-# Tool fuctions
+module ToolFunctions
+
+using LinearAlgebra
+
 function symmetrize(A::AbstractArray)
     return (A + A')/2
 end
@@ -15,3 +18,6 @@ function tr_exp(A::AbstractMatrix, β::Real)
     end
     return res
 end
+
+
+end  # module ToolFunctions
