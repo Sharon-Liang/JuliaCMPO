@@ -1,9 +1,9 @@
-module Models
+#module Models
 
-using LinearAlgebra
+#using LinearAlgebra
 
-include("ToolFunctions,jl")
-include("SetupStruct.jl")
+#include("ToolFunctions.jl")
+#include("SetupStruct.jl")
 
 """
 cMPO for models
@@ -23,6 +23,6 @@ NN Transvers field Ising model
     H = ∑ J Zi Zj + ∑ Γ Xi
 """
 J = 1. ; Γ = 1.
-W = cMPO(Γ*X, √J*Z, √J*Z, zeros(2,2))
+W = cmpo(Γ*X, √J*Z, √J*Z, zeros(2,2))
 
-end  # modul Models
+#end  # modul Models

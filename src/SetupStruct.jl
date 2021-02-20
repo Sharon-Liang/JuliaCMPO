@@ -1,8 +1,14 @@
 module SetupStruct
 
 using LinearAlgebra
+using Reexport: @reexport
 
-include("ToolFunction.jl")
+include("ToolFunctions.jl")
+@reexport using .ToolFunctions
+
+export cmps, cmpo
+export toarray, myprod, myinnerprod
+export difference
 
 """
     D: Virtual bond dimension (depends on Hamitonian)
@@ -18,7 +24,7 @@ cMPS -        -
      Q: χ × χ matrix
      R: χ × χ × (D-1) array
 """
-struct cMPS{T<:AbstractArray}
+struct cmps{T<:AbstractArray}
     Q::T
     R::T
 end
@@ -33,14 +39,14 @@ cMPO -              -
      L: d × d × (D-1) array   : NN interaction terms
      R: d × d × (D-1) × (D-1) array : long-range interaction terms
 """
-struct cMPO{T<:AbstractArray}
+struct cmpo{T<:AbstractArray}
     Q::T  # onsite
     R::T  # interaction
     L::T  # interaction
     P::T  # long-range
 end
 
-function toarray(ψ::cMPS)
+function toarray(ψ::cmps)
     # size(Q) == size(R)
     (r,c) = size(ψ.Q)
     x = zeros(r,c,2)
@@ -49,15 +55,15 @@ function toarray(ψ::cMPS)
     return x
 end
 
-function myprod(O::cMPO, S::cMPS)
+function myprod(O::cmpo, S::cmps)
     Oi = Matrix(1.0I,size(O.Q))
     Si = Matrix(1.0I,size(S.Q))
     Q = kron(Oi , S.Q) + kron(O.Q , Si) + kron(O.L , S.R)
     R = kron(O.R , Si) + kron(O.P , S.R)
-    return cMPS(Q, R)
+    return cmps(Q, R)
 end
 
-function myinnerprod(sl::cMPS, sr::cMPS, β::Real)
+function myinnerprod(sl::cmps, sr::cmps, β::Real)
     li = Matrix(1.0I,size(sl.Q))
     ri = Matrix(1.0I,size(sr.Q))
     prod -= kron(li , sr.Q) + kron(sl.Q , ri) + kron(sl.R, sr.R)
@@ -65,7 +71,7 @@ function myinnerprod(sl::cMPS, sr::cMPS, β::Real)
 end
 
 
-function difference(ψ1::cMPS, ψ2::cMPS; β=1)
+function difference(ψ1::cmps, ψ2::cmps; β=1)
     res = myinnerprod(ψ1,ψ1,β) + myinnerprod(ψ2,ψ2,β)
     res -= myinnerprod(ψ2,ψ1,β) + myinnerprod(ψ1,ψ2,β)
     return res

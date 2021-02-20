@@ -1,17 +1,18 @@
-module PhysicalObservables
+#module PhysicalObservables
 
-using LinearAlgebra
+#using Reexport: @reexport
 
-include("ToolFunctions,jl")
-include("SetupStruct.jl")
+#include("SetupStruct.jl")
+#@reexport using .SetupStruct
 
+#export FreeEnergy
 """
 Free energy
 """
-function FreeEnergy(ψ::cMPS, W::cMPO, β::Real)
+function FreeEnergy(ψ::cmps, W::cmps, β::Real)
     Hψ = myprod(W,ψ)
     res = log(myinnerprod(ψ, Hψ ,β))- log(myinnerprod(ψ,ψ,β))
     return -1/β * res
 end
 
-end  # module PhysicalObservables
+#end  # module PhysicalObservables
