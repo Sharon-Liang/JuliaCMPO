@@ -34,16 +34,14 @@ function OptimFreeEnergy(x::Array{Float64,3}, W::cmpo, β::Real)
     return FreeEnergy(ψ,W,β)
 end
 
-function OptimFreeEnergy!(x::Array{Float64,3}, W::cmpo, β::Real)
-    gx = similar(x)
+function OptimFreeEnergy!(gx::Array{Float64, 3}, x::Array{Float64,3}, W::cmpo, β::Real)
     ψ = cmps(x[:,:,1], x[:,:,2])
-    grad = gradient(ψ -> F(ψ, W, β), ψ)[1]
+    grad = gradient(ψ -> FreeEnergy(ψ, W, β), ψ)[1]
     (r,c) = size(grad.Q)
     for i = 1:r, j = 1:c
         gx[i,j,1] = grad.Q[i,j]
         gx[i,j,2] = grad.R[i,j]
     end
-    return gx
 end
 
 function OptimDiff(x::Array{Float64,3})
