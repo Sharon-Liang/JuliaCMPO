@@ -1,5 +1,5 @@
-export pauli, TFIsing
-export FreeEnergy
+#module PhysicalObservables
+include("Setup.jl")
 
 function pauli(char::Char)
     if char=='x' return [0. 1.; 1. 0.]
@@ -16,7 +16,7 @@ end
 NN Transvers field Ising model
     H = ∑ J Zi Zj + ∑ Γ Xi
 """
-function TFIsing(J::Float64, Γ::Float64)
+function TFIsing(J::Real, Γ::Real)
     return cmpo(Γ*pauli('x'), √J*pauli('z'), √J*pauli('z'), zeros(2,2))
 end
 

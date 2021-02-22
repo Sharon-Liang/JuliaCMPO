@@ -1,9 +1,5 @@
-using LinearAlgebra
-
-export symmetrize, TrExp
-export cmps, cmpo
-export toarray, init_cmps, difference
-export myinnerprod, myprod
+#module Setup
+#using LinearAlgebra
 
 """
 Tool Functions
@@ -97,3 +93,5 @@ function myprod(O::cmpo, S::cmps)
     R = kron(O.R , Si) + kron(O.P , S.R)
     return cmps(Q, R)
 end
+
+#end # module
