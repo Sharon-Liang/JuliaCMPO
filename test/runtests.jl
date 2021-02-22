@@ -46,15 +46,3 @@ Gradient test
         @test isapprox(g[i], g2[i], rtol=1e-2)
     end
 end
-
-@testset "Gradient Descent test" begin
-    β = 1.
-    χ = 2
-    W = TFIsing(1.,1.)
-    ψ = init_cmps(χ)
-    η = 1.e-5
-
-    g = Zygote.gradient(ψ->FreeEnergy(ψ, W, β), ψ)[1]
-    ψ1 = cmps(ψ.Q - η*g.Q, ψ.R - η * g.R)
-    @test FreeEnergy(ψ1, W, β) <= FreeEnergy(ψ, W, β)
-end
