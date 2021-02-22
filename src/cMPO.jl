@@ -1,11 +1,11 @@
 module cMPO
 
-using Reexport: @reexport
+using LinearAlgebra
+using Zygote
+using Optim
+using Random; Random.seed!()
 
-include("ToolFunctions.jl")
-include("SetupStruct.jl")
-
-@reexport using .ToolFunctions
-@reexport using .SetupStruct
+include("Setup.jl")
+include("PhysicalObservables.jl")
 
 end # module
