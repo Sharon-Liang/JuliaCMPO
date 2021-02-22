@@ -1,5 +1,5 @@
 #module PhysicalObservables
-include("Setup.jl")
+#include("Setup.jl")
 
 function pauli(char::Char)
     if char=='x' return [0. 1.; 1. 0.]
@@ -29,19 +29,21 @@ function FreeEnergy(ψ::cmps, W::cmpo, β::Real)
     return -1/β * res
 end
 
-function OptimFreeEnergy(x::Array{Float64,3}, β::Real)
-    ψ = cmps(size(x)[1], x[:,:,1], x[:,:,2])
+function OptimFreeEnergy(x::Array{Float64,3}, W::cmpo, β::Real)
+    ψ = cmps(x[:,:,1], x[:,:,2])
     return FreeEnergy(ψ,W,β)
 end
 
-function OptimFreeEnergy!(gx::Array{Float64,3}, x::Array{Float64,3})
-    ψ = cMPS(x[:,:,1], x[:,:,2])
+function OptimFreeEnergy!(x::Array{Float64,3}, W::cmpo, β::Real)
+    gx = similar(x)
+    ψ = cmps(x[:,:,1], x[:,:,2])
     grad = gradient(ψ -> F(ψ, W, β), ψ)[1]
     (r,c) = size(grad.Q)
     for i = 1:r, j = 1:c
         gx[i,j,1] = grad.Q[i,j]
         gx[i,j,2] = grad.R[i,j]
     end
+    return gx
 end
 
 function OptimDiff(x::Array{Float64,3})

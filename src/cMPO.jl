@@ -12,7 +12,7 @@ export toarray, init_cmps, difference
 export myinnerprod, myprod
 
 export pauli, TFIsing
-export FreeEnergy
+export FreeEnergy, OptimFreeEnergy, OptimFreeEnergy!
 
 include("Setup.jl")
 include("PhysicalObservables.jl")
