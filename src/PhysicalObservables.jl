@@ -25,7 +25,7 @@ Free energy
 """
 function FreeEnergy(ψ::cmps, W::cmpo, β::Real)
     Hψ = W * ψ
-    res = LogTrExp(*(ψ,Hψ,β),β)- LogTrExp(*(ψ,ψ,β),β)
+    res = LogTrExp(ψ * Hψ, β)- LogTrExp(ψ * ψ, β)
     return -1/β * res
 end
 

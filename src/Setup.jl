@@ -72,7 +72,7 @@ function LinearAlgebra.dot(sl::cmps, sr::cmps, β::Real)
     return TrExp(-K, β)
 end
 
-function *(sl::cmps, sr::cmps, β::Real)
+function *(sl::cmps, sr::cmps)
     li = Matrix(1.0I,size(sl.Q))
     ri = Matrix(1.0I,size(sr.Q))
     K = kron(li , sr.Q) + kron(sl.Q , ri) + kron(sl.R, sr.R)
