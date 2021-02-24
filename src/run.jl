@@ -8,10 +8,10 @@ arr = toarray(ψ)
 
 W = TFIsing(1.,1.)
 
-len = 100
-β = [i for i in range(0.1,10,length = len)]
+len = 10
+β = [i for i in range(20,30,length = len)]
 
-open("./data/chi10.txt","w") do io
+open("./data/lowT.txt","w") do io
     for b in β
         of(x::Array{Float64, 3}) = OptimFreeEnergy(x::Array{Float64, 3}, W, b)
         of!(gx::Array{Float64, 3}, x::Array{Float64,3}) = OptimFreeEnergy!(gx::Array{Float64, 3}, x::Array{Float64,3}, W, b)
