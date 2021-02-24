@@ -5,6 +5,10 @@ using LinearAlgebra
 using Zygote
 using Optim
 using Random; Random.seed!()
+using StatsFuns
+
+import Base.*
+import LinearAlgebra.dot
 
 export symmetrize, TrExp
 export cmps, cmpo
