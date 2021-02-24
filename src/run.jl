@@ -1,19 +1,21 @@
 using cMPO
 using Optim
+using DelimitedFiles
 
-β = 10.
-χ = 2
-
+χ = 10
 ψ = init_cmps(χ)
 arr = toarray(ψ)
 
 W = TFIsing(1.,1.)
 
-FreeEnergy(ψ, W, β)
+len = 100
+β = [i for i in range(0.1,10,length = len)]
 
-of(x::Array{Float64, 3}) = OptimFreeEnergy(x::Array{Float64, 3}, W, β)
-of!(gx::Array{Float64, 3}, x::Array{Float64,3}) = OptimFreeEnergy!(gx::Array{Float64, 3}, x::Array{Float64,3}, W, β)
-
-op = optimize(of, of!, arr, LBFGS())
-
-minimum(op)
+open("./data/chi10.txt","w") do io
+    for b in β
+        of(x::Array{Float64, 3}) = OptimFreeEnergy(x::Array{Float64, 3}, W, b)
+        of!(gx::Array{Float64, 3}, x::Array{Float64,3}) = OptimFreeEnergy!(gx::Array{Float64, 3}, x::Array{Float64,3}, W, b)
+        op = optimize(of, of!, arr, LBFGS())
+        writedlm(io,[b minimum(op)])
+    end
+end
