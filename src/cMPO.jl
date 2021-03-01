@@ -17,6 +17,7 @@ export myinnerprod, myprod
 
 export pauli, TFIsing
 export FreeEnergy, OptimFreeEnergy, OptimFreeEnergy!
+export Thermal_average, Correlation_2time
 
 include("Setup.jl")
 include("PhysicalObservables.jl")

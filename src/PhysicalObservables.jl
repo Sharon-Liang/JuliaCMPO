@@ -16,8 +16,9 @@ end
 NN Transvers field Ising model
     H = ∑ J Zi Zj + ∑ Γ Xi
 """
-function TFIsing(J::Real, Γ::Real)
-    return cmpo(Γ*pauli('x'), √J*pauli('z'), √J*pauli('z'), zeros(2,2))
+function TFIsing(J::Real, Γ::Real; field = 0.0)
+    h = field * pauli('z')
+    return cmpo(Γ*pauli('x') + h, √J*pauli('z'), √J*pauli('z'), zeros(2,2))
 end
 
 """
@@ -43,6 +44,43 @@ function OptimFreeEnergy!(gx::Array{Float64, 3}, x::Array{Float64,3}, W::cmpo, �
         gx[i,j,2] = grad.R[i,j]
     end
 end
+
+"""
+The thermal average of local opeartors
+"""
+function Thermal_average(ψ::cmps, W::cmpo, Op::AbstractArray, β::Real)
+    eye = Matrix(1.0I, size(ψ.Q))
+    Op = kron(eye, kron(Op, eye))
+    K = ψ * (W * ψ)
+    K = symmetrize(K)
+    vals, U = eigen(K)
+    m = maximum(vals)
+    Op = U' * Op * U
+    den = exp.(β* (vals .- m)) |> sum
+    num = exp.(β * (vals .- m)) .* diag(Op) |> sum
+    return num/den
+end
+
+"""
+The local two-time correlation functions
+"""
+function Correlation_2time(A::AbstractArray,B::AbstractArray,ψ::cmps, W::cmpo, β::Real, τ::Number)
+       eye = Matrix(1.0I, size(ψ.Q))
+       A = kron(eye, kron(A, eye))
+       B = kron(eye, kron(B, eye))
+       K = ψ * (W * ψ)
+       K = symmetrize(K)
+       vals, U = eigen(K)
+       m = maximum(vals)
+       A = U' * A * U ; B = U' * B * U
+       den = exp.(β* (vals .- m)) |> sum
+       num = exp.(β* (vals .- m)) .* diag(A) .* diag(B) |> sum
+       for i = 1: length(vals), j = 1: i-1
+           num += 2 * exp.(β*(vals[i]-m)) * exp(-τ*(vals[i] - vals[j])) * A[i,j] * B[j,i]
+       end
+       return num/den
+end
+
 
 function OptimDiff(x::Array{Float64,3})
     ψ = cMPS(x[:,:,1], x[:,:,2])
