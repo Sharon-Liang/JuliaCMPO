@@ -72,11 +72,12 @@ function Correlation_2time(A::AbstractArray,B::AbstractArray,ψ::cmps, W::cmpo, 
        K = symmetrize(K)
        vals, U = eigen(K)
        m = maximum(vals)
-       A = U' * A * U ; B = U' * B * U
+       A = U' * A * U |> symmetrize
+       B = U' * B * U |> symmetrize
        den = exp.(β* (vals .- m)) |> sum
-       num = exp.(β* (vals .- m)) .* diag(A) .* diag(B) |> sum
-       for i = 1: length(vals), j = 1: i-1
-           num += 2 * exp.(β*(vals[i]-m)) * exp(-τ*(vals[i] - vals[j])) * A[i,j] * B[j,i]
+       num = 0.0
+       for i = 1: length(vals), j = 1: length(vals)
+           num += exp(β*(vals[i]-m)-τ*(vals[i] - vals[j])) * A[i,j] * B[j,i]
        end
        return num/den
 end

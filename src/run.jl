@@ -7,8 +7,8 @@ using PyPlot
 
 χ = 10
 
-β = 1.e4
-η = 1.e-4
+β = 20
+#η = 1.e-4
 
 len = 41
 g = [i for i in range(0,2,length = len)]
@@ -21,12 +21,12 @@ g = [i for i in range(0,2,length = len)]
 #β = [i for i in range(0.01,20,length = len)]
 
 
-open("./data/zero-T-Gamma.txt","w") do io
-    jldopen("./data/zero-T-states.jld","w") do file
+open("./data/beta-20-Gamma.txt","w") do io
+    jldopen("./data/beta-20-states.jld","w") do file
     ψ = init_cmps(χ)
     arr = toarray(ψ)
     for j in g
-        W = TFIsing(1.0, j, field = η)
+        W = TFIsing(1.0, j)
         of(x::Array{Float64, 3}) = OptimFreeEnergy(x::Array{Float64, 3}, W, β)
         of!(gx::Array{Float64, 3}, x::Array{Float64,3}) = OptimFreeEnergy!(gx::Array{Float64, 3}, x::Array{Float64,3}, W, β)
         op = optimize(of, of!, arr, LBFGS())
@@ -38,14 +38,14 @@ open("./data/zero-T-Gamma.txt","w") do io
     end
 end
 
-
-d = load("./data/zero-T-states.jld")
-open("./data/Sz-Sz-tau.txt","w") do io
-    for j in g
-        key = string(g[j])
-        ψ = cmps(d[key][:,:,1],d[key][:,:,2])
-        W = TFIsing(1.0, g[j], field = η)
-        sz = Thermal_average(ψ, W, pauli('z'), β)
-        writedlm(io,[j sz])
+d = load("./data/beta-20-states.jld")
+τ = [i for i in range(0, β, length = 100)]
+key = string(0.10)
+ψ = cmps(d[key][:,:,1],d[key][:,:,2])
+W = TFIsing(1.0, 0.1)
+open("./data/SzSz-beta-20-gamma-01.txt","w") do io
+    for t in τ
+        sz = Correlation_2time(pauli('z'), pauli('z'), ψ, W, β, t)
+        writedlm(io,[t sz])
     end
 end
