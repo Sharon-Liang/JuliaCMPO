@@ -16,9 +16,14 @@ end
 NN Transvers field Ising model
     H = ∑ J Zi Zj + ∑ Γ Xi
 """
-function TFIsing(J::Real, Γ::Real; field = 0.0)
-    h = field * pauli('z')
-    return cmpo(Γ*pauli('x') + h, √J*pauli('z'), √J*pauli('z'), zeros(2,2))
+function TFIsing(J::Real, Γ::Real; field='N')
+    if field == 'N'
+        h = zeros(2,2)
+    else
+        η = 1.e-5
+        h = η .* pauli(field)
+    end
+    return cmpo(Γ*pauli('x')+h, √J*pauli('z'), √J*pauli('z'), zeros(2,2))
 end
 
 """
