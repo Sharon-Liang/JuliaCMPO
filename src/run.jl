@@ -7,7 +7,7 @@ using PyPlot
 
 χ = 10
 
-β = 20
+β = 1
 #η = 1.e-4
 
 len = 50
@@ -22,11 +22,11 @@ g = [i for i in range(0,2,length = len)]
 
 
 #open("./data/Gamma-1/F_energy.txt","w") do io
-jldopen("./data/beta-20/states-xfield.jld","w") do file
+jldopen("./data/beta-1/states-zfield.jld","w") do file
     ψ = init_cmps(χ)
     arr = toarray(ψ)
     for j in g
-        W = TFIsing(1.0, j, field = 'x')
+        W = TFIsing(1.0, j, field = 'z')
         of(x::Array{Float64, 3}) = OptimFreeEnergy(x::Array{Float64, 3}, W, β)
         of!(gx::Array{Float64, 3}, x::Array{Float64,3}) = OptimFreeEnergy!(gx::Array{Float64, 3}, x::Array{Float64,3}, W, β)
         op = optimize(of, of!, arr, LBFGS())
@@ -39,14 +39,14 @@ jldopen("./data/beta-20/states-xfield.jld","w") do file
 end
 
 
-d = load("./data/beta-20/states-xfield.jld")
-#τ = [i for i in range(0, β, length = 100)]
-open("./data/beta-20/Sx.txt","w") do io
+d = load("./data/beta-1/states.jld")
+τ = [i for i in range(0, β, length = 100)]
+open("./data/beta-1/Sz.txt","w") do io
     for j in g
         key = string(j)
         ψ = cmps(d[key][:,:,1],d[key][:,:,2])
-        W = TFIsing(1.0, j, field='x')
-        sz = Thermal_average(ψ, W, pauli('x'),β)
+        W = TFIsing(1.0, j, field = 'z')
+        sz = Thermal_average(ψ, W, pauli('z'),β)
         writedlm(io,[j sz])
     end
 end
