@@ -61,7 +61,7 @@ function Thermal_average(ψ::cmps, W::cmpo, Op::AbstractArray, β::Real)
     vals, U = eigen(K)
     m = maximum(vals)
     Op = U' * Op * U
-    den = exp.(β* (vals .- m)) |> sum
+    den = exp.(β * (vals .- m)) |> sum
     num = exp.(β * (vals .- m)) .* diag(Op) |> sum
     return num/den
 end

@@ -111,4 +111,16 @@ function *(O::cmpo, S::cmps)
     return cmps(Q, R)
 end
 
+function init_cmps(χ::Integer, W::cmpo)
+    # r = 0 case
+    d = size(W.Q)[1];  (q,r) = divrem(log(d,χ), 1)
+    ψ = cmps(W.Q, W.R)
+    if r == 0
+        for i = 1:Integer(q-1)  ψ = W * ψ  end
+    else
+        println("Not support yet :)")
+        return
+    end
+    return ψ
+end
 #end # module
