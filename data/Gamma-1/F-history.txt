@@ -1,0 +1,5 @@
+
+ 2020-3-5 
+Free energy calculation unconverged β: 
+random init with χ = 8, β = 20 
+fix init with χ = 8, β = 20 
