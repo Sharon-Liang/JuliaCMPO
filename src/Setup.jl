@@ -79,13 +79,6 @@ function *(sl::cmps, sr::cmps)
     return -K
 end
 
-
-function difference(ψ1::cmps, ψ2::cmps; β=1)
-    res = dot(ψ1,ψ1,β) + dot(ψ2,ψ2,β)
-    res -= dot(ψ2,ψ1,β) + dot(ψ1,ψ2,β)
-    return res
-end
-
 """
 cMPO -              -
      | 1 + ϵQ   √ϵL |
