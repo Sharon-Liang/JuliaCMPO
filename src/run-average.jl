@@ -8,14 +8,14 @@ len = 51
 g = [i for i in range(0,2,length = len)]
 
 # Thermal_average
-d = load("./data/beta-20-chi-8/srandom-z.jld")
-open("./data/beta-20-chi-8/sz-rand.txt","w") do io
+d = load("./data/beta-20-chi-8/sfix.jld")
+open("./data/beta-20-chi-8/sx-fix.txt","w") do io
     for j in g
         key = string(j)
         ψ = cmps(d[key][:,:,1],d[key][:,:,2])
-        W = TFIsing(1.0, j,field ='z')
-        sz = Thermal_average(ψ,W,pauli('z'),β)
-        writedlm(io,[j sz])
+        W = TFIsing(1.0, j)
+        sx = Thermal_average(ψ,W,pauli('x'),β)
+        writedlm(io,[j sx])
     end
 end
 
