@@ -8,8 +8,8 @@ len = 51
 g = [i for i in range(0,2,length = len)]
 
 # Thermal_average
-d = load("./data/beta-20-chi-8/sfix.jld")
-open("./data/beta-20-chi-8/sx-fix.txt","w") do io
+d = load("./data/0323/shigh-beta-20.jld")
+open("./data/0323/sx-high-beta-20.txt","w") do io
     for j in g
         key = string(j)
         ψ = cmps(d[key][:,:,1],d[key][:,:,2])
