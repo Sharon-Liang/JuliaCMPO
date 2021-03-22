@@ -6,26 +6,22 @@ using JLD, HDF5
 include("exact.jl")
 
 # exact free energy
-β = 20
-len = 51
-g = [i for i in range(0,2,length = len)]
+Γ = 2.0
+len = 40
+beta = [i for i in range(1,20,length = len)]
 
-open("./data/0323/fexact-beta-20.txt","w") do io
-    for j in g
-        f = free_energy(1., j, β)
-        writedlm(io,[j f])
+open("./data/0323/fexact-gamma-2.0.txt","w") do io
+    for β in beta
+        f = free_energy(1., Γ, β)
+        writedlm(io,[β f])
     end
 end
 
 
 # exact sx
-β = 20
-len = 51
-g = [i for i in range(0,2,length = len)]
-
-open("./data/0323/sx-exact-beta-20.txt","w") do io
-    for j in g
-        sx = ave_sx(1., j, β)
-        writedlm(io,[j sx])
+open("./data/0323/sx-exact-gamma-2.0.txt","w") do io
+    for β in beta
+        sx = ave_sx(1., Γ, β)
+        writedlm(io,[β sx])
     end
 end

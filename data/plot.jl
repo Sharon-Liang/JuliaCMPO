@@ -17,7 +17,7 @@ ylabel("F loss")
 plot(d1[:,1], d1[:,2] - e[:,2], linewidth = 2)
 plot(d2[:,1], d2[:,2] - e[:,2], linewidth = 2, "--")
 plot(d3[:,1], d3[:,2] - e[:,2], linewidth = 2, "--")
-
+ticklabel_format(axis="y", style="scientific",scilimits=(0,0))
 legend(["random init", "fixed init","high-T init"])
 
 savefig("./figure/Floss-0323-beta-20-1.pdf")

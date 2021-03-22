@@ -3,19 +3,19 @@ using LinearAlgebra
 using DelimitedFiles
 using JLD, HDF5
 
-β = 20
-len = 51
-g = [i for i in range(0,2,length = len)]
+Γ = 2.0
+len = 40
+beta = [i for i in range(1,20,length = len)]
 
 # Thermal_average
-d = load("./data/0323/shigh-beta-20.jld")
-open("./data/0323/sx-high-beta-20.txt","w") do io
-    for j in g
-        key = string(j)
+d = load("./data/0323/gamma-2.0.jld")
+open("./data/0323/sx-gamma-2.0.txt","w") do io
+    for β in beta
+        key = string(β)
         ψ = cmps(d[key][:,:,1],d[key][:,:,2])
-        W = TFIsing(1.0, j)
+        W = TFIsing(1.0, Γ)
         sx = Thermal_average(ψ,W,pauli('x'),β)
-        writedlm(io,[j sx])
+        writedlm(io,[β sx])
     end
 end
 
