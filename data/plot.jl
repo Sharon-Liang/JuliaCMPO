@@ -3,24 +3,27 @@ using DelimitedFiles
 
 
 
-e = readdlm("./data/0323/fexact-beta-20.txt")
-d1 = readdlm("./data/0323/frand-beta-20.txt")
-d2 = readdlm("./data/0323/ffix-beta-20.txt")
-d3 = readdlm("./data/0323/fhigh-beta-20.txt")
+e1 = readdlm("./data/0323/fexact-gamma-0.1.txt")
+e2 = readdlm("./data/0323/fexact-gamma-1.0.txt")
+e3 = readdlm("./data/0323/fexact-gamma-2.0.txt")
+
+d1 = readdlm("./data/0323/f-gamma-0.1.txt")
+d2 = readdlm("./data/0323/f-gamma-1.0.txt")
+d3 = readdlm("./data/0323/f-gamma-2.0.txt")
 
 figure # F loss figure
-title("TFIM: β=20, χ = 8, date : 2020-03-23")
-xlim([0,2])
+title("TFIM: χ = 8, date : 2020-03-23")
+xlim([1,20])
 #ylim([0,1.e-8])
-xlabel("Γ/J")
+xlabel("β")
 ylabel("F loss")
-plot(d1[:,1], d1[:,2] - e[:,2], linewidth = 2)
-plot(d2[:,1], d2[:,2] - e[:,2], linewidth = 2, "--")
-plot(d3[:,1], d3[:,2] - e[:,2], linewidth = 2, "--")
+#plot(d1[:,1], d1[:,2] - e1[:,2], linewidth = 2)
+#plot(d2[:,1], d2[:,2] - e2[:,2], linewidth = 2)
+plot(d3[:,1], d3[:,2] - e3[:,2], linewidth = 2)
 ticklabel_format(axis="y", style="scientific",scilimits=(0,0))
-legend(["random init", "fixed init","high-T init"])
+legend(["Γ/J = 2.0"])
 
-savefig("./figure/Floss-0323-beta-20-1.pdf")
+savefig("./figure/Floss-gamma-2.0.pdf")
 PyPlot.display_figs()
 
 figure # F-compare figure
@@ -36,20 +39,27 @@ savefig("./figure/Fcompare-0319.pdf")
 PyPlot.display_figs()
 
 figure # <s> figure
-d = readdlm("./data/0323/sx-exact-beta-20.txt")
-dr = readdlm("./data/0323/sx-rand-beta-20.txt")
-df = readdlm("./data/0323/sx-fix-beta-20.txt")
-dh = readdlm("./data/0323/sx-high-beta-20.txt")
-title("β = 20, χ = 8, date: 2020-03-23")
-xlabel("Γ/J")
-ylabel("<sx>")
-plot(d[:,1], d[:,2], linewidth =2)
-plot(dr[:,1], dr[:,2], linewidth =2, "--")
-plot(df[:,1], df[:,2], linewidth =2, "--")
-plot(dh[:,1], dh[:,2], linewidth =2, "--")
-legend(["exact", "random init", "fixed init","high-T init"])
+e1 = readdlm("./data/0323/sx-exact-gamma-0.1.txt")
+e2 = readdlm("./data/0323/sx-exact-gamma-1.0.txt")
+e3 = readdlm("./data/0323/sx-exact-gamma-2.0.txt")
 
-savefig("./figure/sx-0323-beta-20-1.pdf")
+d1 = readdlm("./data/0323/sx-gamma-0.1.txt")
+d2 = readdlm("./data/0323/sx-gamma-1.0.txt")
+d3 = readdlm("./data/0323/sx-gamma-2.0.txt")
+title("χ = 8, date: 2020-03-23")
+xlabel("β")
+ylabel("<sx>")
+
+plot(e1[:,1], e1[:,2], linewidth =2)
+plot(e2[:,1], e2[:,2], linewidth =2)
+plot(e3[:,1], e3[:,2], linewidth =2)
+plot(d1[:,1], d1[:,2], linewidth =2, "--")
+plot(d2[:,1], d2[:,2], linewidth =2, "--")
+plot(d3[:,1], d3[:,2], linewidth =2, "--")
+legend(["Γ=0.1 exact", "Γ=1.0 exact", "Γ=2.0 exact",
+        "Γ=0.1", "Γ=1.0", "Γ=2.0"])
+
+savefig("./figure/sx-0323.pdf")
 PyPlot.display_figs()
 
 
