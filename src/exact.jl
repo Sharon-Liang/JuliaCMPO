@@ -1,6 +1,4 @@
-""" Exact solutions """
-
-"""NN Transverse Field Ising Model """
+# exact solutions of TFIsing model
 function energy_density(k::Real, J::Real, Γ::Real)
     eng = 2*sqrt(J^2+ Γ^2 - 2*J*Γ*cos(k))
     return eng
@@ -21,7 +19,7 @@ function ave_sx(J::Real, Γ::Real, β::Real; L = 100)
     L2 = 2*L
     for n = -L+1:L
         k = 2*π/L2 * n
-        θk = atan(J*sin(k), J*cos(k)-Γ)
+        θk = atan(-J*sin(k), -J*cos(k)+Γ) # J and Γ with signs
         uk = cos(θk/2) ; vk = sin(θk/2)
         ϵ = energy_density(k, J, Γ)
         num += uk^2 * logistic(-β*ϵ) + vk^2 * logistic(β*ϵ)
