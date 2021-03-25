@@ -19,7 +19,8 @@ end
 Free energy
 """
 function free_energy(ψ::cmps, W::cmpo, β::Real)
-    res = logtrexp(-β*(ψ*W*ψ))- logtrexp(-β*(ψ * ψ))
+    K = ψ * W * ψ ; H = ψ * ψ
+    res = logtrexp(-β*K)- logtrexp(-β*H)
     return -1/β * res
 end
 
@@ -32,37 +33,64 @@ end
 """
 The thermal average of local opeartors
 """
-function thermal_average(ψ::cmps, W::cmpo, Op::AbstractArray, β::Real)
+function thermal_average(Op::AbstractArray, ψ::cmps, W::cmpo, β::Real)
     eye = Matrix(1.0I, size(ψ.Q))
     Op = eye ⊗ Op ⊗ eye
-    K = ψ * W * ψ |> symmetrize
-    vals, U = eigen(K)
-    m = maximum(vals)
-    Op = U' * Op * U
-    den = exp.(β * (vals .- m)) |> sum
-    num = exp.(β * (vals .- m)) .* diag(Op) |> sum
+    K = ψ * W * ψ |> symmetrize |> Hermitian
+    e, v = eigen(-β*K)
+    m = maximum(e)
+    Op = v' * Op * v
+    den = exp.(e .- m) |> sum
+    num = exp.(e .- m) .* diag(Op) |> sum
     return num/den
 end
 
 """
 The local two-time correlation functions
 """
-function correlation_2time(A::AbstractArray,B::AbstractArray,ψ::cmps, W::cmpo, β::Real, τ::Number)
+function correlation_2time(A::AbstractArray,B::AbstractArray, τ::Number,
+                            ψ::cmps, W::cmpo, β::Real)
        eye = Matrix(1.0I, size(ψ.Q))
-       A = kron(eye, kron(A, eye))
-       B = kron(eye, kron(B, eye))
-       K = ψ * (W * ψ)
-       K = symmetrize(K)
-       vals, U = eigen(K)
-       m = maximum(vals)
-       A = U' * A * U |> symmetrize
-       B = U' * B * U |> symmetrize
-       den = exp.(β* (vals .- m)) |> sum
+       A = eye ⊗ A ⊗ eye
+       B = eye ⊗ B ⊗ eye
+       K = ψ * W * ψ |> symmetrize |> Hermitian
+       e, v = eigen(-β * K)
+       m = maximum(val)
+       A = v' * A * v
+       B = v' * B * v
+       den = exp.(e .- m) |> sum
        num = 0.0
-       for i = 1: length(vals), j = 1: length(vals)
-           num += exp(β*(vals[i]-m)-τ*(vals[i] - vals[j])) * A[i,j] * B[j,i]
+       for i = 1: length(e), j = 1: length(e)
+           num += exp(e[i]-m + τ*(e[i] - e[j])) * A[i,j] * B[j,i]
        end
        return num/den
 end
 
+function spectrum(A::AbstractArray,B::AbstractArray, ω::Real,
+                    ψ::cmps, W::cmpo, β::Real; type = "ret")
+       η = 1.e-5
+       if type=="ret" ω = ω + η * 1im
+       elseif type=="adv" ω = ω - η * 1im
+       elseif type=="ord" ω = ω - η * 1im * sign(ω)
+       elseif type=="img" ω = ω * 1im
+       else error("type should be 'ret','adv','ord','img'")
+       end
+       eye = Matrix(1.0I, size(ψ.Q))
+       A = eye ⊗ A ⊗ eye
+       B = eye ⊗ B ⊗ eye
+       K = ψ * W * ψ |> symmetrize |> Hermitian
+       e, v = eigen(-β * K)
+       m = maximum(val)
+       A = v' * A * v
+       B = v' * B * v
+       den = exp.(e .- m) |> sum
+       num = 0.0
+       for i = 1: length(e), j = 1: length(e)
+           up = exp(e[j]-m) - exp(e[i]-m)
+           up = up * A[i,j] * B[j,i]
+           down = ω + e[i] - e[j]
+           num += up/down
+       end
+       return num/den
+end
 #end  # module PhysicalObservables
