@@ -35,6 +35,8 @@ end
     oor = x ⊗ i2
     oop = zeros(4,4)
 
+    sos = -(i2 ⊗ osq + x ⊗ i2 ⊗ i2 + z ⊗ osr)
+
     @test isapprox(s_arr, toarray(s))
     @test isapprox(s*s, ss)
     @test isapprox((o*s).Q, osq)
@@ -45,6 +47,7 @@ end
     @test isapprox((o*o).R, oor)
     @test isapprox((o*o).L, ool)
     @test isapprox((o*o).P, oop)
+    @test isapprox(s*o*s, sos)
 end
 
 @testset "normalize" begin

@@ -1,30 +1,5 @@
 #module Setup
 #using LinearAlgebra
-"""
-    D: Virtual bond dimension (depends on Hamitonian)
-    χ: Imaginary-time bond dimension
-    d: Physical bond dimension （degrees of freedom on one Lattice site)
-"""
-
-"""
-cMPS -        -
-     | 1 + ϵQ |
-     |  √ϵR   |
-     -        -
-     Q: χ × χ matrix
-     R: χ × χ × (D-1) array
-"""
-"""
-cMPO -              -
-     | 1 + ϵQ   √ϵL |
-     |  √ϵR      P  |
-     -              -
-     Q: d × d matrix : Onsite terms
-     R: d × d × (D-1) array   : NN interaction terms
-     L: d × d × (D-1) array   : NN interaction terms
-     R: d × d × (D-1) × (D-1) array : long-range interaction terms
-"""
-
 struct cmps{T<:AbstractArray}
     Q::T
     R::T
@@ -33,7 +8,7 @@ end
 struct cmpo{T<:AbstractArray}
     Q::T  # onsite
     R::T  # interaction
-    L::T  # interaction
+    L::T # interaction
     P::T  # long-range
 end
 
@@ -120,5 +95,5 @@ function ovlp(s::cmps, β::Real)
     -β*(s*s) |> trexp |> value
 end
 
-"""
+
 #end # module

@@ -33,10 +33,10 @@ function trexp(A::AbstractMatrix)
     if ishermitian == false
         error("The input matrix should be hermitian")
     end
-    A = symmetrize(A)
-    vals = eigvals(A)
-    max = maximum(real, vals)
-    res = exp.(vals .- max) |> sum
+    A = symmetrize(A) |> Hermitian
+    val= eigvals(A)
+    max = maximum(val)
+    res = exp.(val .- max) |> sum
     trexp(max, res)
 end
 
@@ -44,7 +44,7 @@ function logtrexp(A::AbstractMatrix)
     if ishermitian == false
         error("The input matrix should be hermitian")
     end
-    A = symmetrize(A)
+    A = symmetrize(A) |> Hermitian
     eigvals(A) |> logsumexp
 end
 
