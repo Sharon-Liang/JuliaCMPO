@@ -67,8 +67,8 @@ function correlation_2time(A::AbstractArray,B::AbstractArray, τ::Number,
 end
 
 function spectrum(A::AbstractArray,B::AbstractArray, ω::Real,
-                    ψ::cmps, W::cmpo, β::Real; type = "ret")
-       η = 1.e-5
+                    ψ::cmps, W::cmpo, β::Real; type = "ret",
+                    η::Float64 = 0.05)
        if type=="ret" ω = ω + η * 1im
        elseif type=="adv" ω = ω - η * 1im
        elseif type=="ord" ω = ω - η * 1im * sign(ω)

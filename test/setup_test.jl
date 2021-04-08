@@ -12,6 +12,16 @@ using Random; Random.seed!()
     @test isapprox(logtrexp(sa), log_trexp, rtol=1e-5)
 end
 
+@testset "-β * eigvals(A) |> sum and eigvals(-β * A) |> sum" begin
+    A = rand(4,4) |> symmetrize |> Hermitian
+    β = 10
+    e1 = eigvals(A)
+    e2 = eigvals(-β * A)
+    a1 = exp.(-β .* e1) |> sum
+    a2 = exp.(e2) |> sum
+    @test isapprox(a1, a2)
+end
+
 @testset "multiplications of cmps and cmpo" begin
     x = rand(2,2) |> symmetrize
     z = rand(2,2) |> symmetrize
