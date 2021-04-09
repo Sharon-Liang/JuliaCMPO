@@ -55,13 +55,14 @@ function correlation_2time(A::AbstractArray,B::AbstractArray, τ::Number,
        B = eye ⊗ B ⊗ eye
        K = ψ * W * ψ |> symmetrize |> Hermitian
        e, v = eigen(-β * K)
-       m = maximum(val)
+       m = maximum(e)
        A = v' * A * v
        B = v' * B * v
        den = exp.(e .- m) |> sum
        num = 0.0
        for i = 1: length(e), j = 1: length(e)
-           num += exp(e[i]-m + τ*(e[i] - e[j])) * A[i,j] * B[j,i]
+           num += exp(e[i]- m - τ/β *(e[i] - e[j])) * A[i,j] * B[j,i]
+           #println(num)
        end
        return num/den
 end
