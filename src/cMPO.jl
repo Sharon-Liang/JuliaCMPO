@@ -21,7 +21,7 @@ export toarray, init_cmps, ovlp
 export TFIsing
 export free_energy
 export thermal_average, correlation_2time, spectrum
-export energy_density, ave_sx
+export energy_density, ave_sx, critical_zz_cor
 
 include("Setup.jl")
 include("PhysicalObservables.jl")

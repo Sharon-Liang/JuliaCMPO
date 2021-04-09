@@ -26,3 +26,12 @@ function ave_sx(J::Real, Γ::Real, β::Real; L = 100)
     end
     return  1 - 2*num/L2
 end
+
+function critical_zz_cor(β::Real, τ::Real, x::Real ;J::Real=1.0)
+    g0 = 0.858714569; zc = (2*J)^(-1/4); c = 2*J
+    T = 1/β
+    fac = zc * T^(1/4) * g0
+    down = sin(π*T*(τ-1im*x/c)) * sin(π*T*(τ+1im*x/c))
+    down = down^(1/8)
+    return fac/down |> real
+end
