@@ -45,4 +45,15 @@ function critical_zz_sus(n::Integer, β::Real; J::Real=1.0)
     return fac*res |> real
 end
 
+
+function critical_zz_chi(ω::Real, β::Real; J::Real=1.0)
+    # Ref: PRX.4.031008(2014) A6
+    g0 = 0.858714569; zc = (2*J)^(-1/4)
+    T = 1/β
+    up = zc * g0 * β^(3/4)
+    down = 2^(1/4) * √π * gamma(1/8) * gamma(5/8)
+    fac = up/down
+    res = sinh(ω/(2*T)) * abs(gamma(1/8 - 1im*ω/(2π*T)))^2
+    return fac*res
+end
 #end

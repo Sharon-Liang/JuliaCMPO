@@ -23,6 +23,7 @@ export free_energy
 export thermal_average, correlation_2time
 export susceptibility, imag_susceptibility, structure_factor
 export energy_density, ave_sx, critical_zz_cor, critical_zz_sus
+export critical_zz_chi
 
 include("Setup.jl")
 include("PhysicalObservables.jl")
