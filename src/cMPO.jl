@@ -6,7 +6,7 @@ using LinearAlgebra
 using Zygote
 using Optim
 using Random; Random.seed!()
-using StatsFuns
+using StatsFuns, SpecialFunctions
 
 import Base: *, isequal
 import LinearAlgebra: normalize
@@ -20,8 +20,9 @@ export toarray, init_cmps, ovlp
 
 export TFIsing
 export free_energy
-export thermal_average, correlation_2time, spectrum
-export energy_density, ave_sx, critical_zz_cor
+export thermal_average, correlation_2time
+export susceptibility, imag_susceptibility, structure_factor
+export energy_density, ave_sx, critical_zz_cor, critical_zz_sus
 
 include("Setup.jl")
 include("PhysicalObservables.jl")

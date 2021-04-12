@@ -27,11 +27,22 @@ function ave_sx(J::Real, Γ::Real, β::Real; L = 100)
     return  1 - 2*num/L2
 end
 
-function critical_zz_cor(β::Real, τ::Real, x::Real ;J::Real=1.0)
-    g0 = 0.858714569; zc = (2*J)^(-1/4); c = 2*J
+function critical_zz_cor(τ::Real, β::Real;J::Real=1.0)
+    g0 = 0.858714569; zc = (2*J)^(-1/4)
     T = 1/β
     fac = zc * T^(1/4) * g0
-    down = sin(π*T*(τ-1im*x/c)) * sin(π*T*(τ+1im*x/c))
-    down = down^(1/8)
+    down = sin(π*T*τ)
+    down = down^(1/4)
     return fac/down |> real
 end
+
+function critical_zz_sus(n::Integer, β::Real; J::Real=1.0)
+    g0 = 0.858714569; zc = (2*J)^(-1/4)
+    T = 1/β
+    fac = 4/3 * zc * g0 * β^(3/4)
+    ωn = 2π * n/β  #bosion
+    res = exp(1im*n*π) / beta(7/8 + n,7/8 - n)
+    return fac*res |> real
+end
+
+#end
