@@ -48,7 +48,7 @@ end
 """
 The local two-time correlation functions
 """
-function correlation_2time(A::AbstractArray,B::AbstractArray, τ::Number,
+function correlation_2time(τ::Number, A::AbstractArray,B::AbstractArray,
                             ψ::cmps, W::cmpo, β::Real)
        eye = Matrix(1.0I, size(ψ.Q))
        A = eye ⊗ A ⊗ eye
@@ -61,36 +61,33 @@ function correlation_2time(A::AbstractArray,B::AbstractArray, τ::Number,
        den = exp.(-β * e .- m) |> sum
        num = 0.0
        for i = 1: length(e), j = 1: length(e)
-           num += exp(-β * e[i]- m + τ*(e[i] - e[j])) * A[i,j] * B[j,i]
+           num += exp(-β*e[i]- m + τ*(e[i] - e[j])) * A[i,j] * B[j,i]
        end
        return num/den
 end
 
-function spectrum(A::AbstractArray,B::AbstractArray, ω::Real,
-                    ψ::cmps, W::cmpo, β::Real; type = "ret",
-                    η::Float64 = 0.05)
-       if type=="ret" ω = ω + η * 1im
-       elseif type=="adv" ω = ω - η * 1im
-       elseif type=="ord" ω = ω - η * 1im * sign(ω)
-       elseif type=="img" ω = ω * 1im
-       else error("type should be 'ret','adv','ord','img'")
-       end
+function susceptibility(n::Integer, A::AbstractArray,B::AbstractArray,
+                    ψ::cmps, W::cmpo, β::Real)
+       # i ωn
+       ωn = 2π * n/β  #bosion
        eye = Matrix(1.0I, size(ψ.Q))
        A = eye ⊗ A ⊗ eye
        B = eye ⊗ B ⊗ eye
        K = ψ * W * ψ |> symmetrize |> Hermitian
-       e, v = eigen(-β * K)
-       m = maximum(val)
+       e, v = eigen(K)
+       m = maximum(-β * e)
        A = v' * A * v
        B = v' * B * v
-       den = exp.(e .- m) |> sum
+       den = exp.(-β * e .- m) |> sum
        num = 0.0
        for i = 1: length(e), j = 1: length(e)
-           up = exp(e[j]-m) - exp(e[i]-m)
+           up = exp(- β*e[j]-m) - exp(-β * e[i]-m)
            up = up * A[i,j] * B[j,i]
-           down = ω + e[i] - e[j]
+           down = 1im*ωn + e[i] - e[j]
            num += up/down
        end
-       return num/den
+       return num/den |> real
 end
+
+
 #end  # module PhysicalObservables
