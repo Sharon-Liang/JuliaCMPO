@@ -90,4 +90,25 @@ function susceptibility(n::Integer, A::AbstractArray,B::AbstractArray,
 end
 
 
+function imag_susceptibility(ω::Real,A::AbstractArray,B::AbstractArray,
+                    ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.05)
+    eye = Matrix(1.0I, size(ψ.Q))
+    A = eye ⊗ A ⊗ eye
+    B = eye ⊗ B ⊗ eye
+    K = ψ * W * ψ |> symmetrize |> Hermitian
+    e, v = eigen(K)
+    m = maximum(-β * e)
+    A = v' * A * v
+    B = v' * B * v
+    den = exp.(-β * e .- m) |> sum
+    num = 0.0
+    for i = 1: length(e), j = 1: length(e)
+        up = exp(-β*e[j]-m) - exp(-β*e[i]-m)
+        up = up * A[i,j] * B[j,i] * η
+        down = (ω + e[i] - e[j])^2 + η^2
+        num += up/down
+    end
+    return -num/den
+end
+
 #end  # module PhysicalObservables
