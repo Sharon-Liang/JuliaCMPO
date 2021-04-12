@@ -16,7 +16,7 @@ J = 1.0; Γ = 1.0; W = TFIsing(J,Γ)
 β = 20.0 ; key = string(β)
 ψ = cmps(d1[key][2][:,:,1], d1[key][2][:,:,2])
 
-w = [x for x in range(1.e-3,10,length = 1000)]
+w = [10^x for x in range(-5,1,length = 1000)]
 c = [critical_zz_chi(x,β) for x in w]
 # theoretical C(0,t)
 c0 = [imag_susceptibility(x,z,z,ψ,W,β,η = 0.05) for x in w]
@@ -24,9 +24,9 @@ c0 = [imag_susceptibility(x,z,z,ψ,W,β,η = 0.05) for x in w]
 c1 = [imag_susceptibility(x,z,z,ψ,W,β,η = 0.1) for x in w]
 
 figure()
-semilogx(w, c, "k", label = "theoretical")
 semilogx(w, c0, "o",markersize = 3, label = "η = 0.05")
 semilogx(w, c1, "o",markersize = 3, label = "η = 0.1")
+semilogx(w, c, "k", label = "theoretical")
 xlabel("ω")
 ylabel("Im χ(ω)")
 title("β = 20, Γ = J = 1.0 , date : 2020-04-12")
