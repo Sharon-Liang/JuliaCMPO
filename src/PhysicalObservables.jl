@@ -127,7 +127,8 @@ function NMR_relaxation(A::AbstractArray,B::AbstractArray,
         up = exp(-β*e[j]-m) - exp(-β*e[i]-m)
         up = up * A[i,j] * B[j,i] * η *(e[i]-e[j])
         down = (e[i] - e[j])^2 + η^2
-        num += up/down^2
+        down = down^2
+        num += up/down
     end
     return num/den * 4/β
 end
