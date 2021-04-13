@@ -21,7 +21,7 @@ export toarray, init_cmps, ovlp
 export TFIsing
 export free_energy
 export thermal_average, correlation_2time
-export susceptibility, imag_susceptibility, structure_factor
+export susceptibility, imag_susceptibility, NMR_relaxation
 export energy_density, ave_sx, critical_zz_cor, critical_zz_sus
 export critical_zz_chi
 

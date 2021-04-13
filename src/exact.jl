@@ -28,16 +28,16 @@ function ave_sx(J::Real, Γ::Real, β::Real; L = 100)
 end
 
 function critical_zz_cor(τ::Real, β::Real;J::Real=1.0)
-    g0 = 0.858714569; zc = (2*J)^(-1/4)
+    g0 = 0.858714569; zc = J^(-1/4)
     T = 1/β
-    fac = zc * T^(1/4) * g0
+    fac = zc * 2^(-1/4)* T^(1/4) * g0
     down = sin(π*T*τ)
     down = down^(1/4)
     return fac/down |> real
 end
 
 function critical_zz_sus(n::Integer, β::Real; J::Real=1.0)
-    g0 = 0.858714569; zc = (2*J)^(-1/4)
+    g0 = 0.858714569; zc = J^(-1/4)
     T = 1/β
     fac = 4/3 * zc * g0 * β^(3/4)
     ωn = 2π * n/β  #bosion
@@ -48,12 +48,24 @@ end
 
 function critical_zz_chi(ω::Real, β::Real; J::Real=1.0)
     # Ref: PRX.4.031008(2014) A6
-    g0 = 0.858714569; zc = (2*J)^(-1/4)
+    g0 = 0.858714569; zc = J^(-1/4)
     T = 1/β
     up = zc * g0 * β^(3/4)
     down = 2^(1/4) * √π * gamma(1/8) * gamma(5/8)
     fac = up/down
     res = sinh(ω/(2*T)) * abs(gamma(1/8 - 1im*ω/(2π*T)))^2
     return fac*res
+end
+
+function NMR_relaxation(J::Real, Γ::Real, β::Real)
+    Δ = 2*√(J^2 - Γ^2)
+    if Δ==0
+        g0 = 0.858714569; zc = J^(-1/4)
+        up = zc * g0 * β^(3/4) * gamma(1/8)
+        down = 2^(1/4) * √π * gamma(5/8)
+        res = up/down
+    else
+        error("Not support yet.")
+    end
 end
 #end

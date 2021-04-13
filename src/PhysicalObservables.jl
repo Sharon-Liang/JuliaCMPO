@@ -49,49 +49,49 @@ end
 The local two-time correlation functions
 """
 function correlation_2time(τ::Number, A::AbstractArray,B::AbstractArray,
-                            ψ::cmps, W::cmpo, β::Real)
-       eye = Matrix(1.0I, size(ψ.Q))
-       A = eye ⊗ A ⊗ eye
-       B = eye ⊗ B ⊗ eye
-       K = ψ * W * ψ |> symmetrize |> Hermitian
-       e, v = eigen(K)
-       m = maximum(-β * e)
-       A = v' * A * v
-       B = v' * B * v
-       den = exp.(-β * e .- m) |> sum
-       num = 0.0
-       for i = 1: length(e), j = 1: length(e)
-           num += exp(-β*e[i]- m + τ*(e[i] - e[j])) * A[i,j] * B[j,i]
-       end
-       return num/den
+                           ψ::cmps, W::cmpo, β::Real)
+    eye = Matrix(1.0I, size(ψ.Q))
+    A = eye ⊗ A ⊗ eye
+    B = eye ⊗ B ⊗ eye
+    K = ψ * W * ψ |> symmetrize |> Hermitian
+    e, v = eigen(K)
+    m = maximum(-β * e)
+    A = v' * A * v
+    B = v' * B * v
+    den = exp.(-β * e .- m) |> sum
+    num = 0.0
+    for i = 1: length(e), j = 1: length(e)
+        num += exp(-β*e[i]- m + τ*(e[i] - e[j])) * A[i,j] * B[j,i]
+    end
+    return num/den
 end
 
 function susceptibility(n::Integer, A::AbstractArray,B::AbstractArray,
-                    ψ::cmps, W::cmpo, β::Real)
-       # i ωn
-       ωn = 2π * n/β  #bosion
-       eye = Matrix(1.0I, size(ψ.Q))
-       A = eye ⊗ A ⊗ eye
-       B = eye ⊗ B ⊗ eye
-       K = ψ * W * ψ |> symmetrize |> Hermitian
-       e, v = eigen(K)
-       m = maximum(-β * e)
-       A = v' * A * v
-       B = v' * B * v
-       den = exp.(-β * e .- m) |> sum
-       num = 0.0
-       for i = 1: length(e), j = 1: length(e)
-           up = exp(- β*e[j]-m) - exp(-β * e[i]-m)
-           up = up * A[i,j] * B[j,i]
-           down = 1im*ωn + e[i] - e[j]
-           num += up/down
-       end
-       return num/den |> real
+                        ψ::cmps, W::cmpo, β::Real)
+    # i ωn
+    ωn = 2π * n/β  #bosion
+    eye = Matrix(1.0I, size(ψ.Q))
+    A = eye ⊗ A ⊗ eye
+    B = eye ⊗ B ⊗ eye
+    K = ψ * W * ψ |> symmetrize |> Hermitian
+    e, v = eigen(K)
+    m = maximum(-β * e)
+    A = v' * A * v
+    B = v' * B * v
+    den = exp.(-β * e .- m) |> sum
+    num = 0.0
+    for i = 1: length(e), j = 1: length(e)
+        up = exp(- β*e[j]-m) - exp(-β * e[i]-m)
+        up = up * A[i,j] * B[j,i]
+        down = 1im*ωn + e[i] - e[j]
+        num += up/down
+    end
+    return num/den |> real
 end
 
 
 function imag_susceptibility(ω::Real,A::AbstractArray,B::AbstractArray,
-                    ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.05)
+                             ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.05)
     eye = Matrix(1.0I, size(ψ.Q))
     A = eye ⊗ A ⊗ eye
     B = eye ⊗ B ⊗ eye
@@ -111,4 +111,24 @@ function imag_susceptibility(ω::Real,A::AbstractArray,B::AbstractArray,
     return -num/den
 end
 
+function NMR_relaxation(A::AbstractArray,B::AbstractArray,
+                        ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.05)
+    eye = Matrix(1.0I, size(ψ.Q))
+    A = eye ⊗ A ⊗ eye
+    B = eye ⊗ B ⊗ eye
+    K = ψ * W * ψ |> symmetrize |> Hermitian
+    e, v = eigen(K)
+    m = maximum(-β * e)
+    A = v' * A * v
+    B = v' * B * v
+    den = exp.(-β * e .- m) |> sum
+    num = 0.0
+    for i = 1: length(e), j = 1: length(e)
+        up = exp(-β*e[j]-m) - exp(-β*e[i]-m)
+        up = up * A[i,j] * B[j,i] * η *(e[i]-e[j])
+        down = (e[i] - e[j])^2 + η^2
+        num += up/down^2
+    end
+    return num/den * 4/β
+end
 #end  # module PhysicalObservables
