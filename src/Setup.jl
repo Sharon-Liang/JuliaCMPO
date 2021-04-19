@@ -62,12 +62,19 @@ function *(ol::cmpo, or::cmpo)
 end
 
 """ init cmps """
-function init_cmps(χ::Integer; hermition = true)
+function init_cmps(χ::Integer; D::Integer = 1, hermition = true)
     Q = rand(χ, χ)
-    R = rand(χ, χ)
+    if D == 1
+        R = rand(χ, χ)
+    else
+        R = rand(χ, χ, D)
+    end
+
     if hermition
         Q = symmetrize(Q)
-        R = symmetrize(R)
+        for d = 1:D
+            R[:,:,d] = symmetrize(R[:,:,d])
+        end
     end
     return cmps(Q,R)
 end

@@ -18,7 +18,7 @@ export grad_func, grad_num
 export cmps, cmpo
 export toarray, init_cmps, ovlp
 
-export TFIsing
+export TFIsing, XYmodel
 export free_energy
 export thermal_average, correlation_2time
 export susceptibility, imag_susceptibility, NMR_relaxation

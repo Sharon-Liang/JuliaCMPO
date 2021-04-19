@@ -15,6 +15,14 @@ function TFIsing(J::Real, Γ::Real; field='N')
     return cmpo(Γ*pauli('x')+h, √J*pauli('z'), √J*pauli('z'), zeros(2,2))
 end
 
+function XYmodel()
+    x = pauli('x'); y = pauli('y')
+    Q = zeros(2,2)
+    LR = zeros(ComplexF32,(2,2,2)); LR[:,:,1] = x; LR[:,:,2] = y
+    P = zeros(2,2,2,2)
+    return cmpo(Q,LR,LR,P)
+end
+
 """
 Free energy
 """
