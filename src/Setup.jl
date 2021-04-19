@@ -1,24 +1,30 @@
 #module Setup
 #using LinearAlgebra
-struct cmps{T<:AbstractArray}
-    Q::T
-    R::T
+struct cmps
+    Q::AbstractArray
+    R::AbstractArray
 end
 
-struct cmpo{T<:AbstractArray}
-    Q::T  # onsite
-    R::T  # interaction
-    L::T # interaction
-    P::T  # long-range
+struct cmpo
+    Q::AbstractArray  # onsite
+    R::AbstractArray  # interaction
+    L::AbstractArray # interaction
+    P::AbstractArray  # long-range
 end
 
 function toarray(ψ::cmps)
-    # size(Q) == size(R)
-    (r,c) = size(ψ.Q)
-    x = zeros(r,c,2)
-    x[:,:,1] = ψ.Q
-    x[:,:,2] = ψ.R
-    return x
+    if (typeof(ψ.Q)<:AbstractMatrix) & (typeof(ψ.R)<:AbstractMatrix)
+        (r,c) = size(ψ.R)
+        res = zeros(r,c,2)
+        res[:,:,1] = ψ.Q
+        res[:,:,2] = ψ.R
+    else
+        (r,c,d) = size(ψ.R)
+        res = zeros(r,c,d+1)
+        res[:,:,1] = ψ.Q
+        for i=1:d res[:,:,i+1] = ψ.R[:,:,i] end
+    end
+    return res
 end
 
 """multiplications of cmps and cmpo"""
