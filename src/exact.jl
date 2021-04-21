@@ -57,7 +57,7 @@ function critical_zz_chi(ω::Real, β::Real; J::Real=1.0)
     return fac*res
 end
 
-function NMR_relaxation(J::Real, Γ::Real, β::Real)
+function structure_factor(J::Real, Γ::Real, β::Real)
     Δ = 2*√(J^2 - Γ^2)
     if Δ==0
         g0 = 0.858714569; zc = J^(-1/4)

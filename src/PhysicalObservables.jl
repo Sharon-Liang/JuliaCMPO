@@ -17,9 +17,10 @@ end
 
 function XYmodel()
     x = pauli('x'); y = pauli('y')
-    Q = zeros(2,2)
-    LR = zeros(ComplexF32,(2,2,2)); LR[:,:,1] = x; LR[:,:,2] = y
-    P = zeros(2,2,2,2)
+    dtype = eltype(y)
+    Q = zeros(dtype,2,2)
+    LR = zeros(dtype,2,2,2); LR[:,:,1] = x; LR[:,:,2] = y
+    P = zeros(dtype,2,2,2,2)
     return cmpo(Q,LR,LR,P)
 end
 
@@ -32,8 +33,18 @@ function free_energy(ψ::cmps, W::cmpo, β::Real)
     return -1/β * res
 end
 
-function free_energy(param::Array{Float64,3}, W::cmpo, β::Real)
-    ψ = cmps(param[:,:,1], param[:,:,2])
+function free_energy(param::Array{T,3} where T<:Number, W::cmpo, β::Real)
+    (r,c,D) = size(param)
+    if D==2
+        ψ = cmps(param[:,:,1], param[:,:,2])
+    else
+        Q = param[:,:,1]
+        R = similar(param[:,:,2:end])
+        for d = 1:D-1
+            R[:,:,d] = param[:,:,d+1]
+        end
+        ψ = cmps(Q,R)
+    end
     free_energy(ψ, W, β)
 end
 
@@ -111,15 +122,14 @@ function imag_susceptibility(ω::Real,A::AbstractArray,B::AbstractArray,
     den = exp.(-β * e .- m) |> sum
     num = 0.0
     for i = 1: length(e), j = 1: length(e)
-        up = exp(-β*e[j]-m) - exp(-β*e[i]-m)
-        up = up * A[i,j] * B[j,i] * η
-        down = (ω + e[i] - e[j])^2 + η^2
-        num += up/down
+        res = exp(-β*e[i]-m) - exp(-β*e[j]-m)
+        res = res * A[i,j] * B[j,i] * delta(ω+e[i]-e[j],η)
+        num += res
     end
-    return -num/den
+    return  π*num/den
 end
 
-function NMR_relaxation(A::AbstractArray,B::AbstractArray,
+function structure_factor(ω::Real, A::AbstractArray,B::AbstractArray,
                         ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.05)
     eye = Matrix(1.0I, size(ψ.Q))
     A = eye ⊗ A ⊗ eye
@@ -132,12 +142,8 @@ function NMR_relaxation(A::AbstractArray,B::AbstractArray,
     den = exp.(-β * e .- m) |> sum
     num = 0.0
     for i = 1: length(e), j = 1: length(e)
-        up = exp(-β*e[j]-m) - exp(-β*e[i]-m)
-        up = up * A[i,j] * B[j,i] * η *(e[i]-e[j])
-        down = (e[i] - e[j])^2 + η^2
-        down = down^2
-        num += up/down
+        num += exp(-β*e[i]-m)*A[i,j]*B[j,i]*delta(ω+e[i]-e[j], η)
     end
-    return num/den * 4/β
+    return num/den * 2π
 end
 #end  # module PhysicalObservables

@@ -12,13 +12,21 @@ function pauli(char::Char)
     end
 end
 
+function delta(x::Real, η::Real)
+    num = η
+    den = (x^2 + η^2) * π
+    return num/den
+end
+
 function ⊗(A::AbstractMatrix, B::AbstractMatrix)
     kron(A,B)
 end
 
 function ⊗(A::AbstractMatrix, B::Array{T,3}) where T<:Number
+    (eltype(A) <: Complex) | (eltype(B)<: Complex) ?
+        dtype = ComplexF64 : dtype = Float64
     χ1 = size(A)[1]; χ2 = size(B)[1]; D = size(B)[3]
-    res = zeros(χ1*χ2, χ1*χ2, D)
+    res = zeros(dtype,(χ1*χ2, χ1*χ2, D))
     for d = 1:D
         res[:,:,d] = A ⊗ B[:,:,d]
     end
@@ -26,44 +34,54 @@ function ⊗(A::AbstractMatrix, B::Array{T,3}) where T<:Number
 end
 
 function ⊗(A::Array{T,3}, B::AbstractMatrix) where T<:Number
+    (eltype(A) <: Complex) | (eltype(B)<: Complex) ?
+        dtype = ComplexF64 : dtype = Float64
     χ1 = size(A)[1]; χ2 = size(B)[1]; D = size(A)[3]
-    res = zeros(χ1*χ2, χ1*χ2, D)
+    res = zeros(dtype,(χ1*χ2, χ1*χ2, D))
     for d = 1:D
         res[:,:,d] = A[:,:,d] ⊗ B
     end
     return res
 end
 
-function ⊗(A::Array{T,3}, B::Array{T,3}) where T<:Number
+function ⊗(A::Array{T,3} where T<:Number, B::Array{T,3} where T<:Number)
+    (eltype(A) <: Complex) | (eltype(B)<: Complex) ?
+        dtype = ComplexF64 : dtype = Float64
     χ1 = size(A)[1]; χ2 = size(B)[1]; D = size(A)[3]
-    res = zeros(χ1*χ2, χ1*χ2)
+    res = zeros(dtype,(χ1*χ2, χ1*χ2))
     for d = 1:D
         res += A[:,:,d] ⊗ B[:,:,d]
     end
     return res
 end
 
-function ⊗(A::Array{T,4}, B::Array{T,3}) where T<:Number
+function ⊗(A::Array{T,4} where T<:Number, B::Array{T,3} where T<:Number)
+    (eltype(A) <: Complex) | (eltype(B)<: Complex) ?
+        dtype = ComplexF64 : dtype = Float64
     χ1 = size(A)[1]; χ2 = size(B)[1]; D = size(B)[3]
-    res = zeros(χ1*χ2, χ1*χ2,D)
+    res = zeros(dtype,(χ1*χ2, χ1*χ2,D))
     for d = 1:D
         res[:,:,d] = A[:,:,d,:] ⊗ B
     end
     return res
 end
 
-function ⊗(A::Array{T,3}, B::Array{T,4}) where T<:Number
+function ⊗(A::Array{T,3} where T<:Number, B::Array{T,4} where T<:Number)
+    (eltype(A) <: Complex) | (eltype(B)<: Complex) ?
+        dtype = ComplexF64 : dtype = Float64
     χ1 = size(A)[1]; χ2 = size(B)[1]; D = size(A)[3]
-    res = zeros(χ1*χ2, χ1*χ2, D)
+    res = zeros(dtype,(χ1*χ2, χ1*χ2, D))
     for d = 1:D
         res[:,:,d] = A ⊗ B[:,:,:,d]
     end
     return res
 end
 
-function ⊗(A::Array{T,4}, B::Array{T,4}) where T<:Number
+function ⊗(A::Array{T,4} where T<:Number, B::Array{T,4} where T<:Number)
+    (eltype(A) <: Complex) | (eltype(B)<: Complex) ?
+        dtype = ComplexF64 : dtype = Float64
     χ1 = size(A)[1]; χ2 = size(B)[1]; D = size(A)[3]
-    res = zeros(χ1*χ2, χ1*χ2, D, D)
+    res = zeros(dtype,(χ1*χ2, χ1*χ2, D, D))
     for d1 = 1:D, d2 = 1:D
         res[:,:,d1, d2] = A[:,:,d1,:] ⊗ B[:,:,:,d2]
     end
@@ -105,7 +123,7 @@ end
 """function manipulation"""
 function grad_num(f::Function, var::AbstractArray)
     ϵ = 1.e-5
-    g = zeros(size(var))
+    g = similar(var)
     for i = 1:length(var)
         var[i] -= ϵ
         f1 = f(var)
