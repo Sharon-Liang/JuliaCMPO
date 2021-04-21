@@ -68,35 +68,36 @@ end
 end
 
 @testset "multiplications of cmps and cmpo: D-1 > 1" begin
-    x = rand(2,2) |> symmetrize
+    dtype = ComplexF64
+    x = rand(dtype,(2,2)) |> symmetrize
     z = rand(2,2) |> symmetrize
-    R = zeros(2,2,2); R[:,:,1] = x ; R[:,:,2] = x
-    L = zeros(2,2,2); L[:,:,1] = z ; L[:,:,2] = z
+    R = zeros(dtype,(2,2,2)); R[:,:,1] = x ; R[:,:,2] = x
+    L = zeros(dtype,(2,2,2)); L[:,:,1] = z ; L[:,:,2] = z
     s = cmps(x, R)
-    o = cmpo(x, R, L, zeros(2,2,2,2))
+    o = cmpo(x, R, L, zeros(dtype,(2,2,2,2)))
 
-    s_arr = zeros(2,2,3)
+    s_arr = zeros(dtype,(2,2,3))
     s_arr[:,:,1] = x; s_arr[:,:,2] = x; s_arr[:,:,3] = x;
 
     i2 = Matrix(1.0I,2,2)
     ss = -(i2 ⊗ x + x ⊗ i2 + x ⊗ x + x ⊗ x)
 
     osq = i2 ⊗ x + x ⊗ i2 + z ⊗ x + z ⊗ x
-    osr = zeros(4,4,2)
+    osr = zeros(dtype,(4,4,2))
     osr[:,:,1] = x ⊗ i2
     osr[:,:,2] = x ⊗ i2
 
     soq = i2 ⊗ x + x ⊗ i2 + x ⊗ x + x ⊗ x
-    sor = zeros(4,4,2)
+    sor = zeros(dtype,(4,4,2))
     sor[:,:,1] = i2 ⊗ z
     sor[:,:,2] = i2 ⊗ z
 
     ooq = i2 ⊗ x + x ⊗ i2 + z ⊗ x + z ⊗ x
-    ool = zeros(4,4,2)
+    ool = zeros(dtype,(4,4,2))
     ool[:,:,1] = i2 ⊗ z; ool[:,:,2] = i2 ⊗ z
-    oor = zeros(4,4,2)
+    oor = zeros(dtype,(4,4,2))
     oor[:,:,1] = x ⊗ i2; oor[:,:,2] = x ⊗ i2
-    oop = zeros(4,4,2,2)
+    oop = zeros(dtype,(4,4,2,2))
 
     sos = -(i2 ⊗ osq + x ⊗ i2 ⊗ i2 + x ⊗ osr[:,:,1] + x ⊗ osr[:,:,2])
 
