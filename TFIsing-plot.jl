@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.14.3
+# v0.14.4
 
 using Markdown
 using InteractiveUtils
@@ -48,9 +48,10 @@ begin
 	# beta = [0.1, 1, 10, 20]
 	b = 20
 	path1 = @sprintf "./data/bnew_%.1f.jld" b
-	path3 = @sprintf "./data/f_and_sx_bnew_%.1f.txt" b
+	p1 = @sprintf "./data/f_and_sx_bnew_%.1f.txt" b
+	p2 = @sprintf "./data/f_and_sx_bnew_%.1f_r.txt" b
+	p3 = @sprintf "./data/f_and_sx_bnew_%.1f_g.txt" b
 	b1 = load(path1)
-	f1 = readdlm(path3)
 end
 
 # ╔═╡ 2cb83a03-03b2-4958-bcc0-4877b6ad658d
@@ -134,7 +135,37 @@ end
 pwd()
 
 # ╔═╡ d8d0e971-fb53-47dd-8dc5-5808e54bc8af
+begin
+	#compare free energy
+	f1 = readdlm(p1)
+	f2 = readdlm(p2)
+	f3 = readdlm(p3)
+end
 
+# ╔═╡ 443aa1dc-e4fa-4766-a51d-ea4ddcba3494
+df1 = f1[:,3] - f1[:,2]
+
+# ╔═╡ 80c3bc9e-d417-4682-861d-db0fef01b86c
+df2 = f2[:,3] - f2[:,2]
+
+# ╔═╡ ef56a38e-15a8-4aee-a870-c11171711e26
+df3 = f3[:,3] - f3[:,2]
+
+# ╔═╡ 10b10dc3-4cae-4b2b-a725-a760abdbe7e1
+begin
+	tf=@sprintf "free energy loss compare of β=%.1f with different ψ0" b
+	plot(gamma, df1, m=:circle, lw = 2, label="+-| init")
+	plot!(gamma, df2, m=:circle, lw = 2, label="random init")
+	plot!(gamma, df3, m=:circle, lw = 2, label="previous init")
+	plot!(title=tf, xlabel="Γ/J", ylabel="free energy loss",legend=:best)
+end
+
+# ╔═╡ 58a5077f-0cab-48e4-b2a3-c0e7375615f6
+begin
+	plot(gamma, df1, m=:circle, lw = 2, label="+-| init")
+	plot!(gamma, df2, m=:circle, lw = 2, label="random init")
+	plot!(title=tf, xlabel="Γ/J", ylabel="free energy loss", ylims=(-1.e-10,6.e-9), legend=:best)
+end
 
 # ╔═╡ Cell order:
 # ╠═a63b4ad6-46e6-4635-8037-c24b20abf070
@@ -157,3 +188,8 @@ pwd()
 # ╠═86574854-9b9c-4fa8-940f-20446705fce6
 # ╠═0065491c-a633-11eb-25e8-291ac2c6fa6e
 # ╠═d8d0e971-fb53-47dd-8dc5-5808e54bc8af
+# ╠═443aa1dc-e4fa-4766-a51d-ea4ddcba3494
+# ╠═80c3bc9e-d417-4682-861d-db0fef01b86c
+# ╠═ef56a38e-15a8-4aee-a870-c11171711e26
+# ╠═10b10dc3-4cae-4b2b-a725-a760abdbe7e1
+# ╠═58a5077f-0cab-48e4-b2a3-c0e7375615f6
