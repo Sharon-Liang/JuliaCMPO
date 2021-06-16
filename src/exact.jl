@@ -4,6 +4,16 @@ function energy_density(k::Real, J::Real, Γ::Real)
     return eng
 end
 
+function partitian(J::Real, Γ::Real, β::Real; L = 10000)
+    z = 1.
+    for n = 1:L
+        k = 2*π/L * n
+        ϵ = energy_density(k, J, Γ)
+        z *= (exp(β*ϵ/2) + exp(-β*ϵ/2)) 
+    end
+    return z
+end
+
 function free_energy(J::Real, Γ::Real, β::Real; L = 10000)
     f = 0.
     for n = 1:L

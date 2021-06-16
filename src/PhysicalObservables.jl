@@ -9,7 +9,7 @@ function TFIsing(J::Real, Γ::Real; field='N')
     if field == 'N'
         h = zeros(2,2)
     else
-        η = 1.e-5
+        η = 1.e-2
         h = η .* pauli(field)
     end
     return cmpo(Γ*pauli('x')+h, √J*pauli('z'), √J*pauli('z'), zeros(2,2))
@@ -22,6 +22,21 @@ function XYmodel()
     LR = zeros(dtype,2,2,2); LR[:,:,1] = x; LR[:,:,2] = y
     P = zeros(dtype,2,2,2,2)
     return cmpo(Q,LR,LR,P)
+end
+
+"""
+Partitian function
+"""
+function partitian(ψ::cmps, W::cmpo, β::Real)
+    K = ψ * W * ψ ; H = ψ * ψ
+    num = trexp(-β*K)
+    den = trexp(-β*H)
+    return exp(num.max - den.max) * num.res/den.res
+end
+
+function partitian!(ψ::cmps, W::cmpo, β::Real)
+    K = ψ * W * ψ
+    return trexp(-β*K)
 end
 
 """
