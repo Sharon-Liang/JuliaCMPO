@@ -64,7 +64,7 @@ function *(ol::cmpo, or::cmpo)
 end
 
 """ init cmps """
-function init_cmps(χ::Integer; D::Integer = 1, hermition = true, dtype = Float64)
+function init_cmps(χ::Int; D::Int = 1, hermition = true, dtype = Float64)
     Q = rand(dtype, χ, χ)
     if D == 1
         R = rand(dtype, χ, χ)
@@ -81,7 +81,7 @@ function init_cmps(χ::Integer; D::Integer = 1, hermition = true, dtype = Float6
     return cmps(Q,R)
 end
 
-function init_cmps(χ::Integer, W::cmpo)
+function init_cmps(χ::Int, W::cmpo)
     # r = 0 case
     d = size(W.Q)[1];  (q,r) = divrem(log(d,χ), 1)
     ψ = cmps(W.Q, W.R)
