@@ -3,7 +3,6 @@ using Printf
 using SparseArrays
 using DelimitedFiles
 using JLD, HDF5
-using Combinatorics
 
 function energy_density(J::Real, Γ::Real, N::Int, m::Int)
     k = m * π /N
