@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.14.4
+# v0.14.7
 
 using Markdown
 using InteractiveUtils
@@ -50,6 +50,13 @@ end
 # ╔═╡ a7c05b5c-d77d-4d71-9a5f-139a621968d8
 w2 = TFIsing(1.0, g_2)
 
+# ╔═╡ b6d66d89-6a5d-47ab-bd89-fa8e0e54fbf0
+begin
+	# Fit the lowest energy level (E2-E1)
+	model(t,p) = p[1] * t .+ p[2]
+	p0 = [-0.75, 0]
+end
+
 # ╔═╡ b6015a68-602b-4883-9cc3-9e57c8dffdd7
 begin
 	# beta = [0.1, 1, 10, 20]
@@ -62,7 +69,7 @@ begin
 end
 
 # ╔═╡ 2cb83a03-03b2-4958-bcc0-4877b6ad658d
-gamma = [i for i in range(0,5,step = 0.2)]
+gamma = [i for i in range(0,2,step = 0.2)]
 
 # ╔═╡ aa944832-e966-4d56-9a53-42a92b8dd75b
 # v = [gamma, 128, 128] eigen vectors, length(gamma)=26
@@ -86,7 +93,7 @@ begin
 	dge2_beta = zeros(length(beta), num-1); dge3_beta = zeros(length(beta), num-1)
 	for i = 1:length(beta)
 		β = beta[i]; key = string(beta[i])
-		ψ = cmps(g1[key][2][:,:,1], g1[key][2][:,:,1])
+		ψ = cmps(g1[key][2][:,:,1], g1[key][2][:,:,2])
 		gk2 = ψ * ψ; ge2[i,:] = eigvals(gk2)[1:num]
 		dge2[i,:] = ge2[i,2:end] .- ge2[i,1]
 		dge2_beta[i,:] = dge2[i,:] * beta[i]
@@ -110,7 +117,7 @@ begin
 	gti2 = @sprintf "Γ/J = %.1f, eigen values of |-+-|" g
 	x = log.(T)
 	plot(x, dge3_beta, ls=:dash, shape=:circle)
-	#plot!(x, -0.75 .* x,lw = 1.5, c=:black, label=("-0.75log(T)"))
+	plot!(x, -0.75 .* x,lw = 1.5, c=:black, label=("-0.75log(T)"))
 	plot!(title= gti2, xlabel = "log(T)", ylabel = "ΔE/T",legend=:topright)
 end
 
@@ -122,7 +129,7 @@ begin
 	v2 = zeros(length(beta), 128, 128)
 	for i = 1:length(beta)
 		β = beta[i]; key = string(beta[i])
-		ψ = cmps(g2[key][2][:,:,1], g2[key][2][:,:,1])
+		ψ = tocmps(g2[key][2])
 		gk2 = ψ * ψ; ge_2[i,:] = eigvals(gk2)[1:num]
 		dge_2[i,:] = ge2[i,2:end] .- ge2[i,1]
 		dge_2_beta[i,:] = dge2[i,:] * beta[i]
@@ -152,9 +159,38 @@ begin
 	end
 	# plot 
 	yti3 = @sprintf "Γ/J =%.1f, sz[i,i] * sz[i,i]" g_2
-	plot(beta, y3, ls=:dash, shape=:circle)
-	plot!(title= yti3, xlabel = "β", ylabel = "|z_ii|^2 ", legend=:bottomleft)
+	plot(x, y3, ls=:dash, shape=:circle)
+	plot!(title= yti3, xlabel = "log(T)", ylabel = "|z_ii|^2 ", legend=:bottomleft)
 end
+
+# ╔═╡ 831f2394-3fd1-45b7-9cbc-32886bb10b93
+begin # |sz[i,i]|^2 * e^{-Em/T}
+	yd3_beta = zeros(length(beta), num-1)
+	for i = 1: length(beta), j = 1:num-1
+		yd3_beta[i,j] = -log(y3[i,j+1]) + dge3_beta[i,j]
+	end
+	plot(x, yd3_beta, ls=:dash, shape=:circle)
+	plot!(x, -0.75 .* x,lw = 1.5, c=:black, label=("-0.75log(T)"))
+	plot!(xlabel = "log(T)", ylabel = "log(|z_ii|^2)+ΔE/T ", legend=:best)
+end
+
+# ╔═╡ e51012e1-832e-4c6d-b4b3-db36be55f7c0
+begin
+	x1 = x[10:end] # inear part
+	ydata1 = dge3_beta[10:end,1]
+	ydata2 = yd3_beta[10:end,1]
+	fit1 = curve_fit(model, x1, ydata1,p0); param1 = fit1.param
+	lab1 = @sprintf "fit ΔE1/T = %.2f * log(T) + %.2f" param1[1] param1[2]
+	fit2 = curve_fit(model, x1, ydata2,p0); param2 = fit2.param
+	lab2 = @sprintf "fit log|Szii|^2 e^{-ΔE1/T} = %.2f * log(T) + %.2f" param1[1] param1[2]
+	nydata1 = model(x1,param1)
+	nydata2 = model(x1,param2)
+	plot(x1, ydata1, ls=:dash, shape=:circle, label="ΔE1/T")
+	plot!(x1, nydata1, lw=2, label="fit ΔE1/T")
+end
+
+# ╔═╡ ddb84c1e-15f0-4d42-b756-f63da6964866
+fit2.param
 
 # ╔═╡ 2a448062-f5d2-4422-b8f0-b3c070c023e1
 begin
@@ -177,7 +213,7 @@ begin
 	for i = 1:length(gamma)
 		gi = gamma[i]; key = string(gamma[i])
 		w = TFIsing(1.0, gi)
-		ψi = cmps(b1[key][2][:,:,1], b1[key][2][:,:,1])
+		ψi = cmps(b1[key][2][:,:,1], b1[key][2][:,:,2])
 		k2 = ψi * ψi; e2[i,:] = eigvals(k2)[1:num]
 		de2[i,:] = e2[i,2:end] .- e2[i,1]
 		k3 = ψi * w * ψi
@@ -200,8 +236,8 @@ begin
 	# plot k3
 	bti2 = @sprintf "β=%.1f, eigen values of |-+-|" b
 	plot(gamma, de3, ls=:dash, shape=:circle)
+	plot!(gamma, 2 .* abs.(gamma .- 1.0),lw = 1.5, label=("|Δ|"))
 	plot!(gamma, 4 .* abs.(gamma .- 1.0),lw = 1.5, label=("2|Δ|"))
-	plot!(gamma, 8 .* abs.(gamma .- 1.0),lw = 1.5, label=("4|Δ|"))
 	plot!(title= bti2, xlabel = "Γ/J", ylabel = "ΔE = Ei-E1",legend=:topleft)
 end
 
@@ -277,7 +313,7 @@ end
 
 # ╔═╡ Cell order:
 # ╠═181610df-4507-4cec-a7e0-2f919aec32bd
-# ╟─da8e7582-314f-401b-9406-a334c299c6b2
+# ╠═da8e7582-314f-401b-9406-a334c299c6b2
 # ╟─ddaf571f-8bea-4c47-b8f7-1d7499de4719
 # ╟─0cd9aa6f-c170-4fd1-9284-e431b76cd821
 # ╠═b98faf74-3372-4f36-b9e9-2318355ecaa9
@@ -288,6 +324,10 @@ end
 # ╠═f01991c3-5906-440f-9153-a4d3fa64e3c0
 # ╠═6641f603-2764-49cd-8d20-c3aeabc09446
 # ╠═84514442-d9d7-49bd-8394-94b7c551976d
+# ╠═831f2394-3fd1-45b7-9cbc-32886bb10b93
+# ╠═b6d66d89-6a5d-47ab-bd89-fa8e0e54fbf0
+# ╠═e51012e1-832e-4c6d-b4b3-db36be55f7c0
+# ╠═ddb84c1e-15f0-4d42-b756-f63da6964866
 # ╠═2a448062-f5d2-4422-b8f0-b3c070c023e1
 # ╠═b6015a68-602b-4883-9cc3-9e57c8dffdd7
 # ╠═2cb83a03-03b2-4958-bcc0-4877b6ad658d

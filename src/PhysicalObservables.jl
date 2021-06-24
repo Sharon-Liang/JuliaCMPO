@@ -9,7 +9,7 @@ function TFIsing(J::Real, Γ::Real; field='N')
     if field == 'N'
         h = zeros(2,2)
     else
-        η = 1.e-5
+        η = 1.e-2
         h = η .* pauli(field)
     end
     return cmpo(Γ*pauli('x')+h, √J*pauli('z'), √J*pauli('z'), zeros(2,2))
@@ -24,9 +24,51 @@ function XYmodel()
     return cmpo(Q,LR,LR,P)
 end
 
+function HeisenbergModel()
+end
+
+
 """
-Free energy
+The thermal average of local opeartors ===============================
 """
+function thermal_average(Op::AbstractArray, ψ::cmps, W::cmpo, β::Real)
+    eye = Matrix(1.0I, size(ψ.Q))
+    Op = eye ⊗ Op ⊗ eye
+    K = ψ * W * ψ |> symmetrize |> Hermitian
+    e, v = eigen(-β*K)
+    m = maximum(e)
+    Op = v' * Op * v
+    den = exp.(e .- m) |> sum
+    num = exp.(e .- m) .* diag(Op) |> sum
+    return num/den
+end
+
+function thermal_average(Op::AbstractArray, ψ::cmps, β::Real)
+    K = ψ * ψ |> symmetrize |> Hermitian
+    e, v = eigen(-β*K)
+    m = maximum(e)
+    Op = v' * Op * v
+    den = exp.(e .- m) |> sum
+    num = exp.(e .- m) .* diag(Op) |> sum
+    return num/den
+end
+
+
+"""
+Thermal dynamic quanties =============================================
+"""
+function partitian(ψ::cmps, W::cmpo, β::Real)
+    K = ψ * W * ψ ; H = ψ * ψ
+    num = trexp(-β*K)
+    den = trexp(-β*H)
+    return exp(num.max - den.max) * num.res/den.res
+end
+
+function partitian!(ψ::cmps, W::cmpo, β::Real)
+    K = ψ * W * ψ
+    return trexp(-β*K)
+end
+
 function free_energy(ψ::cmps, W::cmpo, β::Real)
     K = ψ * W * ψ ; H = ψ * ψ
     res = logtrexp(-β*K)- logtrexp(-β*H)
@@ -48,21 +90,26 @@ function free_energy(param::Array{T,3} where T<:Number, W::cmpo, β::Real)
     free_energy(ψ, W, β)
 end
 
-
-"""
-The thermal average of local opeartors
-"""
-function thermal_average(Op::AbstractArray, ψ::cmps, W::cmpo, β::Real)
-    eye = Matrix(1.0I, size(ψ.Q))
-    Op = eye ⊗ Op ⊗ eye
-    K = ψ * W * ψ |> symmetrize |> Hermitian
-    e, v = eigen(-β*K)
-    m = maximum(e)
-    Op = v' * Op * v
-    den = exp.(e .- m) |> sum
-    num = exp.(e .- m) .* diag(Op) |> sum
-    return num/den
+function energy(ψ::cmps, W::cmpo, β::Real)
+    wang = ψ * W * ψ
+    gong = ψ * ψ
+    eng = thermal_average(wang, ψ, W, β) - thermal_average(gong, ψ, β)
+    return eng
 end
+
+function specific_heat(ψ::cmps, W::cmpo, β::Real)
+    wang = ψ * W * ψ ; wang2 = wang * wang
+    gong = ψ * ψ ; gong2 = gong * gong
+    c = thermal_average(wang2, ψ, W, β) - thermal_average(wang, ψ, W, β)^2
+    c -= thermal_average(gong2, ψ, β) - thermal_average(gong, ψ, β)^2
+    return β^2 * c
+end
+
+function entropy(ψ::cmps, W::cmpo, β::Real)
+    s = energy(ψ,W,β) - free_energy(ψ,W,β)
+    return β*s
+end
+
 
 """
 The local two-time correlation functions

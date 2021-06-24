@@ -6,7 +6,7 @@ using LsqFit
 
 z = pauli('z')
 
-d1 = load("./data/g_1.0.jld")
+d1 = load("./data/bnew_20.0_r.jld")
 #d2 = load("./data/g_0.1.jld")
 #d3 = load("./data/g_2.0.jld")
 

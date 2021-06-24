@@ -4,9 +4,12 @@ authors = ["Sharon-Liang <liangshuang228@gmail.com>"]
 version = "0.1.0"
 
 [deps]
+Arpack = "7d9fca2a-8960-54d3-9f78-7d1dccf2cb97"
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 HDF5 = "f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f"
 JLD = "4138dd39-2aa7-5051-a626-17a0bb65d9c8"
+KrylovKit = "0b1a1467-8014-51b9-945f-bf0ae24f4b77"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 LsqFit = "2fda8390-95c7-5789-9bda-21331edee243"
 Optim = "429524aa-4258-5aef-a3af-852621145aeb"
@@ -18,4 +21,5 @@ SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 StatsFuns = "4c63d2b9-4356-54db-8cca-17b64c39e42c"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 TimerOutputs = "a759f4b9-e2f1-59dc-863e-4aeb61b1ea8f"
+Yao = "5872b779-8223-5990-8dd0-5abbb0748c8c"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"

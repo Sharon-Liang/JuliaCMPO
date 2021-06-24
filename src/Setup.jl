@@ -111,4 +111,9 @@ function ovlp(s::cmps, β::Real)
 end
 
 
+function tocmps(A::Array{Float64, 3})
+    Q = A[:,:,1]
+    R = A[:,:,2]
+    return cmps(Q,R)
+end
 #end # module

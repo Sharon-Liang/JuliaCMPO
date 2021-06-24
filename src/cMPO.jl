@@ -16,11 +16,12 @@ export pauli, delta, ⊗
 export symmetrize, trexp, value, logtrexp
 export grad_func, grad_num
 export cmps, cmpo
-export toarray, init_cmps, ovlp
+export toarray, init_cmps, ovlp, tocmps
 
-export TFIsing, XYmodel
-export free_energy
-export thermal_average, correlation_2time
+export TFIsing, XYmodel, HeisenbergModel
+export thermal_average, partitian, partitian!
+export free_energy, energy, specific_heat, entropy
+export correlation_2time
 export susceptibility, imag_susceptibility, structure_factor
 export energy_density, ave_sx, critical_zz_cor, critical_zz_sus
 export critical_zz_chi
