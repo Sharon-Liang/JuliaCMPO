@@ -51,7 +51,6 @@ for len in sitenum
             else
                 e = eigs(mh, nev=eignum, which = :SR)[1]
             end
-            e = e ./ len
             writedlm(file,[Γ e'])
         end
     end
