@@ -4,6 +4,16 @@ function energy_density(k::Real, J::Real, Γ::Real)
     return eng
 end
 
+function energy(J::Real, Γ::Real, β::Real; L = 10000)
+    e = 0.
+    for n = 1:L
+        k = 2*π/L * n
+        ϵ = energy_density(k, J, Γ)
+        e += ϵ *(logistic(-β*ϵ) - 0.5)
+    end
+    return e
+end
+
 function partitian(J::Real, Γ::Real, β::Real; L = 10000)
     z = 1.
     for n = 1:L
@@ -22,6 +32,21 @@ function free_energy(J::Real, Γ::Real, β::Real; L = 10000)
         f += logaddexp(β*ϵ/2, -β*ϵ/2)
     end
     return -f/(β*L)
+end
+
+function entropy(J::Real, Γ::Real, β::Real; L = 10000)
+    s = energy(J, Γ, β; L) - free_energy(J, Γ, β; L)
+    return β*s
+end
+
+function specific_heat(J::Real, Γ::Real, β::Real; L = 10000)
+    c = 0.
+    for n = 1:L
+        k = 2*π/L * n
+        ϵ = energy_density(k, J, Γ)
+        e += ϵ *(ϵ*(logistic(-β*ϵ)^2 - logistic(-β*ϵ)) - 0.5)
+    end
+    return -β^2 * c  
 end
 
 function ave_sx(J::Real, Γ::Real, β::Real; L = 100)
