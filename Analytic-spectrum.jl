@@ -52,13 +52,14 @@ function subsets(k::Int, Pmax::Number, Ps::Vector)
 end
 
 
-function energy_level(J::Real, Γ::Real, N::Int; 
-    num::Int = 200, emax_diff::Real = 4)
+function energy_level(J::Real, Γ::Real, N::Integer; 
+    num::Int = 200, emax_diff::Real = 4, Nexcite_max::Int = 10)
     # N: Number of lattice sites
     # num: number of energy levels, default N
     # emax: maximum energy difference
     if N%4 != 0 @error "N must be a multiply of 4" end
-    num = min(num, 2^N)
+    log2(num) > N ? num = 2^N : 
+    Nexcite_max = max(N, Nexcite_max)
 
     # allowed momentum of even/odd sector
     m_even = [i for i in range(-(N-1), N-1, step = 2)]
@@ -72,35 +73,40 @@ function energy_level(J::Real, Γ::Real, N::Int;
 
     # estimate k-limit
     Nresult = 1
-    for i = 2:2:N
+    for i = 2:2:Nexcite_max
         indices, excite_even = subsets(i, emax_diff, Em_even)
         excite_even .+= gs_even
         length(indices) == 0 ? break : append!(energy, excite_even)
+        println("lenth  of energy array= ", length(energy))
     end
 
     # odd sector
     gs_odd = -0.5 * sum(Em_odd) # not gs energy
-    for i = 1:2:N # gs included
+    for i = 1:2:Nexcite_max # gs included
         indices, excite_odd = subsets(i, emax_diff, Em_odd)
         excite_odd .+= gs_odd
         length(indices) == 0 ? break : append!(energy, excite_odd)
+        println("lenth  of energy array= ", length(energy))
     end
 
     sort!(energy)
+    println("final length of energy arrag = ", length(energy))
     num = min(num, length(energy))
+    println("final number of energy levels = ", num)
     return energy[1:num]    
 end
 
 """check gamma/J """
-J = [i for  i in range(0,1, step=0.1)]
-sitenum = [8, 16]
+J = [i for i in range(0.,1.,step = 0.05)]
+sitenum = [16, 100]
+
 for len in sitenum
     path1 = @sprintf "./data/exact/analytic-fixg%i.txt" len
     println(path1)
     println("Fix Γ, change J, sitenum = ", len)
     open(path1, "w") do file
         for j in J
-            e = energy_level(j, 1., len, emax_diff = 4*len)
+            e = energy_level(j, 1., len, emax_diff = 8, Nexcite_max=len)
             writedlm(file,[j e'])
         end
     end
