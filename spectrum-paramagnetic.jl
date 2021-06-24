@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.14.7
+# v0.14.8
 
 using Markdown
 using InteractiveUtils
@@ -81,14 +81,14 @@ begin #plot energy level
 	#plot(temp, T3[:,2], ls=:dash, shape=:circle, label="cMPO:η=0.1")
 	plot!(J, 2 .* abs.(J .- 1.0),lw = 2, label=("|Δ|"))
 	plot!(J, 4 .* abs.(J .- 1.0),lw = 2, label=("2|Δ|"))
-	plot!(title= title1, xlabel = "J/Γ", ylabel = "ΔEm",legend=:topright)
+	plot!(title= title1, xlabel = "J/Γ", ylabel = "ΔEm",legend=:none)
 end
 
 # ╔═╡ 56fa8ff0-8789-42ad-a057-7045144d4db5
 plot_sz(1, Sz, num, J)
 
 # ╔═╡ 5c6bfcf4-2b2e-483b-a4c7-e112f1350cec
-plot_sz(2, Sz, num, J)
+plot_sz(2, Sz, 9, J)
 
 # ╔═╡ 94408f21-1a38-43b3-8fe1-2b7ccd67ecd5
 plot_sz(3, Sz, num, J)
@@ -97,15 +97,18 @@ plot_sz(3, Sz, num, J)
 plot_sz(4, Sz, num, J)
 
 # ╔═╡ 24dd81ce-abb9-4408-a208-a00637bcf7f9
-plot_sz(5, Sz, num, J)
+begin
+	plot_sz(5, Sz, num, J)
+	plot!(legend=:none)
+end
 
 # ╔═╡ Cell order:
 # ╠═e59c23f7-d0e4-4232-a132-5a6884c4be7b
 # ╟─e8d842a8-bc62-4d93-9003-5cdf518a25a4
 # ╟─48045ce5-9992-4913-96ee-bef48909af1b
-# ╟─fb473514-8e99-4a16-a4b6-a3b85fd5279f
+# ╠═fb473514-8e99-4a16-a4b6-a3b85fd5279f
 # ╠═fc5f8272-41d1-429d-a9a7-4544f8647f53
-# ╟─f6d2309d-c76e-4a3a-98d5-4d82bb2cfa22
+# ╠═f6d2309d-c76e-4a3a-98d5-4d82bb2cfa22
 # ╠═56fa8ff0-8789-42ad-a057-7045144d4db5
 # ╠═5c6bfcf4-2b2e-483b-a4c7-e112f1350cec
 # ╠═94408f21-1a38-43b3-8fe1-2b7ccd67ecd5
