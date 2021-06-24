@@ -1,5 +1,5 @@
 using Pkg
-Pkg.activate("./")
+Pkg.activate("../")
 using cMPO
 using Optim
 using DelimitedFiles
@@ -11,7 +11,7 @@ using Printf
 T = [i for i in range(3,0.05,length=60)]
 println("change T")
 for g in Γ
-    path = @sprintf "./data/tnew_%.1f.jld" g
+    path = @sprintf "../data/tnew_%.1f.jld" g
     jldopen(path,"w") do file
         w = TFIsing(1.0, g)
         arr = init_cmps(χ,w) |> toarray

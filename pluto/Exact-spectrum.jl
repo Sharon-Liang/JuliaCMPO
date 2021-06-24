@@ -22,8 +22,8 @@ eignum = 128
 J = [i for  i in range(0,1, step=0.1)]
 gamma = [i for i in range(0,1,step=0.1)]
 for len in sitenum
-    path1 = @sprintf "./data/exact/exact-fixg%i.txt" len
-    path2 = @sprintf "./data/exact/exact-fixj%i.txt" len
+    path1 = @sprintf "../data/exact/exact-fixg%i.txt" len
+    path2 = @sprintf "../data/exact/exact-fixj%i.txt" len
 
     println("Fix Γ, change J, sitenum = ", len)
     open(path1, "w") do file
