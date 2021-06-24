@@ -24,7 +24,16 @@ md"""
 """
 
 # ╔═╡ d9759ebc-db50-4024-8ece-44e089815064
-num = 20
+num = 40
+
+# ╔═╡ bd9f611b-a9df-4475-aad7-d929168f5add
+begin
+	aly = readdlm("../data/exact/analytic-fixg100.txt")
+	for i= 3:201
+		aly[:,i] = (aly[:,i] .- aly[:,2])
+	end
+	"N=100, Analytic data (aly)"
+end
 
 # ╔═╡ cd5ec73c-e76c-419e-b72c-958863ef407b
 function load_exact(N::Integer, xlab::Char)
@@ -70,26 +79,6 @@ begin
 	string("cmpo data path (cd)=", path)
 end
 
-# ╔═╡ c8fc0917-f7f2-4f26-b6f1-ed41cb5d80a3
-begin
-	#plot(J, dE_wang[:,1:num], 
-	#	line =(:dash, :red),
-	#	marker=(:circle, 2, :red)
-	#	)
-	plot(J, 2 .* abs.(J .- 1.0),lw = 2, lc=:gray, label=("|Δ|"))
-	#plot!(J, dE_gong[:,1:num], 
-	#	line =(:dash, :red),
-	#	marker=(:circle, 2, :red)
-	#	)
-	plot!(ed[:,1], ed[:,3:90], 
-		line =(:blue),
-		marker=(:hexagon, 2, :blue))
-	plot!(ed1[:,1], ed1[:,3:50], 
-		line =(:green),
-		marker=(:star, 2, :green))
-	plot!(legend=:none)
-end
-
 # ╔═╡ 9ecfc8e7-0cb5-468a-95f1-f1bd8c222f06
 begin
 	dE_gong = zeros(length(J), 63); dE_wang = zeros(length(J), 127)
@@ -109,13 +98,69 @@ begin
 	" dE_gong and dE_wang "
 end
 
+# ╔═╡ c8fc0917-f7f2-4f26-b6f1-ed41cb5d80a3
+begin
+	plot(J, 2 .* abs.(J .- 1.0),lw = 2, lc=:gray, label=("|Δ|"), fmt=:png)
+	plot!(J, dE_wang[:,1], 
+		line =(:dash, :reds),
+		marker=(:circle, 2, :reds, stroke(0)), label = "cmpo",
+		)
+	plot!(J, dE_wang[:,2:num], 
+		line =(:dash, :reds),
+		marker=(:circle, 2, :reds, stroke(0)), label = false
+		)
+	#plot!(J, dE_gong[:,1:num], 
+	#	line =(:dash, :red),
+	#	marker=(:circle, 2, :red)
+	#	)
+	#plot!(ed[:,1], ed[:,3:90], 
+	#	line =(:blue),
+	#	marker=(:hexagon, 2, :blue))
+	plot!(ed1[:,1], ed1[:,3], 
+		line =(:blues), label = "ED:N=16",
+		marker=(:star, 2, :greens))
+	plot!(ed1[:,1], ed1[:,4:50], 
+		line =(:blues), label = false,
+		marker=(:star, 2, :blue))
+	plot!(xlabel="J/Γ", ylabel = "Ei- E0", ylim=(0,4), legend=:bottomleft)
+end
+
+# ╔═╡ fbd6e688-9d3b-49a7-a966-a7327105d6f0
+begin
+	plot(J, 2 .* abs.(J .- 1.0),lw = 2, lc=:green, label=("|Δ|"))
+	plot!(aly[:,1], aly[:,3], 
+		line =(:blues), label = "Analytic:N=100",
+		marker=(:star, 2, :greens))
+	plot!(aly[:,1], aly[:,4:200], 
+		line =(:blues), label = false,
+		marker=(:star, 2, :blue))
+	plot!(J, dE_wang[:,1], 
+		line =(:dash, :reds),
+		marker=(:circle, 2, :reds, stroke(0)), label = "cmpo",
+		fmt = :png)
+	plot!(J, dE_wang[:,2:num], 
+		line =(:dash, :reds),
+		marker=(:circle, 2, :reds, stroke(0)), label = false
+		)
+	#plot!(J, dE_gong[:,1:num], 
+	#	line =(:dash, :red),
+	#	marker=(:circle, 2, :red)
+	#	)
+	#plot!(ed[:,1], ed[:,3:90], 
+	#	line =(:blue),
+	#	marker=(:hexagon, 2, :blue))
+	plot!(ylim=(0,3), legend=:bottomleft)
+end
+
 # ╔═╡ Cell order:
 # ╟─5abee561-14f6-4c37-a669-e7bbeafada32
-# ╠═d9759ebc-db50-4024-8ece-44e089815064
+# ╟─d9759ebc-db50-4024-8ece-44e089815064
 # ╠═c8fc0917-f7f2-4f26-b6f1-ed41cb5d80a3
-# ╠═9ecfc8e7-0cb5-468a-95f1-f1bd8c222f06
+# ╠═fbd6e688-9d3b-49a7-a966-a7327105d6f0
+# ╟─9ecfc8e7-0cb5-468a-95f1-f1bd8c222f06
 # ╟─22a60fd1-9018-40ed-8011-8d45efa32955
 # ╟─4caaf3f6-42f8-445d-b129-45bd936a5dba
+# ╟─bd9f611b-a9df-4475-aad7-d929168f5add
 # ╟─cd5ec73c-e76c-419e-b72c-958863ef407b
 # ╟─946b658d-bccc-44a8-be9f-6686a08cc178
 # ╟─2de56e90-ce4b-11eb-38fc-db0a4da44e78

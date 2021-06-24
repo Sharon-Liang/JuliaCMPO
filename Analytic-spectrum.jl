@@ -97,15 +97,15 @@ end
 
 """check gamma/J """
 J = [i for i in range(0.,1.,step = 0.05)]
-sitenum = [16, 100]
+sitenum = [100]
 
 for len in sitenum
-    path1 = @sprintf "./data/exact/analytic-fixg%i.txt" len
+    path1 = @sprintf "./data/exact/analytic-fixg%i_l.txt" len
     println(path1)
     println("Fix Γ, change J, sitenum = ", len)
     open(path1, "w") do file
         for j in J
-            e = energy_level(j, 1., len, emax_diff = 8, Nexcite_max=len)
+            e = energy_level(j, 1., len, emax_diff = 8, Nexcite_max=len, num = 1000)
             writedlm(file,[j e'])
         end
     end
