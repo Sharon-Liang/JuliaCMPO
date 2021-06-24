@@ -26,7 +26,7 @@ end
 begin
 	# gamma = [0.1, 0.5, 0.9, 1, 1.1, 2, 4]
 	g = 1.0
-	path2 = @sprintf "./data/gnew_%.1f.jld" g
+	path2 = @sprintf "../data/gnew_%.1f.jld" g
 	g1 = load(path2)
 end
 
@@ -43,7 +43,7 @@ w1 = TFIsing(1.0, g)
 begin
 	# gamma = [0.1, 0.5, 0.9, 1, 1.1, 2, 4]
 	g_2 = 1.0
-	path3 = @sprintf "./data/gnew_%.1f.jld" g_2
+	path3 = @sprintf "../data/gnew_%.1f.jld" g_2
 	g2 = load(path3)
 end
 
@@ -61,10 +61,10 @@ end
 begin
 	# beta = [0.1, 1, 10, 20]
 	b = 20
-	path1 = @sprintf "./data/bnew_%.1f.jld" b
-	p1 = @sprintf "./data/f_and_sx_bnew_%.1f.txt" b
-	p2 = @sprintf "./data/f_and_sx_bnew_%.1f_r.txt" b
-	p3 = @sprintf "./data/f_and_sx_bnew_%.1f_g.txt" b
+	path1 = @sprintf "../data/bnew_%.1f.jld" b
+	p1 = @sprintf "../data/f_and_sx_bnew_%.1f.txt" b
+	p2 = @sprintf "../data/f_and_sx_bnew_%.1f_r.txt" b
+	p3 = @sprintf "../data/f_and_sx_bnew_%.1f_g.txt" b
 	b1 = load(path1)
 end
 

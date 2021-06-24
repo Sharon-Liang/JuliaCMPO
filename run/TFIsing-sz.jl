@@ -1,5 +1,5 @@
 using Pkg
-Pkg.activate("./")
+Pkg.activate("../")
 using cMPO
 using Optim
 using DelimitedFiles
@@ -10,7 +10,7 @@ using Printf
 z = pauli('z')
 
 β = 20
-path = @sprintf "./data/bnew_%.1f_sz2.jld" β
+path = @sprintf "../data/bnew_%.1f_sz2.jld" β
 
 gamma = [i for i in range(0,3,step = 0.02)]
 jldopen(path,"w") do file
@@ -28,7 +28,7 @@ jldopen(path,"w") do file
 end
 
 d = load(path)
-path2 = @sprintf "./data/sz_bnew_%.1f_s2.txt" β
+path2 = @sprintf "../data/sz_bnew_%.1f_s2.txt" β
 open(path2, "w") do file
    for Γ in gamma
         key = string(Γ); var = Γ

@@ -1,5 +1,5 @@
 using Pkg
-Pkg.activate("./")
+Pkg.activate("../")
 using cMPO
 using Optim
 using DelimitedFiles
@@ -13,7 +13,7 @@ println("zero J")
 beta = [i for i in range(0.1,30,step = 0.5)]
 
 w = TFIsing(0.0, 1.0)
-path = @sprintf "./data/j0.jld" 
+path = @sprintf "../data/j0.jld" 
 jldopen(path,"w") do file
     arr = init_cmps(χ, w) |> toarray
     for β in beta
@@ -28,7 +28,7 @@ jldopen(path,"w") do file
 end
 
 d = load(path)
-path2 = @sprintf "./data/f_and_sx_j0.txt" 
+path2 = @sprintf "../data/f_and_sx_j0.txt" 
 open(path2, "w") do file
     for β in beta
         key = string(β); var = β

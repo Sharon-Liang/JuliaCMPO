@@ -7,7 +7,7 @@ using InteractiveUtils
 # ╔═╡ 8ff529df-40f6-4c3b-9e77-22db44183123
 begin
 	using Pkg
-	Pkg.activate(".")
+	Pkg.activate("..")
 	using cMPO
 	using DelimitedFiles, HDF5, JLD
 	using Plots
@@ -35,8 +35,8 @@ w = TFIsing(1.0,1.0)
 # ╔═╡ fad68feb-09bf-42d9-aa44-660e195e4478
 #load data
 begin
-	data = load("./data/gnew_1.0.jld")
-	"data path = ./data/gnew_1.0.jld"
+	data = load("../data/gnew_1.0.jld")
+	"data path = ../data/gnew_1.0.jld"
 end
 
 # ╔═╡ aa278724-98c5-4e8c-91ee-b890f604699a

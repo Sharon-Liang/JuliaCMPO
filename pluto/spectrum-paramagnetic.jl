@@ -7,7 +7,7 @@ using InteractiveUtils
 # ╔═╡ 1464edb4-c9bf-11eb-2370-af329ba2a3e5
 begin
 	using Pkg
-	Pkg.activate(".")
+	Pkg.activate("..")
 	using cMPO
 	using DelimitedFiles, HDF5, JLD
 	using Plots
@@ -28,7 +28,7 @@ J = [i for i in range(0.,1.,step = 0.02)]
 
 # ╔═╡ fb473514-8e99-4a16-a4b6-a3b85fd5279f
 begin
-	path = @sprintf "./data/jnew_%.1f.jld" β
+	path = @sprintf "../data/jnew_%.1f.jld" β
 	d1 = load(path)
 	string("data path =", path)
 end
