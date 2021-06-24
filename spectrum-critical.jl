@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.14.7
+# v0.14.8
 
 using Markdown
 using InteractiveUtils
@@ -102,7 +102,7 @@ end
 plot_sz(1,Sz,num,beta)
 
 # ╔═╡ fdd80b7c-9eb6-478d-8756-b40f483c997c
-plot_sz(2,Sz,num,beta)
+plot_sz(2,Sz,4,beta)
 
 # ╔═╡ 1466a388-55a4-40ed-bebb-797db74922b4
 plot_sz(3,Sz,num,beta)
@@ -122,7 +122,7 @@ plot_sz(6,Sz,num,beta)
 # ╠═353d724c-1706-4fee-843b-1a128ad27c21
 # ╟─d6acf104-52cd-4c52-8bab-e5e56dd398ca
 # ╟─fad68feb-09bf-42d9-aa44-660e195e4478
-# ╠═874de82b-5aa6-41c1-8573-1716e6f06fa9
+# ╟─874de82b-5aa6-41c1-8573-1716e6f06fa9
 # ╠═570eef1d-36e4-4f9a-a73e-d2c1cc46f1b7
 # ╠═2a5c8e15-9db8-4fb7-955b-cce74ba8a00f
 # ╠═aa278724-98c5-4e8c-91ee-b890f604699a
@@ -132,5 +132,5 @@ plot_sz(6,Sz,num,beta)
 # ╠═4eb2497b-5ae7-452c-8408-a210d59218ea
 # ╠═177b7b1d-fdbf-4ea5-91c4-3bf506def062
 # ╠═8db5f545-6fc0-4edb-bef0-f3075a1ca669
-# ╠═32aa73f9-0d71-4711-ad07-0c5db5cbf3a4
-# ╠═8ff529df-40f6-4c3b-9e77-22db44183123
+# ╟─32aa73f9-0d71-4711-ad07-0c5db5cbf3a4
+# ╟─8ff529df-40f6-4c3b-9e77-22db44183123
