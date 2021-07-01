@@ -1,14 +1,14 @@
 #module utilities
 import Base: kron
 
-function pauli(char::Char)
-    if char=='x' return [0. 1.; 1. 0.]
-    elseif char=='y' return [0. -1im; 1im 0.]
-    elseif char=='z' return [1. 0.; 0. -1.]
-    elseif char=='+' return [0. 1.; 0. 0.]
-    elseif char=='-' return [0. 0.; 1. 0.]
+function pauli(symbol::Symbol)
+    if symbol==:x return [0. 1.; 1. 0.]
+    elseif symbol==:y return [0. -1im; 1im 0.]
+    elseif symbol==:z return [1. 0.; 0. -1.]
+    elseif symbol==:+ return [0. 1.; 0. 0.]
+    elseif symbol==:- return [0. 0.; 1. 0.]
     else
-        error("The input should be 'x','y','z','+','_'.")
+        error("The input should be :x,:y,:z,:+,:-.")
     end
 end
 

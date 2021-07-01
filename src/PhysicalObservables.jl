@@ -5,35 +5,78 @@
 NN Transvers field Ising model
     H = ∑ J Zi Zj + ∑ Γ Xi
 """
-function TFIsing(J::Real, Γ::Real; field='N')
-    if field == 'N'
+function TFIsing(J::Real, Γ::Real; field::Symbol=:N)
+    if field == :N
         h = zeros(2,2)
     else
         η = 1.e-2
         h = η .* pauli(field)
     end
-    return cmpo(Γ*pauli('x')+h, √J*pauli('z'), √J*pauli('z'), zeros(2,2))
+    return cmpo(Γ*pauli(:x)+h, √J*pauli(:z), √J*pauli(:z), zeros(2,2))
 end
 
-function XYmodel()
-    x = pauli('x'); y = pauli('y')
-    dtype = eltype(y)
-    Q = zeros(dtype,2,2)
-    LR = zeros(dtype,2,2,2); LR[:,:,1] = x; LR[:,:,2] = y
-    P = zeros(dtype,2,2,2,2)
-    return cmpo(Q,LR,LR,P)
+
+function XYmodel(; J::Real = 1.0)
+    sgn = sign(J) 
+    sp = pauli(:+); sm = pauli(:-);
+    L = zeros(2,2,2)
+    L[:,:,1] = 1/√2 * sp ; L[:,:,2] = 1/√2 * sm
+    R = zeros(2,2,2)
+    R[:,:,1] = -sgn*1/√2 * sm ; R[:,:,2] = -sgn*1/√2 * sp
+    Q = zeros(2,2)
+    P = zeros(2,2,2,2)
+    return cmpo(Q,R,L,P)
 end
 
-function HeisenbergModel()
+function HeisenbergModel(; J::Real=1.0)
+    sgn = sign(J) 
+    sp = pauli(:+); sm = pauli(:-);
+    L = zeros(2,2,3)
+    L[:,:,1] = 1/√2 * sp ; L[:,:,2] = 1/√2 * sm; L[:,:,3] = pauli(:z)
+    R = zeros(2,2,3)
+    R[:,:,1] = -sgn*1/√2 * sm ; R[:,:,2] = -sgn*1/√2 * sp; R[:,:,3] = -sgn*pauli(:z)
+    Q = zeros(2,2)
+    P = zeros(2,2,3,3)
+    return cmpo(Q,R,L,P)
 end
 
+function XXZmodel(Jx::Real, Jz::Real)
+    if Jx == Jz 
+        return HeisenbergModel(J=Jz)
+    elseif Jz == 0
+        return XYmodel(J=Jx)
+    elseif Jx == 0
+        return TFIsing(Jz, 0.0)
+    else
+        sgnz = sign(Jz) ; sgnx = sign(Jx)
+        Jz = abs(Jz); Jx = abs(Jx)
+        sp = pauli(:+); sm = pauli(:-);
+        L = zeros(2,2,3)
+        L[:,:,1] = √(Jx/2) * sp ; L[:,:,2] = √(Jx/2) * sm; L[:,:,3] = √(Jz) *pauli(:z)
+        R = zeros(2,2,3)
+        R[:,:,1] = -sgn * √(Jx/2) * sm ; R[:,:,2] = -sgn * √(Jx/2) * sp; R[:,:,3] = -sgn * √(Jz) *pauli(:z)
+        Q = zeros(2,2)
+        P = zeros(2,2,3,3)
+        return cmpo(Q,R,L,P)
+    end
+end
+
+function make_operator(Op::AbstractArray, dim::Int)
+    eye = Matrix(1.0I, dim, dim)
+    return eye ⊗ Op ⊗ eye
+end
+
+function make_operator(Op::AbstractArray, ψ::cmps)
+    eye = Matrix(1.0I, size(ψ.Q))
+    return eye ⊗ Op ⊗ eye
+end
 
 """
 The thermal average of local opeartors ===============================
 """
 function thermal_average(Op::AbstractArray, ψ::cmps, W::cmpo, β::Real)
-    eye = Matrix(1.0I, size(ψ.Q))
-    Op = eye ⊗ Op ⊗ eye
+    #eye = Matrix(1.0I, size(ψ.Q))
+    #Op = eye ⊗ Op ⊗ eye
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(-β*K)
     m = maximum(e)
@@ -116,9 +159,9 @@ The local two-time correlation functions
 """
 function correlation_2time(τ::Number, A::AbstractArray,B::AbstractArray,
                            ψ::cmps, W::cmpo, β::Real)
-    eye = Matrix(1.0I, size(ψ.Q))
-    A = eye ⊗ A ⊗ eye
-    B = eye ⊗ B ⊗ eye
+    #eye = Matrix(1.0I, size(ψ.Q))
+    #A = eye ⊗ A ⊗ eye
+    #B = eye ⊗ B ⊗ eye
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
     m = maximum(-β * e)
@@ -136,9 +179,9 @@ function susceptibility(n::Integer, A::AbstractArray,B::AbstractArray,
                         ψ::cmps, W::cmpo, β::Real)
     # i ωn
     ωn = 2π * n/β  #bosion
-    eye = Matrix(1.0I, size(ψ.Q))
-    A = eye ⊗ A ⊗ eye
-    B = eye ⊗ B ⊗ eye
+    #eye = Matrix(1.0I, size(ψ.Q))
+    #A = eye ⊗ A ⊗ eye
+    #B = eye ⊗ B ⊗ eye
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
     m = maximum(-β * e)
@@ -158,9 +201,9 @@ end
 
 function imag_susceptibility(ω::Real,A::AbstractArray,B::AbstractArray,
                              ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.05)
-    eye = Matrix(1.0I, size(ψ.Q))
-    A = eye ⊗ A ⊗ eye
-    B = eye ⊗ B ⊗ eye
+    #eye = Matrix(1.0I, size(ψ.Q))
+    #A = eye ⊗ A ⊗ eye
+    #B = eye ⊗ B ⊗ eye
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
     m = maximum(-β * e)
@@ -178,9 +221,9 @@ end
 
 function structure_factor(ω::Real, A::AbstractArray,B::AbstractArray,
                         ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.05)
-    eye = Matrix(1.0I, size(ψ.Q))
-    A = eye ⊗ A ⊗ eye
-    B = eye ⊗ B ⊗ eye
+    #eye = Matrix(1.0I, size(ψ.Q))
+    #A = eye ⊗ A ⊗ eye
+    #B = eye ⊗ B ⊗ eye
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
     m = maximum(-β * e)

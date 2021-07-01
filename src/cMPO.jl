@@ -18,6 +18,7 @@ export grad_func, grad_num
 export cmps, cmpo
 export toarray, init_cmps, ovlp, tocmps
 
+export make_operator
 export TFIsing, XYmodel, HeisenbergModel
 export thermal_average, partitian, partitian!
 export free_energy, energy, specific_heat, entropy

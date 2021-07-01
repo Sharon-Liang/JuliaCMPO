@@ -1,0 +1,19 @@
+  Activating environment at `~/julia-code/mycMPO/Project.toml`
+2021-06-28: TFIsing-multiple-output.jl
+Not converged Γ = 1.04, β = 20
+Not converged Γ = 1.12, β = 18
+
+  Activating environment at `~/julia-code/mycMPO/Project.toml`
+2021-06-29: TFIsing-change-gamma.jl
+  Activating environment at `~/julia-code/mycMPO/Project.toml`
+2021-06-29: TFIsing-change-j.jl
+Not converged J/Γ = 0.92, β = 16
+Not converged J/Γ = 0.96, β = 20
+  Activating environment at `~/julia-code/mycMPO/Project.toml`
+2021-06-29: TFIsing-multiple-output.jl
+2021-06-29: calculate sz
+  Activating environment at `~/julia-code/mycMPO/Project.toml`
+2021-06-30: TFIsing-dt.jl
+Γ = 0.5
+Γ = 1.0
+Γ = 2.0

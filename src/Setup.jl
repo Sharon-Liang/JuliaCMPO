@@ -7,8 +7,8 @@ end
 
 struct cmpo
     Q::AbstractArray  # onsite
-    R::AbstractArray  # interaction
-    L::AbstractArray # interaction
+    R::AbstractArray  # interaction, column vector
+    L::AbstractArray # interaction, row vector
     P::AbstractArray  # long-range
 end
 
@@ -27,6 +27,18 @@ function toarray(ψ::cmps)
         for i=1:d res[:,:,i+1] = ψ.R[:,:,i] end
     end
     return res
+end
+
+function tocmps(A::Array{Float64, 3})
+    (r,c,d) = size(A)
+    Q = A[:,:,1]
+    if d == 2
+        R = A[:,:,2]
+    else
+        Q = zeros(r,c,d)
+        for i=1:d Q[:,:,i] = A[:,:,i+1] end
+    end
+    return cmps(Q,R)
 end
 
 """multiplications of cmps and cmpo"""
@@ -110,10 +122,4 @@ function ovlp(s::cmps, β::Real)
     -β*(s*s) |> trexp |> value
 end
 
-
-function tocmps(A::Array{Float64, 3})
-    Q = A[:,:,1]
-    R = A[:,:,2]
-    return cmps(Q,R)
-end
 #end # module

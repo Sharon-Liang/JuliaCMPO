@@ -28,8 +28,8 @@ num = 40
 
 # ╔═╡ bd9f611b-a9df-4475-aad7-d929168f5add
 begin
-	aly = readdlm("../data/exact/analytic-fixg100.txt")
-	for i= 3:201
+	aly = readdlm("../data/exact/analytic-fixg100_l.txt")
+	for i= 3:1001
 		aly[:,i] = (aly[:,i] .- aly[:,2])
 	end
 	"N=100, Analytic data (aly)"
@@ -109,10 +109,10 @@ begin
 		line =(:dash, :reds),
 		marker=(:circle, 2, :reds, stroke(0)), label = false
 		)
-	#plot!(J, dE_gong[:,1:num], 
-	#	line =(:dash, :red),
-	#	marker=(:circle, 2, :red)
-	#	)
+	plot!(J, dE_gong[:,1:num], 
+		line =(:dash, :red),
+		marker=(:circle, 2, :red), label=false,
+		)
 	#plot!(ed[:,1], ed[:,3:90], 
 	#	line =(:blue),
 	#	marker=(:hexagon, 2, :blue))
@@ -128,10 +128,11 @@ end
 # ╔═╡ fbd6e688-9d3b-49a7-a966-a7327105d6f0
 begin
 	plot(J, 2 .* abs.(J .- 1.0),lw = 2, lc=:green, label=("|Δ|"))
+	plot!(J, 4 .* abs.(J .- 1.0),lw = 2, lc=:red, label=("2|Δ|"))
 	plot!(aly[:,1], aly[:,3], 
 		line =(:blues), label = "Analytic:N=100",
 		marker=(:star, 2, :greens))
-	plot!(aly[:,1], aly[:,4:200], 
+	plot!(aly[:,1], aly[:,4:280], 
 		line =(:blues), label = false,
 		marker=(:star, 2, :blue))
 	plot!(J, dE_wang[:,1], 
@@ -149,7 +150,7 @@ begin
 	#plot!(ed[:,1], ed[:,3:90], 
 	#	line =(:blue),
 	#	marker=(:hexagon, 2, :blue))
-	plot!(ylim=(0,3), legend=:bottomleft)
+	plot!(xlabel="J/Γ", ylabel = "Ei- E0", ylim=(0,3), legend=:bottomleft)
 end
 
 # ╔═╡ Cell order:

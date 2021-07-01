@@ -38,8 +38,8 @@ md"""
 
 # ╔═╡ b2678f29-f16e-400f-a8d3-1c67dd5c258b
 begin
-	β = 20
-	p1 = @sprintf "../data/f_and_sx_bnew_%.1f_s.txt" β
+	β = 10
+	p1 = @sprintf "../data_new/f_and_sx_b_%i.txt" β
 	d1 = readdlm(p1)
 	p1
 end
@@ -123,7 +123,7 @@ Gap funtion $\Delta(\Gamma/J)$ at low temperature
 
 # ╔═╡ 9d2de768-a002-4ac9-949e-aa3b34d96be5
 begin
-	p2 = @sprintf "../data/bnew_%.1f_s.jld" β
+	p2 = @sprintf "../data_new/b_%i.jld" β
 	d2 = load(p2)
 	p2
 end
@@ -157,7 +157,7 @@ begin # Partitian function Z'
 	#plot
 	t1_Zc = @sprintf "Z' at Γ/J = 1"
 	plot(1 ./beta[5:end], Zc[5:end], ls=:dash, shape=:circle, label="Γ/J = 1.0")
-	plot!(title= t1_Zc, xlabel = "T", ylabel = "Z'",legend=:topleft)
+	plot!(title= t1_Zc, xlabel = "T", ylabel = "Z'",legend=:topleft,)
 end
 
 # ╔═╡ 08e629d6-05d3-4ae6-8def-0c479957244e
@@ -309,7 +309,7 @@ end
 # ╔═╡ d247d358-4367-4326-bcda-a11f0e66b83d
 begin #plot energy level
 	t1_e = @sprintf "Gap function at β=%.1f" β
-	plot(gamma, eng, ls=:dash, shape=:circle,markersize=2)
+	plot(gamma, eng[:,2:end], ls=:dash, shape=:circle,markersize=2)
 	#plot(temp, T3[:,2], ls=:dash, shape=:circle, label="cMPO:η=0.1")
 	plot!(gamma, 2 .* abs.(gamma .- 1.0),lw = 2, label=("|Δ|"))
 	plot!(gamma, 4 .* abs.(gamma .- 1.0),lw = 2, label=("2|Δ|"))
@@ -374,7 +374,7 @@ pwd()
 # ╔═╡ Cell order:
 # ╟─2aca9ac6-48ef-470f-a2ce-873b1acd7438
 # ╟─daeac86c-674b-411e-a354-94d30c2ccfb3
-# ╟─b2678f29-f16e-400f-a8d3-1c67dd5c258b
+# ╠═b2678f29-f16e-400f-a8d3-1c67dd5c258b
 # ╠═65e5f4df-887e-4d32-be0b-0ffac4fd0651
 # ╠═a69d2c85-65dc-486f-8006-bde6720a648a
 # ╟─6155dce8-2737-44c9-b5d8-e2adeb905e6b
@@ -393,7 +393,7 @@ pwd()
 # ╟─ceefb4a3-b1c3-4ff6-8970-a06e2f3e214f
 # ╠═f0857adc-5155-4c9e-93df-16963b56413d
 # ╟─5380b277-cad3-49ca-b685-7e7060176ea4
-# ╟─9d2de768-a002-4ac9-949e-aa3b34d96be5
+# ╠═9d2de768-a002-4ac9-949e-aa3b34d96be5
 # ╠═2049cdf6-33aa-4b45-a910-a96e29629ad3
 # ╠═b98e458f-5b48-41f3-9b9c-f19335024513
 # ╠═d247d358-4367-4326-bcda-a11f0e66b83d
@@ -410,5 +410,5 @@ pwd()
 # ╠═08e629d6-05d3-4ae6-8def-0c479957244e
 # ╟─8949d60a-0a6a-4821-8b53-0217b146ddf0
 # ╠═ce3a64cd-f495-486d-a67f-b5f318e746ad
-# ╟─b77c1e29-028d-4a96-aa0f-a33644380b84
+# ╠═b77c1e29-028d-4a96-aa0f-a33644380b84
 # ╠═d25175e8-b918-11eb-2ca0-2168adee0ebe
