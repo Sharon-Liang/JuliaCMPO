@@ -21,7 +21,7 @@ function partitian(J::Real, Γ::Real, β::Real; L = 10000)
     for n = 1:L
         k = 2*π/L * n
         ϵ = energy_density(k, J, Γ)
-        z *= ( exp(β*(ϵ/2+ϵ0)) + exp(-β*(ϵ/2-ϵ0)) )
+        z *= ( exp(β*ϵ/2) + exp(-β*ϵ/2) )
     end
     return z
 end 

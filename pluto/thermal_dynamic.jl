@@ -96,7 +96,7 @@ begin
 	for i = 1:length(beta)
 		b = beta[i]; key = string(b)
 		ψ = tocmps(d3[key][2])
-		zesc_cmpo[1,i] = partitian(ψ,w,b)
+		zesc_cmpo[1,i] = partitian!(ψ,w,b).res
 		zesc_cmpo[2,i] = energy(ψ,w,b)
 		zesc_cmpo[3,i] = entropy(ψ,w,b)
 		zesc_cmpo[4,i] = specific_heat(ψ,w,b)
