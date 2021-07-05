@@ -6,10 +6,10 @@ using DelimitedFiles
 using JLD, HDF5
 using Printf
 
-println("2021-06-30: TFIsing-dt.jl")
+println("2021-07-02: TFIsing-dt.jl")
 χ = 8
-Γ = [0.5, 1.0, 2.0]
-T = [i for i in range(1,0.02,step=0.002)]
+Γ = [1.0]
+T = [i for i in range(0.002,0.2,step=0.002)]
 for g in Γ
     path = @sprintf "../data/tnew_%.1f.jld" g
     jldopen(path,"w") do file

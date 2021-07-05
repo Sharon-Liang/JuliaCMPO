@@ -74,7 +74,7 @@ end
 begin
 	β = 20
 	J = [i for i in range(0.,1.,step = 0.02)]
-	path = @sprintf "../data/jnew_%.1f.jld" β
+	path = @sprintf "../data_new/j_%i.jld" β
 	cd = load(path)
 	string("cmpo data path (cd)=", path)
 end
@@ -158,8 +158,8 @@ end
 # ╟─d9759ebc-db50-4024-8ece-44e089815064
 # ╠═c8fc0917-f7f2-4f26-b6f1-ed41cb5d80a3
 # ╠═fbd6e688-9d3b-49a7-a966-a7327105d6f0
-# ╟─9ecfc8e7-0cb5-468a-95f1-f1bd8c222f06
-# ╟─22a60fd1-9018-40ed-8011-8d45efa32955
+# ╠═9ecfc8e7-0cb5-468a-95f1-f1bd8c222f06
+# ╠═22a60fd1-9018-40ed-8011-8d45efa32955
 # ╟─4caaf3f6-42f8-445d-b129-45bd936a5dba
 # ╟─bd9f611b-a9df-4475-aad7-d929168f5add
 # ╟─cd5ec73c-e76c-419e-b72c-958863ef407b

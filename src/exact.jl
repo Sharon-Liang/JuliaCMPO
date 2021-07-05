@@ -11,9 +11,10 @@ function energy(J::Real, Γ::Real, β::Real; L = 10000)
         ϵ = energy_density(k, J, Γ)
         e += ϵ *(logistic(-β*ϵ) - 0.5)
     end
-    return e
+    return e/L
 end
 
+"""
 function partitian(J::Real, Γ::Real, β::Real; L = 10000)
     z = 1.
     ϵ0 = [-0.5*energy_density(2*π/L * n, J, Γ) for n=1:L] |> sum
@@ -25,6 +26,17 @@ function partitian(J::Real, Γ::Real, β::Real; L = 10000)
     end
     return z
 end 
+
+function partitian!(J::Real, Γ::Real, β::Real; L = 10000)
+    z = 1.
+    for n = 1:L
+        k = 2*π/L * n
+        ϵ = energy_density(k, J, Γ)
+        z *= ( 1. + exp(-β*ϵ) ) 
+    end
+    return z
+end 
+"""
 
 function free_energy(J::Real, Γ::Real, β::Real; L = 10000)
     f = 0.
@@ -46,9 +58,9 @@ function specific_heat(J::Real, Γ::Real, β::Real; L = 10000)
     for n = 1:L
         k = 2*π/L * n
         ϵ = energy_density(k, J, Γ)
-        e += ϵ *(ϵ*(logistic(-β*ϵ)^2 - logistic(-β*ϵ)) - 0.5)
+        c += ϵ^2*(logistic(-β*ϵ) - logistic(-β*ϵ)^2)                                                                                                                 
     end
-    return -β^2 * c  
+    return β^2 * c/L
 end
 
 function ave_sx(J::Real, Γ::Real, β::Real; L = 100)
