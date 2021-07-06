@@ -15,7 +15,7 @@ import LinearAlgebra: normalize
 export pauli, delta, ⊗
 
 export symmetrize, trexp, value, logtrexp
-export grad_func
+export gradient_function
 export cmps, cmpo
 export toarray, init_cmps, ovlp, tocmps
 

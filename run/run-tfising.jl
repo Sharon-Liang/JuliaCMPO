@@ -8,5 +8,5 @@ using Printf
 
 println("Start!")
 
-include("TFIsing-change-gamma.jl")
+#include("TFIsing-change-gamma.jl")
 include("TFIsing-multiple-output.jl")

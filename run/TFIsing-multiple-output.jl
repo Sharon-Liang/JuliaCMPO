@@ -15,15 +15,15 @@ x = make_operator(pauli(:x),χ)
 #z = make_operator(pauli(:z),χ)
 
 gamma = [i for i in range(0.,2.,step = 0.02)]
-beta = [1, 20]
+beta = [1., 20.]
 mb = maximum(beta)
 
 pcollect1 = Vector{String}(undef, length(beta))
 pcollect2 = Vector{String}(undef, length(beta))
 
 for i = 1:length(beta)
-    pcollect1[i] = @sprintf "../data_new/b_%i.jld" beta[i]
-    pcollect2[i] = @sprintf "../data_new/f_and_sx_b_%i.txt" beta[i]
+    pcollect1[i] = @sprintf "../data_new/b_%.1f.jld" beta[i]
+    pcollect2[i] = @sprintf "../data_new/f_and_sx_b_%.1f.txt" beta[i]
 end 
 
 for path in pcollect1
@@ -43,19 +43,19 @@ for g in gamma
     β = 1.
     while β <= mb
         f = arr -> free_energy(arr, w, β)
-        gf! = grad_func(f, arr)
+        gf! = gradient_function(f, arr)
         op = optimize(f,gf!, arr, LBFGS(),Optim.Options(iterations = 10000))
         arr = op.minimizer
         res = (minimum(op), arr, Optim.converged(op))
         if res[3] == false println("Not converged Γ = ", key, ", β = ", β) end
-        path1 = @sprintf "../data_new/b_%i.jld" β
-        path2 = @sprintf "../data_new/f_and_sx_b_%i.txt" β
+        path1 = @sprintf "../data_new/b_%.1f.jld" β
+        path2 = @sprintf "../data_new/f_and_sx_b_%.1f.txt" β
     
         if path1 in pcollect1
             jldopen(path1, "r+") do file
                 write(file, key, res)
             end
-        end
+       end
 
         if path2 in pcollect2
             ψ = tocmps(arr)

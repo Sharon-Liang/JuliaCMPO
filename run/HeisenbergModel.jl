@@ -6,25 +6,23 @@ using DelimitedFiles
 using JLD, HDF5
 using Printf
 
+println("2021-07-06: HeisenbergModel.jl")
 χ = 8
-Γ = [1.0]
-T = [i for i in range(1,0.02,step=0.01)]
-println("change T")
-for g in Γ
-    path = @sprintf "../data/tnew_%.1f.jld" g
-    jldopen(path,"w") do file
-        w = TFIsing(1.0, g)
-        arr = init_cmps(χ,w) |> toarray
-        for t in T
-            β = 1/t
-            key = string(t)
-            f = arr -> free_energy(arr, w, β)
-            gf! = grad_func(f, arr)
-            op = optimize(f,gf!, arr, LBFGS(),Optim.Options(iterations = 10000))
-            arr = op.minimizer
-            res = (minimum(op), arr, Optim.converged(op))
-            write(file, key, res)
-        end
+beta = [i for i in range(1,100,step=0.1)]
+path = @sprintf "../data/heisenberg.jld"
+jldopen(path,"w") do file
+    w = HeisenbergModel()
+    arr = init_cmps(χ,w) |> toarray
+    for β in beta
+        key = string(β)
+        f = arr -> free_energy(arr, w, β)
+        gf! = gradient_function(f, arr)
+        op = optimize(f,gf!, arr, LBFGS(),Optim.Options(iterations = 10000))
+        arr = op.minimizer
+        res = (minimum(op), arr, Optim.converged(op))
+        if res[3] == false println("Not converged β = ", β) end
+        write(file, key, res)
+        if β%10 == 0 println("Finish β = ", β) end
     end
-    println("Γ = ", g)
 end
+println("Finish!")

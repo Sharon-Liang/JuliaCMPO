@@ -97,11 +97,11 @@ function logtrexp(A::AbstractMatrix)
 end
 
 """function manipulation"""
-function grad_func(f::Function, var::AbstractArray)
+function gradient_function(f::Function, var::AbstractArray)
     function gf(gx::AbstractArray, var::AbstractArray)
-        gx[1:end] = gradient(var -> f(var),var)[1][1:end]
+        gx[1:end] = gradient(f,var)[1][1:end]
     end
-    gf
+    return gf
 end
 
 #end  # module utilities

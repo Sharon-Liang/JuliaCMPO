@@ -47,7 +47,7 @@ for j = 1:length(gamma)
     for i = 1:length(beta)
         β = beta[i]; key = string(β)
         f = arr -> free_energy(arr, w, β)
-        gf! = grad_func(f, arr)
+        gf! = gradient_function(f, arr)
         op = optimize(f,gf!, arr, LBFGS(),Optim.Options(iterations = 10000))
         arr = op.minimizer
         res = (minimum(op), arr, Optim.converged(op))
