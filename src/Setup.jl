@@ -1,5 +1,6 @@
 #module Setup
 #using LinearAlgebra
+import Base: zeros
 struct cmps
     Q::AbstractArray
     R::AbstractArray
@@ -13,32 +14,25 @@ struct cmpo
 end
 
 function toarray(ψ::cmps)
-    (eltype(ψ.Q) <: Complex) | (eltype(ψ.R)<: Complex) ?
-        dtype = ComplexF64 : dtype = Float64
-    if (typeof(ψ.Q)<:AbstractMatrix) & (typeof(ψ.R)<:AbstractMatrix)
-        (r,c) = size(ψ.R)
-        res = zeros(dtype,(r,c,2))
-        res[:,:,1] = ψ.Q
-        res[:,:,2] = ψ.R
-    else
-        (r,c,d) = size(ψ.R)
-        res = zeros(dtype,(r,c,d+1))
-        res[:,:,1] = ψ.Q
-        for i=1:d res[:,:,i+1] = ψ.R[:,:,i] end
+    sq = size(ψ.Q)
+    sr = size(ψ.R)
+    if length(sr) == 2
+        Q = reshape(ψ.Q, sq[1],sq[2],1)
+        R = reshape(ψ.R, sr[1],sr[2],1)
+    elseif length(sr) > 2
+        Q = reshape(ψ.Q, sq[1],sq[2],1)
+        R = ψ.R
     end
-    return res
+    return cat(Q,R,dims=3)
 end
 
 function tocmps(A::Array{Float64, 3})
-    (r,c,d) = size(A)
-    Q = A[:,:,1]
+    d = size(A)[3]
     if d == 2
-        R = A[:,:,2]
+        return cmps(A[:,:,1],A[:,:,2])
     else
-        Q = zeros(r,c,d)
-        for i=1:d Q[:,:,i] = A[:,:,i+1] end
+        return cmps(A[:,:,1],A[:,:,2:end])
     end
-    return cmps(Q,R)
 end
 
 """multiplications of cmps and cmpo"""

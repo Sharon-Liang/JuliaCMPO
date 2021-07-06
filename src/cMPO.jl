@@ -7,6 +7,7 @@ using Zygote
 using Optim
 using Random; Random.seed!()
 using StatsFuns, SpecialFunctions
+using OMEinsum
 
 import Base: *, isequal
 import LinearAlgebra: normalize
@@ -14,7 +15,7 @@ import LinearAlgebra: normalize
 export pauli, delta, ⊗
 
 export symmetrize, trexp, value, logtrexp
-export grad_func, grad_num
+export grad_func
 export cmps, cmpo
 export toarray, init_cmps, ovlp, tocmps
 

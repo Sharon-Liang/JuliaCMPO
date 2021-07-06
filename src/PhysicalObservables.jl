@@ -119,18 +119,7 @@ function free_energy(ψ::cmps, W::cmpo, β::Real)
 end
 
 function free_energy(param::Array{T,3} where T<:Number, W::cmpo, β::Real)
-    (r,c,D) = size(param)
-    if D==2
-        ψ = cmps(param[:,:,1], param[:,:,2])
-    else
-        Q = param[:,:,1]
-        R = similar(param[:,:,2:end])
-        for d = 1:D-1
-            R[:,:,d] = param[:,:,d+1]
-        end
-        ψ = cmps(Q,R)
-    end
-    free_energy(ψ, W, β)
+    free_energy(tocmps(param), W, β)
 end
 
 function energy(ψ::cmps, W::cmpo, β::Real)

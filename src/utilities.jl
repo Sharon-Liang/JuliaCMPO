@@ -19,73 +19,49 @@ function delta(x::Real, η::Real)
 end
 
 function ⊗(A::AbstractMatrix, B::AbstractMatrix)
-    kron(A,B)
+    (r1, c1) = size(A)
+    (r2,c2) = size(B)
+    return reshape(ein"ij,kl->kilj"(A, B), r1*r2, c1*c2)
 end
 
-function ⊗(A::AbstractMatrix, B::Array{T,3}) where T<:Number
-    (eltype(A) <: Complex) | (eltype(B)<: Complex) ?
-        dtype = ComplexF64 : dtype = Float64
-    χ1 = size(A)[1]; χ2 = size(B)[1]; D = size(B)[3]
-    res = zeros(dtype,(χ1*χ2, χ1*χ2, D))
-    for d = 1:D
-        res[:,:,d] = A ⊗ B[:,:,d]
-    end
-    return res
+function ⊗(A::AbstractMatrix, B::Array{Float64,3})
+    (r1,c1) = size(A)
+    (r2,c2,d) = size(B)
+    return reshape(ein"ij,klm->kiljm"(A, B), r1*r2, c1*c2, d)
 end
 
-function ⊗(A::Array{T,3}, B::AbstractMatrix) where T<:Number
-    (eltype(A) <: Complex) | (eltype(B)<: Complex) ?
-        dtype = ComplexF64 : dtype = Float64
-    χ1 = size(A)[1]; χ2 = size(B)[1]; D = size(A)[3]
-    res = zeros(dtype,(χ1*χ2, χ1*χ2, D))
-    for d = 1:D
-        res[:,:,d] = A[:,:,d] ⊗ B
-    end
-    return res
+function ⊗(A::Array{Float64,3}, B::AbstractMatrix)
+    (r1,c1,d) = size(A)
+    (r2,c2) = size(B)
+    return reshape(ein"ijm,kl->kiljm"(A, B), r1*r2, c1*c2, d)
 end
 
-function ⊗(A::Array{T,3} where T<:Number, B::Array{T,3} where T<:Number)
-    (eltype(A) <: Complex) | (eltype(B)<: Complex) ?
-        dtype = ComplexF64 : dtype = Float64
-    χ1 = size(A)[1]; χ2 = size(B)[1]; D = size(A)[3]
-    res = zeros(dtype,(χ1*χ2, χ1*χ2))
-    for d = 1:D
-        res += A[:,:,d] ⊗ B[:,:,d]
-    end
-    return res
+function ⊗(A::Array{Float64,3} , B::Array{Float64,3})
+    (r1,c1,d1) = size(A)
+    (r2,c2,d2) = size(B)
+    if d1 != d2 @error "Dimension mismatch!" end
+    return reshape(ein"ijm,klm->kilj"(A, B), r1*r2, c1*c2)
 end
 
-function ⊗(A::Array{T,4} where T<:Number, B::Array{T,3} where T<:Number)
-    (eltype(A) <: Complex) | (eltype(B)<: Complex) ?
-        dtype = ComplexF64 : dtype = Float64
-    χ1 = size(A)[1]; χ2 = size(B)[1]; D = size(B)[3]
-    res = zeros(dtype,(χ1*χ2, χ1*χ2,D))
-    for d = 1:D
-        res[:,:,d] = A[:,:,d,:] ⊗ B
-    end
-    return res
+function ⊗(A::Array{Float64,4}, B::Array{Float64,3})
+    (r1,c1,d1,f) = size(A)
+    (r2,c2,d2) = size(B)
+    if f != d2 @error "Dimension mismatch!" end
+    return reshape(ein"ijnm,klm->kiljn"(A, B), r1*r2, c1*c2, d1)    
 end
 
-function ⊗(A::Array{T,3} where T<:Number, B::Array{T,4} where T<:Number)
-    (eltype(A) <: Complex) | (eltype(B)<: Complex) ?
-        dtype = ComplexF64 : dtype = Float64
-    χ1 = size(A)[1]; χ2 = size(B)[1]; D = size(A)[3]
-    res = zeros(dtype,(χ1*χ2, χ1*χ2, D))
-    for d = 1:D
-        res[:,:,d] = A ⊗ B[:,:,:,d]
-    end
-    return res
+function ⊗(A::Array{Float64,3}, B::Array{Float64,4})
+    (r1,c1,d1) = size(A)
+    (r2,c2,d2,f) = size(B)
+    if d1 != d2 @error "Dimension mismatch!" end
+    return reshape(ein"ijm,klmn->kiljn"(A, B), r1*r2, c1*c2, f)    
 end
 
-function ⊗(A::Array{T,4} where T<:Number, B::Array{T,4} where T<:Number)
-    (eltype(A) <: Complex) | (eltype(B)<: Complex) ?
-        dtype = ComplexF64 : dtype = Float64
-    χ1 = size(A)[1]; χ2 = size(B)[1]; D = size(A)[3]
-    res = zeros(dtype,(χ1*χ2, χ1*χ2, D, D))
-    for d1 = 1:D, d2 = 1:D
-        res[:,:,d1, d2] = A[:,:,d1,:] ⊗ B[:,:,:,d2]
-    end
-    return res
+function ⊗(A::Array{Float64,4}, B::Array{Float64,4})
+    (r1,c1,d1,f1) = size(A)
+    (r2,c2,d2,f2) = size(B)
+    if f1 != d2 @error "Dimension mismatch!" end
+    return reshape(ein"ijpm,klmq->kiljpq"(A, B), r1*r2, c1*c2, d1, f2)    
 end
 
 function symmetrize(A::AbstractMatrix)
@@ -121,22 +97,6 @@ function logtrexp(A::AbstractMatrix)
 end
 
 """function manipulation"""
-function grad_num(f::Function, var::AbstractArray)
-    ϵ = 1.e-5
-    g = similar(var)
-    for i = 1:length(var)
-        var[i] -= ϵ
-        f1 = f(var)
-
-        var[i] += 2ϵ
-        f2 = f(var)
-
-        g[i] = (f2 - f1)/ 2ϵ
-        var[i] -= ϵ
-    end
-    return g
-end
-
 function grad_func(f::Function, var::AbstractArray)
     function gf(gx::AbstractArray, var::AbstractArray)
         gx[1:end] = gradient(var -> f(var),var)[1][1:end]
