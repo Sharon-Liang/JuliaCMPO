@@ -150,7 +150,7 @@ md"""
 # ╔═╡ 35e461dd-83f8-404e-b975-03a3d8d6fe46
 begin
 	e_theory = [energy(1.0,1.0,b) for b in beta]
-	plot( T , zesc_cmpo[2,:], line=(:dash), marker=(:circle, 2,stroke(0)), 
+	plot( T , zesc_cmpo[2,:], line=(:dash), marker=(:circle, 3,stroke(0)), 
 		label = "Γ/J = 1 cmpo")
 	plot!(T, e_theory, lw=1, label="Γ/J = 1 theory")
 	plot!(ylabel ="energy density", xlabel = "T",legend=:topleft)
@@ -239,14 +239,14 @@ end
 # ╟─414e24c4-12a1-4b89-9c37-fd1cacaf0ba5
 # ╟─13f7d046-e5b3-4fd5-8a5e-230e3ee7ad87
 # ╟─7f7d5a73-ac56-4b5b-a48d-79ffe3173b82
-# ╠═c6da9c11-8705-4153-8207-67df57d018ea
+# ╟─c6da9c11-8705-4153-8207-67df57d018ea
 # ╟─b85869b9-9f4a-40c5-930c-0840b7cfb077
-# ╠═35e461dd-83f8-404e-b975-03a3d8d6fe46
+# ╟─35e461dd-83f8-404e-b975-03a3d8d6fe46
 # ╟─4161b8fb-ad55-475a-a010-5086700f84f2
 # ╟─0c8e0be4-83ee-48b2-b5c7-e22bc597bcb1
 # ╟─31c0b5ce-0cbe-4111-ac99-94a0931874b2
 # ╟─235e6cc8-2cf2-4f1d-b95d-5219be75e7d2
 # ╟─3d6f4488-9d52-42e9-aaeb-57eaaa99b3fa
-# ╠═03085ea0-d3e4-4374-96df-713575e7a082
-# ╠═3fab0dcf-b745-4e7e-b479-12640e4047a5
+# ╟─03085ea0-d3e4-4374-96df-713575e7a082
+# ╟─3fab0dcf-b745-4e7e-b479-12640e4047a5
 # ╟─1b076adf-3117-42fd-b1e1-47a9c1c84254
