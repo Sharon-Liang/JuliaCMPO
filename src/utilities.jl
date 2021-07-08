@@ -24,40 +24,40 @@ function ⊗(A::AbstractMatrix, B::AbstractMatrix)
     return reshape(ein"ij,kl->kilj"(A, B), r1*r2, c1*c2)
 end
 
-function ⊗(A::AbstractMatrix, B::Array{Float64,3})
+function ⊗(A::AbstractMatrix, B::Array{T,3} where T) 
     (r1,c1) = size(A)
     (r2,c2,d) = size(B)
     return reshape(ein"ij,klm->kiljm"(A, B), r1*r2, c1*c2, d)
 end
 
-function ⊗(A::Array{Float64,3}, B::AbstractMatrix)
+function ⊗(A::Array{T,3} where T, B::AbstractMatrix) 
     (r1,c1,d) = size(A)
     (r2,c2) = size(B)
     return reshape(ein"ijm,kl->kiljm"(A, B), r1*r2, c1*c2, d)
 end
 
-function ⊗(A::Array{Float64,3} , B::Array{Float64,3})
+function ⊗(A::Array{T1,3} where T1 , B::Array{T2,3} where T2)
     (r1,c1,d1) = size(A)
     (r2,c2,d2) = size(B)
     if d1 != d2 @error "Dimension mismatch!" end
     return reshape(ein"ijm,klm->kilj"(A, B), r1*r2, c1*c2)
 end
 
-function ⊗(A::Array{Float64,4}, B::Array{Float64,3})
+function ⊗(A::Array{T1,4} where T1, B::Array{T2,3} where T2)
     (r1,c1,d1,f) = size(A)
     (r2,c2,d2) = size(B)
     if f != d2 @error "Dimension mismatch!" end
     return reshape(ein"ijnm,klm->kiljn"(A, B), r1*r2, c1*c2, d1)    
 end
 
-function ⊗(A::Array{Float64,3}, B::Array{Float64,4})
+function ⊗(A::Array{T1,3} where T1, B::Array{T2,4} where T2)
     (r1,c1,d1) = size(A)
     (r2,c2,d2,f) = size(B)
     if d1 != d2 @error "Dimension mismatch!" end
     return reshape(ein"ijm,klmn->kiljn"(A, B), r1*r2, c1*c2, f)    
 end
 
-function ⊗(A::Array{Float64,4}, B::Array{Float64,4})
+function ⊗(A::Array{T1,4} where T1, B::Array{T2,4} where T2)
     (r1,c1,d1,f1) = size(A)
     (r2,c2,d2,f2) = size(B)
     if f1 != d2 @error "Dimension mismatch!" end
@@ -78,7 +78,8 @@ function value(x::trexp)
 end
 
 function trexp(A::AbstractMatrix)
-    if ishermitian == false
+    #if ishermitian(A) == false
+    if isapprox(A,A') == false
         error("The input matrix should be hermitian")
     end
     A = symmetrize(A) |> Hermitian
@@ -89,7 +90,8 @@ function trexp(A::AbstractMatrix)
 end
 
 function logtrexp(A::AbstractMatrix)
-    if ishermitian == false
+    #if ishermitian(A) == false
+    if isapprox(A,A') == false
         error("The input matrix should be hermitian")
     end
     A = symmetrize(A) |> Hermitian

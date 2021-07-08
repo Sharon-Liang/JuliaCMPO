@@ -22,11 +22,14 @@ function toarray(ψ::cmps)
     elseif length(sr) > 2
         Q = reshape(ψ.Q, sq[1],sq[2],1)
         R = ψ.R
+    else
+        @error "Improper cmps"
     end
     return cat(Q,R,dims=3)
 end
 
-function tocmps(A::Array{Float64, 3})
+
+function tocmps(A::Array{T, 3}) where T <: Number
     d = size(A)[3]
     if d == 2
         return cmps(A[:,:,1],A[:,:,2])
