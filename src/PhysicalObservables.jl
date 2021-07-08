@@ -101,19 +101,21 @@ end
 Thermal dynamic quanties =============================================
 """
 function partitian(ψ::cmps, W::cmpo, β::Real)
-    K = ψ * W * ψ ; H = ψ * ψ
+    K = ψ * W * ψ |> symmetrize |> Hermitian
+    H = ψ * ψ |> symmetrize |> Hermitian
     num = trexp(-β*K)
     den = trexp(-β*H)
     return exp(num.max - den.max) * num.res/den.res
 end
 
 function partitian!(ψ::cmps, W::cmpo, β::Real)
-    K = ψ * W * ψ
+    K = ψ * W * ψ |> symmetrize |> Hermitian
     return trexp(-β*K)
 end
 
 function free_energy(ψ::cmps, W::cmpo, β::Real)
-    K = ψ * W * ψ ; H = ψ * ψ
+    K = ψ * W * ψ |> symmetrize |> Hermitian
+    H = ψ * ψ |> symmetrize |> Hermitian
     res = logtrexp(-β*K)- logtrexp(-β*H)
     return -1/β * res
 end
@@ -123,17 +125,19 @@ function free_energy(param::Array{T,3} where T<:Number, W::cmpo, β::Real)
 end
 
 function energy(ψ::cmps, W::cmpo, β::Real)
-    wang = ψ * W * ψ
-    gong = ψ * ψ
-    eng = thermal_average(wang, ψ, W, β) - thermal_average(gong, ψ, β)
+    K = ψ * W * ψ |> symmetrize |> Hermitian
+    H = ψ * ψ |> symmetrize |> Hermitian
+    eng = thermal_average(K, ψ, W, β) - thermal_average(H, ψ, β)
     return eng
 end
 
 function specific_heat(ψ::cmps, W::cmpo, β::Real)
-    wang = ψ * W * ψ ; wang2 = wang * wang
-    gong = ψ * ψ ; gong2 = gong * gong
-    c = thermal_average(wang2, ψ, W, β) - thermal_average(wang, ψ, W, β)^2
-    c -= thermal_average(gong2, ψ, β) - thermal_average(gong, ψ, β)^2
+    K = ψ * W * ψ |> symmetrize |> Hermitian
+    H = ψ * ψ |> symmetrize |> Hermitian
+    K2 = K * K
+    H2 = H * H
+    c = thermal_average(K2, ψ, W, β) - thermal_average(K, ψ, W, β)^2
+    c -= thermal_average(H2, ψ, β) - thermal_average(H, ψ, β)^2
     return β^2 * c
 end
 
