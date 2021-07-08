@@ -29,8 +29,8 @@ md"""
 
 # ╔═╡ 1b97e39f-dd29-4672-9ea3-457302691e88
 begin
-	path1 = @sprintf "../data_new/b_%i.jld" β
-	path2 = @sprintf "../data_new/f_and_sx_b_%i.txt" β
+	path1 = @sprintf "../data/b_%i.jld" β
+	path2 = @sprintf "../data/f_and_sx_b_%i.txt" β
 	d1 = load(path1)
 	d2 = readdlm(path2)
 	string("d1 = ", path1, "; ", "d2 = ", path2)
@@ -48,8 +48,8 @@ g = 1.0
 
 # ╔═╡ 94a279c8-3e26-4702-b3a2-beee20d7ef79
 begin
-	path3 = @sprintf "../data_new/g_%.1f.jld" g
-	path4 = @sprintf "../data_new/f_and_sx_g_%.1f.txt" g
+	path3 = @sprintf "../data/g_%.1f.jld" g
+	path4 = @sprintf "../data/f_and_sx_g_%.1f.txt" g
 	d3 = load(path3)
 	d4 = readdlm(path4)
 	string("d3 = ", path3, "; ", "d4 = ", path4)
@@ -76,7 +76,7 @@ end
 
 # ╔═╡ b61bce7a-6fbb-419e-bee7-5731c49dcde0
 begin
-	path5 = @sprintf "../data_new/sz_b_%i.txt" β
+	path5 = @sprintf "../data/sz_b_%i.txt" β
 	d5 = readdlm(path5)
 	string("d5 = ", path5)
 end
@@ -225,8 +225,8 @@ end
 # ╔═╡ Cell order:
 # ╟─950b236a-d7da-11eb-1911-4de0c3345bbe
 # ╟─9ddc1f98-baf6-4b33-bba5-02fb94c82b8f
-# ╠═1b97e39f-dd29-4672-9ea3-457302691e88
-# ╠═6ad5cf43-09f6-4988-a9c3-110964fdcbaf
+# ╟─1b97e39f-dd29-4672-9ea3-457302691e88
+# ╟─6ad5cf43-09f6-4988-a9c3-110964fdcbaf
 # ╟─583998e3-370a-4d7f-b018-0a1c723067cc
 # ╟─94a279c8-3e26-4702-b3a2-beee20d7ef79
 # ╟─9ac28f13-96cb-4112-9279-e399123ff1b5
@@ -249,4 +249,4 @@ end
 # ╟─3d6f4488-9d52-42e9-aaeb-57eaaa99b3fa
 # ╠═03085ea0-d3e4-4374-96df-713575e7a082
 # ╠═3fab0dcf-b745-4e7e-b479-12640e4047a5
-# ╠═1b076adf-3117-42fd-b1e1-47a9c1c84254
+# ╟─1b076adf-3117-42fd-b1e1-47a9c1c84254
