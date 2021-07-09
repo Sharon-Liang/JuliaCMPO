@@ -15,7 +15,7 @@ function TFIsing(J::Real, Γ::Real; field::Symbol=:N)
     return cmpo(Γ*pauli(:x)+h, √J*pauli(:z), √J*pauli(:z), zeros(2,2))
 end
 
-
+"""
 function XYmodel(; J::Real = 1.0)
     sgn = sign(J) 
     sp = pauli(:+); sm = pauli(:-);
@@ -27,19 +27,18 @@ function XYmodel(; J::Real = 1.0)
     P = zeros(2,2,2,2)
     return cmpo(Q,R,L,P)
 end
-
+"""
 function HeisenbergModel(; J::Real=1.0)
-    sgn = sign(J) 
+    #AFM Heisenberg model
     sp = pauli(:+); sm = pauli(:-);
-    L = zeros(2,2,3)
-    L[:,:,1] = 1/√2 * sp ; L[:,:,2] = 1/√2 * sm; L[:,:,3] = pauli(:z)
-    R = zeros(2,2,3)
-    R[:,:,1] = -sgn*1/√2 * sm ; R[:,:,2] = -sgn*1/√2 * sp; R[:,:,3] = -sgn*pauli(:z)
+    LR = zeros(2,2,3)
+    LR[:,:,1] = 1/√2 * sp ; LR[:,:,2] = 1/√2 * sm; LR[:,:,3] = pauli(:z)
     Q = zeros(2,2)
-    P = zeros(2,2,3,3)
-    return cmpo(Q,R,L,P)
+    P = zeros(2,2,3,3) 
+    return cmpo(Q,LR,LR,P)
 end
 
+"""
 function XXZmodel(Jx::Real, Jz::Real)
     if Jx == Jz 
         return HeisenbergModel(J=Jz)
@@ -60,6 +59,7 @@ function XXZmodel(Jx::Real, Jz::Real)
         return cmpo(Q,R,L,P)
     end
 end
+"""
 
 function make_operator(Op::AbstractArray, dim::Int)
     eye = Matrix(1.0I, dim, dim)
@@ -152,9 +152,6 @@ The local two-time correlation functions
 """
 function correlation_2time(τ::Number, A::AbstractArray,B::AbstractArray,
                            ψ::cmps, W::cmpo, β::Real)
-    #eye = Matrix(1.0I, size(ψ.Q))
-    #A = eye ⊗ A ⊗ eye
-    #B = eye ⊗ B ⊗ eye
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
     m = maximum(-β * e)
@@ -171,10 +168,7 @@ end
 function susceptibility(n::Integer, A::AbstractArray,B::AbstractArray,
                         ψ::cmps, W::cmpo, β::Real)
     # i ωn
-    ωn = 2π * n/β  #bosion
-    #eye = Matrix(1.0I, size(ψ.Q))
-    #A = eye ⊗ A ⊗ eye
-    #B = eye ⊗ B ⊗ eye
+    ωn = 2π * n/β  #boson
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
     m = maximum(-β * e)
@@ -194,9 +188,6 @@ end
 
 function imag_susceptibility(ω::Real,A::AbstractArray,B::AbstractArray,
                              ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.05)
-    #eye = Matrix(1.0I, size(ψ.Q))
-    #A = eye ⊗ A ⊗ eye
-    #B = eye ⊗ B ⊗ eye
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
     m = maximum(-β * e)
@@ -214,9 +205,6 @@ end
 
 function structure_factor(ω::Real, A::AbstractArray,B::AbstractArray,
                         ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.05)
-    #eye = Matrix(1.0I, size(ψ.Q))
-    #A = eye ⊗ A ⊗ eye
-    #B = eye ⊗ B ⊗ eye
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
     m = maximum(-β * e)
