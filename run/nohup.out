@@ -40,3 +40,17 @@ finish Γ/J = 1.5
 finish Γ/J = 2.0
 Finish!
 
+  Activating environment at `~/julia-code/mycMPO/Project.toml`
+2021-07-09: HeisenbergModel.jl
+Not converged β = 9.0
+Finish β = 10.0
+Finish β = 20.0
+Finish β = 30.0
+Finish β = 40.0
+Finish β = 50.0
+Finish β = 60.0
+Finish β = 70.0
+Finish β = 80.0
+Finish β = 90.0
+Finish β = 100.0
+Finish!
