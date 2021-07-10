@@ -6,7 +6,7 @@ using DelimitedFiles
 using JLD, HDF5
 using Printf
 
-println("2021-07-06: HeisenbergModel.jl")
+println("2021-07-09: HeisenbergModel.jl")
 χ = 8
 beta = [i for i in range(1,100,step=0.1)]
 path = @sprintf "../data/heisenberg.jld"
