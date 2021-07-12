@@ -1,7 +1,7 @@
 using LinearAlgebra
 using Random; Random.seed!()
 
-Dtype = [Float64]
+Dtype = [ComplexF64]
 for dtype in Dtype
     @testset "utilities for hermitian matrices" begin
         A = rand(dtype,2,2)
