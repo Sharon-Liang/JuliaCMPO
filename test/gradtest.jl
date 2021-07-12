@@ -27,17 +27,20 @@ gradtest(f, dims...) = gradtest(f, rand.(Float64, dims)...)
 
 Dtype = [Float64] #Fail for ComplexF32
 for dtype in Dtype
-    @testset "Test Gradient of ⊗" begin
-        a1 = rand(dtype,3,3); a2 = rand(3,3)
-        b1 = rand(dtype,3,3,3); b2 = rand(3,3)
-        c1 = rand(dtype,3,3,3,3); c2 = rand(3,3,3,3)
-        @test gradtest(⊗, a1, a2)
-        @test gradtest(⊗, a1, b1)
-        @test gradtest(⊗, b1, a1)
-        @test gradtest(⊗, b1, b2)
-        @test gradtest(⊗, b1, c1)
-        @test gradtest(⊗, c1, b1)
-        @test gradtest(⊗, c1, c2)
+    str = @sprintf "Input data type = %s" dtype
+    @testset "$str" begin
+        @testset "Test Gradient of ⊗" begin
+            a1 = rand(dtype,3,3); a2 = rand(3,3)
+            b1 = rand(dtype,3,3,3); b2 = rand(3,3)
+            c1 = rand(dtype,3,3,3,3); c2 = rand(3,3,3,3)
+            @test gradtest(⊗, a1, a2)
+            @test gradtest(⊗, a1, b1)
+            @test gradtest(⊗, b1, a1)
+            @test gradtest(⊗, b1, b2)
+            @test gradtest(⊗, b1, c1)
+            @test gradtest(⊗, c1, b1)
+            @test gradtest(⊗, c1, c2)
+        end
     end
 end
 
