@@ -143,6 +143,18 @@ begin
 	plot!(title= title2, xlabel = "β", ylabel = "ΔEm",legend=:topright)
 end
 
+# ╔═╡ 2553b93b-0f1c-4a40-95a7-92a2ee3c8f6f
+begin
+	(r,c) = size(dE_gong)
+	avegap = copy(dE_gong[:,1])
+	for i = 2:c
+		@. avegap += dE_gong[:,i] - dE_gong[:,i-1]
+	end
+	@. avegap /= 9
+	plot(beta, avegap,line=(:dash), marker=(:circle,3), label="Γ/J=1.0")
+	plot!(xlabel="β", ylabel=@sprintf "average gap of lowest %i levels" c+1) 
+end
+
 # ╔═╡ affce903-876e-43cc-a04b-f141ee95a67b
 plot_sz(1,Sz,num,beta)
 
@@ -170,11 +182,12 @@ plot_sz(6,Sz,num,beta)
 # ╟─874de82b-5aa6-41c1-8573-1716e6f06fa9
 # ╟─570eef1d-36e4-4f9a-a73e-d2c1cc46f1b7
 # ╟─e5c99551-55cc-4004-90f0-b8ab390396be
-# ╠═0292ef90-c50d-4305-8a10-3079205d2250
+# ╟─0292ef90-c50d-4305-8a10-3079205d2250
 # ╟─82dd0c9f-2dba-42cf-905e-dcdad41bac73
-# ╠═66125a8f-c5f2-4977-9bdd-3d7eb86578ff
+# ╟─66125a8f-c5f2-4977-9bdd-3d7eb86578ff
 # ╟─ed6a116a-54ae-4234-b1ad-b7ab4d9599e6
 # ╟─2a5c8e15-9db8-4fb7-955b-cce74ba8a00f
+# ╟─2553b93b-0f1c-4a40-95a7-92a2ee3c8f6f
 # ╟─aa278724-98c5-4e8c-91ee-b890f604699a
 # ╟─affce903-876e-43cc-a04b-f141ee95a67b
 # ╟─fdd80b7c-9eb6-478d-8756-b40f483c997c
