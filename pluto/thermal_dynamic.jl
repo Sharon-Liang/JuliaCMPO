@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.14.8
+# v0.15.1
 
 using Markdown
 using InteractiveUtils
@@ -135,12 +135,13 @@ md"""
 
 # ╔═╡ c6da9c11-8705-4153-8207-67df57d018ea
 begin
-	#z_theory = [partian!(1.,1.,b) for b in beta]
 	plot( T , zesc_cmpo[1,:], line=(:dash), marker=(:circle, 2,stroke(0)), 
 		label = "Γ/J = 1 cmpo")
-	#plot!(T, s_theory, lw=1, label="Γ/J = 1 theory")
 	plot!(ylabel ="partitian", xlabel = "T",legend=:topleft)
 end
+
+# ╔═╡ bd424ece-eb25-4e20-a23d-4847ce95c529
+z_theory
 
 # ╔═╡ b85869b9-9f4a-40c5-930c-0840b7cfb077
 md"""
@@ -239,7 +240,8 @@ end
 # ╟─414e24c4-12a1-4b89-9c37-fd1cacaf0ba5
 # ╟─13f7d046-e5b3-4fd5-8a5e-230e3ee7ad87
 # ╟─7f7d5a73-ac56-4b5b-a48d-79ffe3173b82
-# ╟─c6da9c11-8705-4153-8207-67df57d018ea
+# ╠═c6da9c11-8705-4153-8207-67df57d018ea
+# ╠═bd424ece-eb25-4e20-a23d-4847ce95c529
 # ╟─b85869b9-9f4a-40c5-930c-0840b7cfb077
 # ╟─35e461dd-83f8-404e-b975-03a3d8d6fe46
 # ╟─4161b8fb-ad55-475a-a010-5086700f84f2
