@@ -14,30 +14,6 @@ function energy(J::Real, Γ::Real, β::Real; L = 10000)
     return e/L
 end
 
-"""
-function partitian(J::Real, Γ::Real, β::Real; L = 10000)
-    z = 1.
-    ϵ0 = [-0.5*energy_density(2*π/L * n, J, Γ) for n=1:L] |> sum
-    ϵ0 = ϵ0/L
-    for n = 1:L
-        k = 2*π/L * n
-        ϵ = energy_density(k, J, Γ)
-        z *= ( exp(β*ϵ/2) + exp(-β*ϵ/2) )
-    end
-    return z
-end 
-
-function partitian!(J::Real, Γ::Real, β::Real; L = 10000)
-    z = 1.
-    for n = 1:L
-        k = 2*π/L * n
-        ϵ = energy_density(k, J, Γ)
-        z *= ( 1. + exp(-β*ϵ) ) 
-    end
-    return z
-end 
-"""
-
 function free_energy(J::Real, Γ::Real, β::Real; L = 10000)
     f = 0.
     for n = 1:L
