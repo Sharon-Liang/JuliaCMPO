@@ -109,6 +109,10 @@ function partitian(ψ::cmps, W::cmpo, β::Real)
 end
 
 function partitian!(ψ::cmps, W::cmpo, β::Real)
+    """
+    no correspondence to a physical partitian function
+    (ψ is not a normalized eigen state)
+    """
     K = ψ * W * ψ |> symmetrize |> Hermitian
     return trexp(-β*K)
 end
