@@ -135,15 +135,22 @@ function energy(ψ::cmps, W::cmpo, β::Real)
     return eng
 end
 
-function specific_heat(ψ::cmps, W::cmpo, β::Real)
-    K = ψ * W * ψ |> symmetrize |> Hermitian
-    H = ψ * ψ |> symmetrize |> Hermitian
-    K2 = K * K
-    H2 = H * H
-    c = thermal_average(K2, ψ, W, β) - thermal_average(K, ψ, W, β)^2
-    c -= thermal_average(H2, ψ, β) - thermal_average(H, ψ, β)^2
+function specific_heat(ψ::cmps, W::cmpo, β::Real; method::Symbol = :ndiff)
+    if method == :adiff
+        K = ψ * W * ψ |> symmetrize |> Hermitian
+        H = ψ * ψ |> symmetrize |> Hermitian
+        K2 = K * K
+        H2 = H * H
+        c = thermal_average(K2, ψ, W, β) - thermal_average(K, ψ, W, β)^2
+        c -= thermal_average(H2, ψ, β) - thermal_average(H, ψ, β)^2
+    elseif method == :ndiff
+        e = b -> energy(ψ, W, b)
+        c = -central_fdm(5, 1)(e, β)
+    else @error "method should be :adiff or :ndiff"
+    end
     return β^2 * c
 end
+
 
 function entropy(ψ::cmps, W::cmpo, β::Real)
     s = energy(ψ,W,β) - free_energy(ψ,W,β)

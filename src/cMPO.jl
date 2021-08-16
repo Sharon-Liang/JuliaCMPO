@@ -3,7 +3,7 @@ __precompile__()
 
 #using Reexport:@reexport
 using LinearAlgebra
-using Zygote
+using Zygote, FiniteDifferences
 using Optim
 using Random; Random.seed!()
 using StatsFuns, SpecialFunctions

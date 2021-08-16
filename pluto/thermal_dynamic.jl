@@ -98,7 +98,7 @@ begin
 	beta = copy(d4[:,1])
 	T = 1 ./ beta
 	logT = log.(T)
-	zesc_cmpo = zeros(4, length(beta))
+	zesc_cmpo = zeros(5, length(beta))
 	w = TFIsing(1.0,1.0)
 	for i = 1:length(beta)
 		b = beta[i]; key = string(b)
@@ -106,7 +106,8 @@ begin
 		zesc_cmpo[1,i] = partitian!(ψ,w,b).res
 		zesc_cmpo[2,i] = energy(ψ,w,b)
 		zesc_cmpo[3,i] = entropy(ψ,w,b)
-		zesc_cmpo[4,i] = specific_heat(ψ,w,b)
+		zesc_cmpo[4,i] = specific_heat(ψ,w,b,method = :adiff)
+		zesc_cmpo[5,i] = specific_heat(ψ,w,b,method = :ndiff)
 	end
 end
 
@@ -122,9 +123,11 @@ end
 # ╔═╡ 13f7d046-e5b3-4fd5-8a5e-230e3ee7ad87
 begin
 	c_theory = [specific_heat(1.,1.,b) for b in beta]
-	plot( T , zesc_cmpo[4,:], line=(:dash), marker=(:circle, 3,stroke(0)), 
-		label = "Γ/J = 1 cmpo")
-	plot!(T, c_theory , lw=2, label="Γ/J = 1 theory")	
+	plot( T , zesc_cmpo[4,:] - zesc_cmpo[5,:], line=(:dash), marker=(:circle, 3,stroke(0)), 
+		label = "Γ/J = 1 adiff")
+	#plot!( T , zesc_cmpo[5,:], line=(:dash), marker=(:circle, 3,stroke(0)), 
+	#	label = "Γ/J = 1 ndiff")
+	#plot!(T, c_theory , lw=2, label="Γ/J = 1 theory")	
 	plot!(ylabel ="specific heat", xlabel = "T",legend=:topleft)
 end
 
@@ -139,9 +142,6 @@ begin
 		label = "Γ/J = 1 cmpo")
 	plot!(ylabel ="partitian", xlabel = "T",legend=:topleft)
 end
-
-# ╔═╡ bd424ece-eb25-4e20-a23d-4847ce95c529
-z_theory
 
 # ╔═╡ b85869b9-9f4a-40c5-930c-0840b7cfb077
 md"""
@@ -236,12 +236,11 @@ end
 # ╟─b61bce7a-6fbb-419e-bee7-5731c49dcde0
 # ╟─1f677532-f7b2-463b-b844-586445478e07
 # ╟─ee2f4a51-b968-4762-9268-ac563c63c644
-# ╟─d6cfbcb3-46d0-4dcf-8b12-823533383417
+# ╠═d6cfbcb3-46d0-4dcf-8b12-823533383417
 # ╟─414e24c4-12a1-4b89-9c37-fd1cacaf0ba5
-# ╟─13f7d046-e5b3-4fd5-8a5e-230e3ee7ad87
+# ╠═13f7d046-e5b3-4fd5-8a5e-230e3ee7ad87
 # ╟─7f7d5a73-ac56-4b5b-a48d-79ffe3173b82
 # ╠═c6da9c11-8705-4153-8207-67df57d018ea
-# ╠═bd424ece-eb25-4e20-a23d-4847ce95c529
 # ╟─b85869b9-9f4a-40c5-930c-0840b7cfb077
 # ╟─35e461dd-83f8-404e-b975-03a3d8d6fe46
 # ╟─4161b8fb-ad55-475a-a010-5086700f84f2
@@ -251,4 +250,4 @@ end
 # ╟─3d6f4488-9d52-42e9-aaeb-57eaaa99b3fa
 # ╟─03085ea0-d3e4-4374-96df-713575e7a082
 # ╟─3fab0dcf-b745-4e7e-b479-12640e4047a5
-# ╟─1b076adf-3117-42fd-b1e1-47a9c1c84254
+# ╠═1b076adf-3117-42fd-b1e1-47a9c1c84254
