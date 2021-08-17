@@ -5,6 +5,13 @@
 /usr/bin/xdg-open: line 869: lynx: command not found
 /usr/bin/xdg-open: line 869: w3m: command not found
 xdg-open: no method available for opening 'http://localhost:8808/?secret=9vmbtEts'
+# http://localhost:1236/?secret=9vmbtEts/usr/bin/xdg-open: line 869: www-browser: command not found
+/usr/bin/xdg-open: line 869: links2: command not found
+/usr/bin/xdg-open: line 869: elinks: command not found
+/usr/bin/xdg-open: line 869: links: command not found
+/usr/bin/xdg-open: line 869: lynx: command not found
+/usr/bin/xdg-open: line 869: w3m: command not found
+xdg-open: no method available for opening 'http://localhost:8808/?secret=qVIy9WU8'
 
 signal (15): Terminated
 in expression starting at /home/sliang/julia-code/mycMPO/pluto.jl:2
@@ -22,7 +29,7 @@ jl_finish_task at /buildworker/worker/package_linux64/build/src/task.c:208
 start_task at /buildworker/worker/package_linux64/build/src/task.c:850
 unknown function (ip: (nil))
 unknown function (ip: (nil))
-Allocations: 96101609 (Pool: 96076246; Big: 25363); GC: 128
+Allocations: 106247874 (Pool: 106217883; Big: 29991); GC: 135
 fatal: error thrown and no exception handler available.
 ErrorException("schedule: Task not runnable")
 error at ./error.jl:33
@@ -39,82 +46,239 @@ jl_apply at /buildworker/worker/package_linux64/build/src/julia.h:1703 [inlined]
 jl_finish_task at /buildworker/worker/package_linux64/build/src/task.c:208
 start_task at /buildworker/worker/package_linux64/build/src/task.c:850
 unknown function (ip: (nil))
-[ Info: Sending interrupt to process 3
+[ Info: Stopped using PlutoPkg 💔😟😢
+[ Info: Stopped using PlutoPkg 💔😟😢
 ┌ Warning: Forcibly interrupting busy workers
 │   exception = schedule: Task not runnable
 └ @ Distributed /buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Distributed/src/cluster.jl:1242
+┌ Warning: temp cleanup
+│   exception =
+│    schedule: Task not runnable
+│    Stacktrace:
+│      [1] error(s::String)
+│        @ Base ./error.jl:33
+│      [2] enq_work(t::Task)
+│        @ Base ./task.jl:573
+│      [3] yield
+│        @ ./task.jl:674 [inlined]
+│      [4] yield
+│        @ ./task.jl:673 [inlined]
+│      [5] Channel{Tuple{String, Vector{String}, Vector{String}}}(func::Base.Filesystem.var"#25#28"{String}, size::Int64; taskref::Nothing, spawn::Bool)
+│        @ Base ./channels.jl:138
+│      [6] Channel
+│        @ ./channels.jl:131 [inlined]
+│      [7] #walkdir#24
+│        @ ./file.jl:929 [inlined]
+│      [8] walkdir
+│        @ ./file.jl:891 [inlined]
+│      [9] prepare_for_deletion(path::String)
+│        @ Base.Filesystem ./file.jl:482
+│     [10] temp_cleanup_purge(; force::Bool)
+│        @ Base.Filesystem ./file.jl:517
+│     [11] (::Base.var"#790#791")()
+│        @ Base ./initdefs.jl:322
+│     [12] _atexit()
+│        @ Base ./initdefs.jl:343
+└ @ Base.Filesystem file.jl:522
+┌ Warning: temp cleanup
+│   exception =
+│    schedule: Task not runnable
+│    Stacktrace:
+│      [1] error(s::String)
+│        @ Base ./error.jl:33
+│      [2] enq_work(t::Task)
+│        @ Base ./task.jl:573
+│      [3] yield
+│        @ ./task.jl:674 [inlined]
+│      [4] yield
+│        @ ./task.jl:673 [inlined]
+│      [5] Channel{Tuple{String, Vector{String}, Vector{String}}}(func::Base.Filesystem.var"#25#28"{String}, size::Int64; taskref::Nothing, spawn::Bool)
+│        @ Base ./channels.jl:138
+│      [6] Channel
+│        @ ./channels.jl:131 [inlined]
+│      [7] #walkdir#24
+│        @ ./file.jl:929 [inlined]
+│      [8] walkdir
+│        @ ./file.jl:891 [inlined]
+│      [9] prepare_for_deletion(path::String)
+│        @ Base.Filesystem ./file.jl:482
+│     [10] temp_cleanup_purge(; force::Bool)
+│        @ Base.Filesystem ./file.jl:517
+│     [11] (::Base.var"#790#791")()
+│        @ Base ./initdefs.jl:322
+│     [12] _atexit()
+│        @ Base ./initdefs.jl:343
+└ @ Base.Filesystem file.jl:522
 
-Go to http://localhost:8808/?secret=9vmbtEts in your browser to start writing ~ have fun!
+Go to http://localhost:8808/?secret=qVIy9WU8 in your browser to start writing ~ have fun!
 
 Press Ctrl+C in this terminal to stop Pluto
 
       From worker 2:	  Activating environment at `~/julia-code/mycMPO/Project.toml`
       From worker 3:	  Activating environment at `~/julia-code/mycMPO/Project.toml`
-      From worker 3:	WARNING: Method definition (::workspace2.var"#model#3"{gap})(Any, Any) in module workspace2 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:4 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:7.
-      From worker 3:	Error encountered while load FileIO.File{FileIO.DataFormat{:JLD}, String}("../data/g_1.0.jld").
+/usr/bin/xdg-open: line 869: www-browser: command not found
+/usr/bin/xdg-open: line 869: links2: command not found
+/usr/bin/xdg-open: line 869: elinks: command not found
+/usr/bin/xdg-open: line 869: links: command not found
+/usr/bin/xdg-open: line 869: lynx: command not found
+/usr/bin/xdg-open: line 869: w3m: command not found
+xdg-open: no method available for opening 'http://localhost:8808/?secret=mtIt8YwU'
+
+signal (15): Terminated
+in expression starting at /home/sliang/julia-code/mycMPO/pluto.jl:2
+epoll_wait at /lib/x86_64-linux-gnu/libc.so.6 (unknown line)
+uv__io_poll at /workspace/srcdir/libuv/src/unix/linux-core.c:309
+uv_run at /workspace/srcdir/libuv/src/unix/core.c:379
+jl_task_get_next at /buildworker/worker/package_linux64/build/src/partr.c:472
+poptask at ./task.jl:755
+wait at ./task.jl:763 [inlined]
+task_done_hook at ./task.jl:489
+_jl_invoke at /buildworker/worker/package_linux64/build/src/gf.c:2238 [inlined]
+jl_apply_generic at /buildworker/worker/package_linux64/build/src/gf.c:2420
+jl_apply at /buildworker/worker/package_linux64/build/src/julia.h:1703 [inlined]
+jl_finish_task at /buildworker/worker/package_linux64/build/src/task.c:208
+start_task at /buildworker/worker/package_linux64/build/src/task.c:850
+unknown function (ip: (nil))
+unknown function (ip: (nil))
+Allocations: 95384607 (Pool: 95356883; Big: 27724); GC: 123
+fatal: error thrown and no exception handler available.
+ErrorException("schedule: Task not runnable")
+error at ./error.jl:33
+#schedule#536 at ./task.jl:633
+schedule##kw at ./task.jl:633 [inlined]
+notify at ./condition.jl:130
+#notify#517 at ./condition.jl:124 [inlined]
+notify at ./condition.jl:124 [inlined]
+notify at ./condition.jl:124 [inlined]
+task_done_hook at ./task.jl:472
+_jl_invoke at /buildworker/worker/package_linux64/build/src/gf.c:2238 [inlined]
+jl_apply_generic at /buildworker/worker/package_linux64/build/src/gf.c:2420
+jl_apply at /buildworker/worker/package_linux64/build/src/julia.h:1703 [inlined]
+jl_finish_task at /buildworker/worker/package_linux64/build/src/task.c:208
+start_task at /buildworker/worker/package_linux64/build/src/task.c:850
+unknown function (ip: (nil))
+[ Info: Stopped using PlutoPkg 💔😟😢
+┌ Warning: Forcibly interrupting busy workers
+│   exception = schedule: Task not runnable
+└ @ Distributed /buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Distributed/src/cluster.jl:1242
+┌ Warning: temp cleanup
+│   exception =
+│    schedule: Task not runnable
+│    Stacktrace:
+│      [1] error(s::String)
+│        @ Base ./error.jl:33
+│      [2] enq_work(t::Task)
+│        @ Base ./task.jl:573
+│      [3] yield
+│        @ ./task.jl:674 [inlined]
+│      [4] yield
+│        @ ./task.jl:673 [inlined]
+│      [5] Channel{Tuple{String, Vector{String}, Vector{String}}}(func::Base.Filesystem.var"#25#28"{String}, size::Int64; taskref::Nothing, spawn::Bool)
+│        @ Base ./channels.jl:138
+│      [6] Channel
+│        @ ./channels.jl:131 [inlined]
+│      [7] #walkdir#24
+│        @ ./file.jl:929 [inlined]
+│      [8] walkdir
+│        @ ./file.jl:891 [inlined]
+│      [9] prepare_for_deletion(path::String)
+│        @ Base.Filesystem ./file.jl:482
+│     [10] temp_cleanup_purge(; force::Bool)
+│        @ Base.Filesystem ./file.jl:517
+│     [11] (::Base.var"#790#791")()
+│        @ Base ./initdefs.jl:322
+│     [12] _atexit()
+│        @ Base ./initdefs.jl:343
+└ @ Base.Filesystem file.jl:522
+
+Go to http://localhost:8808/?secret=mtIt8YwU in your browser to start writing ~ have fun!
+
+Press Ctrl+C in this terminal to stop Pluto
+
+      From worker 2:	  Activating environment at `~/julia-code/mycMPO/Project.toml`
+/usr/bin/xdg-open: line 869: www-browser: command not found
+/usr/bin/xdg-open: line 869: links2: command not found
+/usr/bin/xdg-open: line 869: elinks: command not found
+/usr/bin/xdg-open: line 869: links: command not found
+/usr/bin/xdg-open: line 869: lynx: command not found
+/usr/bin/xdg-open: line 869: w3m: command not found
+xdg-open: no method available for opening 'http://localhost:8808/?secret=hmItL6N7'
+
+Go to http://localhost:8808/?secret=hmItL6N7 in your browser to start writing ~ have fun!
+
+Press Ctrl+C in this terminal to stop Pluto
+
+      From worker 2:	  Activating environment at `~/julia-code/mycMPO/Project.toml`
+      From worker 2:	ERROR: LoadError: ArgumentError: Package FiniteDifferences [26cc04aa-876d-5657-8c51-4c34ba976000] is required but does not seem to be installed:
+      From worker 2:	 - Run `Pkg.instantiate()` to install all recorded dependencies.
+      From worker 2:	
+      From worker 2:	Stacktrace:
+      From worker 2:	 [1] _require(pkg::Base.PkgId)
+      From worker 3:	  Activating environment at `~/julia-code/mycMPO/Project.toml`
+      From worker 2:	   @ Base ./loading.jl:986
+      From worker 2:	 [2] require(uuidkey::Base.PkgId)
+      From worker 2:	   @ Base ./loading.jl:910
+      From worker 2:	 [3] require(into::Module, mod::Symbol)
+      From worker 2:	   @ Base ./loading.jl:897
+      From worker 2:	 [4] include
+      From worker 2:	   @ ./Base.jl:386 [inlined]
+      From worker 2:	 [5] include_package_for_output(pkg::Base.PkgId, input::String, depot_path::Vector{String}, dl_load_path::Vector{String}, load_path::Vector{String}, concrete_deps::Vector{Pair{Base.PkgId, UInt64}}, source::Nothing)
+      From worker 2:	   @ Base ./loading.jl:1209
+      From worker 2:	 [6] top-level scope
+      From worker 2:	   @ none:1
+      From worker 2:	 [7] eval
+      From worker 2:	   @ ./boot.jl:360 [inlined]
+      From worker 2:	 [8] eval(x::Expr)
+      From worker 2:	   @ Base.MainInclude ./client.jl:446
+      From worker 2:	 [9] top-level scope
+      From worker 2:	   @ none:1
+      From worker 2:	in expression starting at /home/sliang/julia-code/mycMPO/src/cMPO.jl:1
+      From worker 3:	ERROR: LoadError: ArgumentError: Package FiniteDifferences [26cc04aa-876d-5657-8c51-4c34ba976000] is required but does not seem to be installed:
+      From worker 3:	 - Run `Pkg.instantiate()` to install all recorded dependencies.
       From worker 3:	
-      From worker 3:	Fatal error:
-Cell interrupted!
-Cell finished, other cells cancelled!
-      From worker 3:	WARNING: Method definition (::workspace45.var"#model#3"{gap})(Any, Any) in module workspace45 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:4 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:7.
-      From worker 3:	WARNING: Method definition (::workspace46.var"#model#3"{gap})(Any, Any) in module workspace46 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:4 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:7.
-      From worker 3:	WARNING: Method definition (::workspace52.var"#model#3"{gap})(Any, Any) in module workspace52 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:4 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:7.
-      From worker 3:	WARNING: Method definition (::workspace58.var"#model#3"{gap})(Any, Any) in module workspace58 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:4 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:7.
-      From worker 3:	WARNING: Method definition (::workspace59.var"#model#3"{gap})(Any, Any) in module workspace59 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:4 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:7.
-      From worker 3:	WARNING: Method definition (::workspace62.var"#model#3"{gap})(Any, Any) in module workspace62 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:4 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:7.
-      From worker 3:	WARNING: Method definition (::workspace63.var"#model#3"{gap})(Any, Any) in module workspace63 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:4 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:7.
-      From worker 3:	WARNING: Method definition (::workspace64.var"#model#3"{gap})(Any, Any) in module workspace64 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:4 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:7.
-      From worker 3:	WARNING: Method definition (::workspace66.var"#model#3"{gap})(Any, Any) in module workspace66 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:4 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:7.
-      From worker 3:	WARNING: Method definition (::workspace67.var"#model#3"{gap})(Any, Any) in module workspace67 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:4 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:7.
-      From worker 3:	WARNING: Method definition (::workspace68.var"#model#3"{gap})(Any, Any) in module workspace68 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:4 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:7.
-      From worker 3:	WARNING: Method definition (::workspace69.var"#model#3"{gap})(Any, Any) in module workspace69 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:4 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:7.
-      From worker 3:	WARNING: Method definition (::workspace71.var"#model#3"{gap})(Any, Any) in module workspace71 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:4 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:7.
-      From worker 3:	WARNING: Method definition (::workspace72.var"#model#3"{gap})(Any, Any) in module workspace72 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:4 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:7.
-      From worker 3:	WARNING: Method definition (::workspace73.var"#model#3"{gap})(Any, Any) in module workspace73 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:4 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:7.
-      From worker 3:	WARNING: Method definition (::workspace74.var"#model#3"{gap})(Any, Any) in module workspace74 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:4 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:7.
-      From worker 3:	WARNING: Method definition (::workspace80.var"#model#6"{gap})(Any, Any) in module workspace80 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:4 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:7.
-      From worker 3:	WARNING: Method definition (::workspace83.var"#model#3"{gap})(Any, Any) in module workspace83 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:4 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:7.
-      From worker 3:	WARNING: Method definition (::workspace86.var"#model#3"{gap})(Any, Any) in module workspace86 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:4 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:7.
-      From worker 3:	WARNING: Method definition (::workspace87.var"#model#3"{gap})(Any, Any) in module workspace87 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:4 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:7.
-      From worker 3:	WARNING: Method definition (::workspace89.var"#model#3"{gap})(Any, Any) in module workspace89 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:4 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:7.
-      From worker 3:	WARNING: Method definition (::workspace91.var"#model#3"{gap})(Any, Any) in module workspace91 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:4 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:7.
-      From worker 3:	WARNING: Method definition (::workspace94.var"#model#3"{gap})(Any, Any) in module workspace94 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:4 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:7.
-      From worker 3:	WARNING: Method definition (::workspace106.var"#model#3"{gap})(Any, Any) in module workspace106 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:4 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:7.
-      From worker 3:	WARNING: Method definition (::workspace110.var"#model#2"{gap})(Any, Any) in module workspace110 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:6 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:11.
-      From worker 3:	WARNING: Method definition (::workspace114.var"#model#3"{gap})(Any, Any) in module workspace114 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:4 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:7.
-      From worker 3:	WARNING: Method definition (::workspace114.var"#model#6"{gap})(Any, Any) in module workspace114 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:6 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:11.
-      From worker 3:	WARNING: Method definition (::workspace119.var"#model#3"{gap})(Any, Any) in module workspace119 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:4 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#72e1724c-d2fa-4b85-97a4-951bb0c3f3fd:7.
-      From worker 3:	WARNING: Method definition (::workspace119.var"#model#6"{gap})(Any, Any) in module workspace119 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:6 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:11.
-      From worker 3:	WARNING: Method definition (::workspace121.var"#model#2"{gap})(Any, Any) in module workspace121 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:6 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:11.
-      From worker 3:	WARNING: Method definition model(Any, Any) in module workspace125 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:6 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:11.
-      From worker 3:	WARNING: Method definition model(Any, Any) in module workspace126 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:6 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:11.
-      From worker 3:	WARNING: Method definition model(Any, Any) in module workspace127 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:6 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:11.
-      From worker 3:	WARNING: Method definition (::workspace128.var"#model#2"{Δ})(Any, Any) in module workspace128 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:6 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:11.
-      From worker 3:	WARNING: Method definition (::workspace130.var"#model#2"{Δ})(Any, Any) in module workspace130 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:7 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:12.
-      From worker 3:	WARNING: Method definition (::workspace131.var"#model#2"{Δ})(Any, Any) in module workspace131 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:7 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:12.
-      From worker 3:	g=1
-      From worker 3:	g=1
-      From worker 3:	g=1
-      From worker 3:	WARNING: Method definition (::workspace132.var"#model#2"{Δ})(Any, Any) in module workspace132 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:7 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:12.
-      From worker 3:	g=1
-      From worker 3:	g=1
-      From worker 3:	g=1
-      From worker 3:	g=1
-      From worker 3:	WARNING: Method definition (::workspace134.var"#model#2"{Δ})(Any, Any) in module workspace134 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:7 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:12.
-      From worker 3:	g=1
-      From worker 3:	g=1
-      From worker 3:	g=1
-      From worker 3:	g=1
-      From worker 3:	WARNING: Method definition (::workspace137.var"#model#2"{Δ})(Any, Any) in module workspace137 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:6 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:11.
-      From worker 3:	WARNING: Method definition (::workspace142.var"#model#2"{Δ})(Any, Any) in module workspace142 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:6 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:11.
-      From worker 3:	WARNING: Method definition (::workspace143.var"#model#2"{Δ})(Any, Any) in module workspace143 at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:6 overwritten at /home/sliang/julia-code/mycMPO/pluto/nmr_relaxiation.jl#==#9dd8334d-7664-44f9-b052-b3858d913066:11.
-      From worker 4:	  Activating environment at `~/julia-code/mycMPO/Project.toml`
-      From worker 4:	┌ Warning: Module NLSolversBase with build ID 337988272323791 is missing from the cache.
-      From worker 4:	│ This may mean NLSolversBase [d41bc354-129a-5804-8e4c-c37616107c6c] does not support precompilation but is imported by a module that does.
-      From worker 4:	└ @ Base loading.jl:1004
-      From worker 4:	┌ Warning: Module NLSolversBase with build ID 337988272323791 is missing from the cache.
-      From worker 4:	│ This may mean NLSolversBase [d41bc354-129a-5804-8e4c-c37616107c6c] does not support precompilation but is imported by a module that does.
-      From worker 4:	└ @ Base loading.jl:1004
-      From worker 4:	┌ Warning: Module NLSolversBase with build ID 337988272323791 is missing from the cache.
-      From worker 4:	│ This may mean NLSolversBase [d41bc354-129a-5804-8e4c-c37616107c6c] does not support precompilation but is imported by a module that does.
-      From worker 4:	└ @ Base loading.jl:1004
+      From worker 3:	Stacktrace:
+      From worker 3:	 [1] _require(pkg::Base.PkgId)
+      From worker 3:	   @ Base ./loading.jl:986
+      From worker 3:	 [2] require(uuidkey::Base.PkgId)
+      From worker 3:	   @ Base ./loading.jl:910
+      From worker 3:	 [3] require(into::Module, mod::Symbol)
+      From worker 3:	   @ Base ./loading.jl:897
+      From worker 3:	 [4] include
+      From worker 3:	   @ ./Base.jl:386 [inlined]
+      From worker 3:	 [5] include_package_for_output(pkg::Base.PkgId, input::String, depot_path::Vector{String}, dl_load_path::Vector{String}, load_path::Vector{String}, concrete_deps::Vector{Pair{Base.PkgId, UInt64}}, source::Nothing)
+      From worker 3:	   @ Base ./loading.jl:1209
+      From worker 3:	 [6] top-level scope
+      From worker 3:	   @ none:1
+      From worker 3:	 [7] eval
+      From worker 3:	   @ ./boot.jl:360 [inlined]
+      From worker 3:	 [8] eval(x::Expr)
+      From worker 3:	   @ Base.MainInclude ./client.jl:446
+      From worker 3:	 [9] top-level scope
+      From worker 3:	   @ none:1
+      From worker 3:	in expression starting at /home/sliang/julia-code/mycMPO/src/cMPO.jl:1
+      From worker 2:	  Activating environment at `~/julia-code/mycMPO/Project.toml`
+      From worker 2:	ERROR: LoadError: ArgumentError: Package FiniteDifferences [26cc04aa-876d-5657-8c51-4c34ba976000] is required but does not seem to be installed:
+      From worker 2:	 - Run `Pkg.instantiate()` to install all recorded dependencies.
+      From worker 2:	
+      From worker 2:	Stacktrace:
+      From worker 2:	 [1] _require(pkg::Base.PkgId)
+      From worker 2:	   @ Base ./loading.jl:986
+      From worker 2:	 [2] require(uuidkey::Base.PkgId)
+      From worker 2:	   @ Base ./loading.jl:910
+      From worker 2:	 [3] require(into::Module, mod::Symbol)
+      From worker 2:	   @ Base ./loading.jl:897
+      From worker 2:	 [4] include
+      From worker 2:	   @ ./Base.jl:386 [inlined]
+      From worker 2:	 [5] include_package_for_output(pkg::Base.PkgId, input::String, depot_path::Vector{String}, dl_load_path::Vector{String}, load_path::Vector{String}, concrete_deps::Vector{Pair{Base.PkgId, UInt64}}, source::Nothing)
+      From worker 2:	   @ Base ./loading.jl:1209
+      From worker 2:	 [6] top-level scope
+      From worker 2:	   @ none:1
+      From worker 2:	 [7] eval
+      From worker 2:	   @ ./boot.jl:360 [inlined]
+      From worker 2:	 [8] eval(x::Expr)
+      From worker 2:	   @ Base.MainInclude ./client.jl:446
+      From worker 2:	 [9] top-level scope
+      From worker 2:	   @ none:1
+      From worker 2:	in expression starting at /home/sliang/julia-code/mycMPO/src/cMPO.jl:1
+      From worker 2:	  Activating environment at `~/julia-code/mycMPO/Project.toml`
+      From worker 2:	  Activating environment at `~/julia-code/mycMPO/Project.toml`
