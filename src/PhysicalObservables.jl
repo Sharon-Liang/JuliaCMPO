@@ -176,10 +176,8 @@ function correlation_2time(τ::Number, A::AbstractArray,B::AbstractArray,
     return num/den
 end
 
-function susceptibility(n::Integer, A::AbstractArray,B::AbstractArray,
+function Matsubara_GF(n::Integer, A::AbstractArray,B::AbstractArray,
                         ψ::cmps, W::cmpo, β::Real)
-    # i ωn
-    ωn = 2π * n/β  #boson
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
     m = maximum(-β * e)
@@ -190,15 +188,16 @@ function susceptibility(n::Integer, A::AbstractArray,B::AbstractArray,
     for i = 1: length(e), j = 1: length(e)
         up = exp(- β*e[j]-m) - exp(-β * e[i]-m)
         up = up * A[i,j] * B[j,i]
-        down = 1im*ωn + e[i] - e[j]
+        down = Masubara_freq(n,β,type=:b) + e[i] - e[j]
         num += up/down
     end
-    return num/den |> real
+    return num/den
 end
 
 
-function imag_susceptibility(ω::Real,A::AbstractArray,B::AbstractArray,
+function spectral_function(ω::Real,A::AbstractArray,B::AbstractArray,
                              ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.05)
+    # A(ω) = -1/π Im G(ω)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
     m = maximum(-β * e)
@@ -207,11 +206,11 @@ function imag_susceptibility(ω::Real,A::AbstractArray,B::AbstractArray,
     den = exp.(-β * e .- m) |> sum
     num = 0.0
     for i = 1: length(e), j = 1: length(e)
-        res = exp(-β*e[i]-m) - exp(-β*e[j]-m)
+        res = exp(-β*e[j]-m) - exp(-β*e[i]-m)
         res = res * A[i,j] * B[j,i] * delta(ω+e[i]-e[j],η)
         num += res
     end
-    return  π*num/den
+    return  num/den
 end
 
 function structure_factor(ω::Real, A::AbstractArray,B::AbstractArray,

@@ -18,6 +18,14 @@ function delta(x::Real, η::Real)
     return num/den
 end
 
+function Masubara_freq(n::Int64, β::Real; type::Symbol= :b)
+    if type == :b  N = 2n
+    elseif type == :f  N = 2n + 1
+    else @error "type should be :b for bosons and :f for fermions" 
+    end
+    return 1.0im*N*π/β
+end
+
 function ⊗(A::AbstractMatrix, B::AbstractMatrix)
     (r1, c1) = size(A)
     (r2,c2) = size(B)

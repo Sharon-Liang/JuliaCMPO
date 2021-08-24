@@ -12,7 +12,7 @@ using OMEinsum
 import Base: *, isequal
 import LinearAlgebra: normalize
 
-export pauli, delta, ⊗
+export pauli, delta, Masubara_freq, ⊗
 
 export symmetrize, trexp, value, logtrexp
 export gradient_function
@@ -24,7 +24,7 @@ export TFIsing, XYmodel, HeisenbergModel
 export thermal_average, partitian, partitian!
 export free_energy, energy, specific_heat, entropy
 export correlation_2time
-export susceptibility, imag_susceptibility, structure_factor
+export MatsubaraGF, spectral_function, structure_factor
 export energy_density, ave_sx, critical_zz_cor, critical_zz_sus
 export critical_zz_chi
 
