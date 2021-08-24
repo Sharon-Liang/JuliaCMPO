@@ -54,3 +54,23 @@ Finish β = 80.0
 Finish β = 90.0
 Finish β = 100.0
 Finish!
+WARNING: Method definition frule(Any, typeof(Base.copysign), Number, Number) in module ChainRules at /home/sliang/.julia/packages/ChainRules/5iZFH/src/rulesets/Base/fastmath_able.jl:187 overwritten on the same line (check for duplicate calls to `include`).
+  ** incremental compilation may be fatally broken for this module **
+
+WARNING: Method definition rrule(typeof(Base.copysign), Number, Number) in module ChainRules at /home/sliang/.julia/packages/ChainRules/5iZFH/src/rulesets/Base/fastmath_able.jl:187 overwritten on the same line (check for duplicate calls to `include`).
+  ** incremental compilation may be fatally broken for this module **
+
+  Activating environment at `~/julia-code/mycMPO/Project.toml`
+Start!
+2021-08-24: TFIsing-change-gamma.jl
+finish Γ/J = 4.0
+finish Γ/J = 6.0
+finish Γ/J = 8.0
+finish Γ/J = 10.0
+Finish!
+  Activating environment at `~/julia-code/mycMPO/Project.toml`
+Start!
+2021-08-24: TFIsing-change-gamma.jl
+finish Γ/J = 0.3
+finish Γ/J = 0.7
+Finish!
