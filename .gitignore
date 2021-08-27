@@ -26,5 +26,6 @@ Manifest.toml
 #ls
 nohup.out
 
-data/
-data_new/
+# ignore data file
+#data/
+#data_new/
