@@ -23,9 +23,9 @@ docs/site/
 # environment.
 Manifest.toml
 
-#ls
-nohup.out
-run/nohup.out
+# running logs
+*.out
+run/*.out
 
 # ignore data file
 #data/
