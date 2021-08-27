@@ -210,7 +210,7 @@ function spectral_function(ω::Real,A::AbstractArray,B::AbstractArray,
         res = res * A[i,j] * B[j,i] * delta(ω+e[i]-e[j],η)
         num += res
     end
-    return -num/den
+    return num/den
 end
 
 function structure_factor(ω::Real, A::AbstractArray,B::AbstractArray,
@@ -229,7 +229,7 @@ function structure_factor(ω::Real, A::AbstractArray,B::AbstractArray,
         return num/den * 2π
     elseif method == :F 
         if ω != 0
-            fac = 2/(1 - e^(-β*ω))
+            fac = 2/(1 - exp(-β*ω))
             K = ψ * W * ψ |> symmetrize |> Hermitian
             e, v = eigen(K)
             m = maximum(-β * e)
