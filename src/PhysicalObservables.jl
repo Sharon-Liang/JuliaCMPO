@@ -176,7 +176,7 @@ function correlation_2time(τ::Number, A::AbstractArray,B::AbstractArray,
     return num/den
 end
 
-function Matsubara_GF(n::Integer, A::AbstractArray,B::AbstractArray,
+function Masubara_GF(n::Integer, A::AbstractArray,B::AbstractArray,
                         ψ::cmps, W::cmpo, β::Real)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
