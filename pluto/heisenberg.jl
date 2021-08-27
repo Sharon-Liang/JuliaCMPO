@@ -27,6 +27,39 @@ begin
 	"../data/heisenberg.jld" 
 end
 
+# ╔═╡ 7edf6487-cf1e-4ff9-9129-a640f0e43e73
+num = 5
+
+# ╔═╡ 76b3b43a-1fe4-4ba5-b814-ee7bc1755cb5
+w = HeisenbergModel()
+
+# ╔═╡ 38a5e88f-7fe9-4bb2-9958-ca9406719cde
+begin
+	dE_gong = zeros(length(beta), num-1)
+	dE_wang = zeros(length(beta), num-1)
+	#sz = zeros(ComplexF32,length(beta), num, num)
+	for i = 1:length(beta)
+		j = beta[i]; key = string(j)
+		ψ = tocmps(data[key][2])
+		gong = ψ * ψ
+		wang = ψ * w * ψ
+		# eigen values and eigen vectors of gong
+		e, v = eigs(gong, nev=num, which=:SR)
+		dE_gong[i,:] = real(e[2:end] .- e[1] )
+		# eigen values and eigen vectors of wang
+		e, v = eigs(wang, nev=num, which=:SR)
+		dE_wang[i,:] = real(e[2:end] .- e[1] )
+		#sz[i,:,:] = v' * z * v
+	end	
+end
+
+# ╔═╡ 1991b76a-7207-4217-b273-81cbfd3860a2
+begin #plot energy level
+	title1 = @sprintf "Gap function"
+	plot(beta, dE_wang, ls=:dash, shape=:circle,markersize=2)
+	plot!(title= title1, xlabel = "β", ylabel = "ΔEm",legend=:none)
+end
+
 # ╔═╡ 1a1509c0-50ef-4e61-8f4b-0b83b32e6e9d
 begin
 	z = make_operator(pauli(:z),8)
@@ -96,6 +129,10 @@ pwd()
 # ╔═╡ Cell order:
 # ╟─bad9c632-c7d7-4461-b4b6-c489a3b91319
 # ╟─9e0bcc39-b7c1-417c-94d2-9bd8935f0b08
+# ╠═7edf6487-cf1e-4ff9-9129-a640f0e43e73
+# ╟─76b3b43a-1fe4-4ba5-b814-ee7bc1755cb5
+# ╠═38a5e88f-7fe9-4bb2-9958-ca9406719cde
+# ╠═1991b76a-7207-4217-b273-81cbfd3860a2
 # ╠═b1c6f6b4-a907-4cdf-808c-39ba0ad89e3b
 # ╠═c091b721-c654-4d47-b448-4890762856a3
 # ╠═cb5fbdf3-0a91-4e55-8833-b5d116c1634d
