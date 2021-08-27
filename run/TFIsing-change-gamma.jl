@@ -8,23 +8,23 @@ using JLD, HDF5
 using Printf
 """
 
-println("2021-08-24: TFIsing-change-gamma.jl")
+println("2021-08-25: TFIsing-change-gamma.jl")
 
 χ = 8
 x = make_operator(pauli(:x),χ)
 
-gamma = [0.3, 0.7]
-T = [i for i in range(0.1, 1.e-4, length = 200)]
-#beta = [i for i in range(10,1000,step=0.02)]
-beta = 1 ./ T
+gamma = [0.1, 0.3, 0.7, 4.0, 6.0, 8.0, 10.0]
+beta = [i for i in range(10,1000,step=0.02)]
+#T = [i for i in range(0.1, 1.e-4, length = 200)]
+#beta = 1 ./ T
 mg = maximum(gamma)
 
 pcollect1 = Vector{String}(undef, length(gamma))
 pcollect2 = Vector{String}(undef, length(gamma))
 
 for i = 1:length(gamma)
-    pcollect1[i] = @sprintf "../data_new/g_%.1f_lowT.jld" gamma[i]
-    pcollect2[i] = @sprintf "../data_new/f_and_sx_g_%.1f_lowT.txt" gamma[i]
+    pcollect1[i] = @sprintf "../data/g_%.1f.jld" gamma[i]
+    pcollect2[i] = @sprintf "../data/f_and_sx_g_%.1f.txt" gamma[i]
 end 
 
 for path in pcollect1
@@ -41,8 +41,8 @@ for j = 1:length(gamma)
     g = gamma[j]
     w = TFIsing(1.0, g)
     arr = init_cmps(χ,w) |> toarray
-    path1 = @sprintf "../data_new/g_%.1f_lowT.jld" g
-    path2 = @sprintf "../data_new/f_and_sx_g_%.1f_lowT.txt" g
+    path1 = @sprintf "../data/g_%.1f.jld" g
+    path2 = @sprintf "../data/f_and_sx_g_%.1f.txt" g
 
     for i = 1:length(beta)
         β = beta[i]; key = string(β)

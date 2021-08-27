@@ -186,7 +186,7 @@ function Matsubara_GF(n::Integer, A::AbstractArray,B::AbstractArray,
     den = exp.(-β * e .- m) |> sum
     num = 0.0
     for i = 1: length(e), j = 1: length(e)
-        up = exp(- β*e[j]-m) - exp(-β * e[i]-m)
+        up = exp(- β*e[i]-m) - exp(-β * e[j]-m)
         up = up * A[i,j] * B[j,i]
         down = Masubara_freq(n,β,type=:b) + e[i] - e[j]
         num += up/down
@@ -197,7 +197,7 @@ end
 
 function spectral_function(ω::Real,A::AbstractArray,B::AbstractArray,
                              ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.05)
-    # A(ω) = -1/π Im G(ω)
+    # A(ω) = -1/π Im G^R(ω)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
     m = maximum(-β * e)
@@ -206,25 +206,51 @@ function spectral_function(ω::Real,A::AbstractArray,B::AbstractArray,
     den = exp.(-β * e .- m) |> sum
     num = 0.0
     for i = 1: length(e), j = 1: length(e)
-        res = exp(-β*e[j]-m) - exp(-β*e[i]-m)
+        res = exp(-β*e[i]-m) - exp(-β*e[j]-m)
         res = res * A[i,j] * B[j,i] * delta(ω+e[i]-e[j],η)
         num += res
     end
-    return  num/den
+    return -num/den
 end
 
 function structure_factor(ω::Real, A::AbstractArray,B::AbstractArray,
-                        ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.05)
-    K = ψ * W * ψ |> symmetrize |> Hermitian
-    e, v = eigen(K)
-    m = maximum(-β * e)
-    A = v' * A * v
-    B = v' * B * v
-    den = exp.(-β * e .- m) |> sum
-    num = 0.0
-    for i = 1: length(e), j = 1: length(e)
-        num += exp(-β*e[i]-m)*A[i,j]*B[j,i]*delta(ω+e[i]-e[j], η)
-    end
-    return num/den * 2π
+                        ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.05, method::Symbol=:N)
+    if method == :S
+        K = ψ * W * ψ |> symmetrize |> Hermitian
+        e, v = eigen(K)
+        m = maximum(-β * e)
+        A = v' * A * v
+        B = v' * B * v
+        den = exp.(-β * e .- m) |> sum
+        num = 0.0
+        for i = 1: length(e), j = 1: length(e)
+            num += exp(-β*e[i]-m)*A[i,j]*B[j,i]*delta(ω+e[i]-e[j], η)
+        end
+        return num/den * 2π
+    elseif method == :F 
+        if ω != 0
+            fac = 2/(1 - e^(-β*ω))
+            K = ψ * W * ψ |> symmetrize |> Hermitian
+            e, v = eigen(K)
+            m = maximum(-β * e)
+            A = v' * A * v
+            B = v' * B * v
+            den = exp.(-β * e .- m) |> sum
+            num = 0.0
+            for i = 1: length(e), j = 1: length(e)
+                res = exp(-β*e[i]-m) - exp(-β*e[j]-m)
+                res = res * A[i,j] * B[j,i] * delta(ω+e[i]-e[j],η)
+                num += res
+            end
+            return fac*π*num/den
+        else
+            @error "ω should not be 0!"
+        end
+    else
+        @error "method should be :S for 'spectral representation' 
+                or :F for 'fluctuation-dissipation theorem'."
+    end       
 end
+
+
 #end  # module PhysicalObservables
