@@ -8,13 +8,13 @@ using JLD, HDF5
 using Printf
 """
 
-println("2021-08-25: TFIsing-change-gamma.jl")
+println("2021-08-27: TFIsing-change-gamma.jl")
 
 χ = 8
 x = make_operator(pauli(:x),χ)
 
 gamma = [0.1, 0.3, 0.7, 4.0, 6.0, 8.0, 10.0]
-beta = [i for i in range(10,1000,step=0.02)]
+beta = [i for i in range(1,20,step=0.02)]
 #T = [i for i in range(0.1, 1.e-4, length = 200)]
 #beta = 1 ./ T
 mg = maximum(gamma)
