@@ -19,6 +19,7 @@ begin
 end
 
 # ╔═╡ 838f933c-db31-4887-b206-562bd060746f
+#gamma = [0.1, 0.5, 1.0, 2.0, 4.0, 8.0]
 gamma = [0.5, 1.0, 2.0]
 
 # ╔═╡ f4fda113-17ce-4312-93ff-fb361815b970
@@ -31,36 +32,28 @@ begin
 end
 
 # ╔═╡ 3f990c4b-97da-4336-8e34-1bd496162328
-beta = [i for i in range(1, 20, step=0.2)]
+lowT = [i for i in range(10, 20, step=0.04)]
+
+# ╔═╡ c30979b4-97dc-4252-ad32-eb8ead672c8a
+highT = [i for i in range(1, 20, step=0.2)] 
 
 # ╔═╡ 8bf42a6a-51eb-42b4-b9aa-e6f8a5148d2f
 begin
-	data = Vector(undef,3)
-	for i = 1:3
+	data = Vector(undef,length(gamma))
+	for i = 1:length(gamma)
 		data[i] = load(pcollect[i])
 	end
 	"load data"
 end
 
 # ╔═╡ 9dd8334d-7664-44f9-b052-b3858d913066
-begin
-	function fitnmr(g::Real, xdata::Vector, ydata::Vector)
-		Δ = 2.0*(1-g)
-		if Δ == 0.
-			@. model1(x,p) = p[1] * x^p[2]
-			p0 = zeros(2)
-			fit1= curve_fit(model1, xdata, ydata, p0)
-			fname = @sprintf "%.3f × T^(-%.3f)" fit1.param[1] fit1.param[2]
-			f = x -> model1(x, fit1.param)
-		else
-			@. model(x,p) = exp(p[2]*Δ*x) * p[1] + p[3]
-			p0 = zeros(3)
-			fit = curve_fit(model, xdata, ydata, p0)
-			fname = (@sprintf "%.3f × exp(%.3fΔ/T) + %.3f" fit.param[1] fit.param[2] 				fit.param[3])
-			f = x -> model(x, fit.param)
-		end
-		return f, fname
-	end
+function linearfit(xdata::Vector, ydata::Vector)
+	@. model(x,p) = p[1] * x + p[2] 
+	p0 = zeros(2)
+	fit= curve_fit(model, xdata, ydata, p0)
+	fname = @sprintf "%.3f x + %.3f" fit.param[1] fit.param[2]
+	f = x -> model(x, fit.param)
+	return f, fname
 end
 
 # ╔═╡ 05f4d459-5bc7-4dbf-ab13-42041c0cf8e7
@@ -71,7 +64,7 @@ begin
 end
 
 # ╔═╡ dfe621e5-a860-47e0-b670-2fd4f57eae68
-function nmr_relaxiation(g::Real,η::Float64=0.05)
+function nmr_relaxiation(g::Real,beta::Vector,η::Float64)
 	i = findall(x-> x==g, gamma)[1]
 	d = data[i]
 	w = TFIsing(1., g)
@@ -80,13 +73,13 @@ function nmr_relaxiation(g::Real,η::Float64=0.05)
 	for i = 1:len
 		β = beta[i]; key = string(β)
 		ψ = tocmps(d[key][2])
-		res[i] = structure_factor(0,z,z,ψ,w,β,η=η)
+		res[i] = structure_factor(0,z,z,ψ,w,β,η=η,method=:S)
 	end
 	return res
 end
 
 # ╔═╡ 4dac8cf2-8e9d-4aa5-9061-1228332a08b9
-function nmr_relaxiation(g::Real)
+function nmr_relaxiation(g::Real,beta::Vector)
 	i = findall(x-> x==g, gamma)[1]
 	d = data[i]
 	w = TFIsing(1., g)
@@ -101,93 +94,165 @@ function nmr_relaxiation(g::Real)
 end
 
 # ╔═╡ 5f036037-0e4a-42a8-be10-2e467ca1015d
-function plot_nmr(g::Real, η::Float64)
+function plot_nmr(g::Real,beta::Vector, η::Float64; fit::Bool=false)
 	datalab = @sprintf "Γ/J=%.1f,η=%.3f" g η
-	t = nmr_relaxiation(g, η)
+	t = nmr_relaxiation(g, beta, η)
+	ydata = log.(t)
 	if g==1
-		xdata = beta
-		ydata = t
+		xdata = log.(1 ./beta)
+		ydata = -ydata
+		xlab = "logT"
+		ylab = "-log(S0)"
+
 	else
-		xdata = beta[1:6]
-		ydata = t[1:6]
+		xdata = beta
+		xlab = "β"
+		ylab = "log(S0)"
 	end
-	ylimit = (minimum(t)*0.8, maximum(t)*1.1)
-	plot(1 ./ beta, t, line=(:dash), marker=(:circle,3),label=datalab)
-	plot!(xlabel="T", ylabel = "S(0)")
-	f, fname = fitnmr(g, xdata, ydata)
-	plot!(1 ./ beta, f(beta), lw = 2, label =fname, ylim = ylimit)
+	plot(xdata, ydata, line=(:dash), marker=(:circle,3),label=datalab)
+		
+	if fit == true
+		f, fname = linearfit(xdata, ydata)
+		plot!(xdata, f(xdata), lw = 2, label=fname)
+	end
+	plot!(xlabel=xlab, ylabel = ylab)
+end
+
+# ╔═╡ 5dfd4e3b-59ef-499a-b8cf-78f008c3a92c
+function add_plot_nmr(g::Real,beta::Vector, η::Float64; fit::Bool=false)
+	datalab = @sprintf "Γ/J=%.1f,η=%.3f" g η
+	t = nmr_relaxiation(g,beta, η)
+	ydata = log.(t)
+	if g==1
+		xdata = log.(1 ./beta)
+		ydata = -ydata
+		xlab = "logT"
+		ylab = "-log(S0)"
+
+	else
+		xdata = beta
+		xlab = "β"
+		ylab = "log(S0)"
+	end
+	plot!(xdata, ydata, line=(:dash), marker=(:circle,3),label=datalab)
+		
+	if fit == true
+		f, fname = linearfit(xdata, ydata)
+		plot!(xdata, f(xdata), lw = 2, label=fname)
+	end
+	plot!(xlabel=xlab, ylabel = ylab)
 end
 
 # ╔═╡ e72e5cc9-0ad4-42d9-be50-979134a7055a
-function plot_nmr(g::Real)
+function plot_nmr(g::Real,beta::Vector; fit::Bool=false)
 	datalab = @sprintf "Γ/J=%.1f,β/2 average" g
-	t = nmr_relaxiation(g)
-	xdata = beta
-	ydata = t
-	ylimit = (minimum(t)*0.8, maximum(t)*1.1)
-	plot(1 ./ beta, t, line=(:dash), marker=(:circle,3),label=datalab)
-	plot!(xlabel="T", ylabel = "S(0)")
-	f, fname = fitnmr(g, xdata, ydata)
-	plot!(1 ./ beta, f(beta), lw = 2, label =fname, ylim = ylimit)
+	t = nmr_relaxiation(g,beta)
+	ydata = log.(t)
+	if g==1
+		xdata = log.(1 ./beta)
+		ydata = -ydata
+		xlab = "logT"
+		ylab = "-log(S0)"
+
+	else
+		xdata = beta
+		xlab = "β"
+		ylab = "log(S0)"
+	end
+	plot(xdata, ydata, line=(:dash), marker=(:circle,3),label=datalab)
+		
+	if fit == true
+		f, fname = linearfit(xdata, ydata)
+		plot!(xdata, f(xdata), lw = 2, label=fname)
+	end
+	plot!(xlabel=xlab, ylabel = ylab)
 end
 
-# ╔═╡ 8c6de546-fc37-411c-8ee8-c8b331056142
-plot_nmr(1.0, 0.05)
+# ╔═╡ 22b7795f-5109-4c1d-acaf-dcb128d3022e
+function add_plot_nmr(g::Real,beta::Vector;fit::Bool=false)
+	datalab = @sprintf "Γ/J=%.1f,β/2 average" g
+	t = nmr_relaxiation(g, beta)
+	ydata = log.(t)
+	if g==1
+		xdata = log.(1 ./beta)
+		ydata = -ydata
+		xlab = "logT"
+		ylab = "-log(S0)"
+	else
+		xdata = beta
+		xlab = "β"
+		ylab = "log(S0)"
+	end
+	plot!(xdata, ydata, line=(:dash), marker=(:circle,3),label=datalab)
+		
+	if fit == true
+		f, fname = linearfit(xdata, ydata)
+		plot!(xdata, f(xdata), lw = 2, label=fname)
+	end
+	plot!(xlabel=xlab, ylabel = ylab)
+end
 
-# ╔═╡ 3645514b-8f48-4607-ad2c-1ed36b15b741
-plot_nmr(1.0, 0.1)
+# ╔═╡ fe18cbe8-bc63-4af0-bba1-52f9242373b4
+begin
+	plot_nmr(1.0, lowT, 0.05, fit=true)
+	add_plot_nmr(1.0, lowT, 0.1, fit=true)
+	add_plot_nmr(1.0, lowT, fit = true)
+	plot!(legend=:topleft)
+end
 
-# ╔═╡ 69f9a51a-518a-46bc-9cd9-c1be6908f433
-plot_nmr(1.0, 0.005)
+# ╔═╡ e6968b92-f0f7-4667-8dc4-dff6941450ed
+begin
+	plot_nmr(0.5, lowT, 0.05, fit=true)
+	add_plot_nmr(0.5, lowT, 0.1, fit=true)
+	add_plot_nmr(0.5, lowT, fit = true)
+	plot!(legend=:topleft)
+end
 
-# ╔═╡ 797747bb-6e76-47a1-8a39-f2ad99158f32
-plot_nmr(0.5,0.05)
+# ╔═╡ 049e4f9a-1312-4a5e-b4a6-b1f2a21c452d
+begin
+	plot_nmr(0.5, highT, 0.05)
+	add_plot_nmr(0.5, highT, 0.1)
+	add_plot_nmr(0.5, highT)
+	plot!(legend=:bottomright)
+end
 
-# ╔═╡ 85b7398c-754d-43ae-93f8-2847c78581e5
-plot_nmr(0.5, 0.1)
+# ╔═╡ be7908c2-1faf-4f2b-b369-a803842af8a5
+begin
+	plot_nmr(2.0, lowT, 0.05, fit=true)
+	add_plot_nmr(2.0, lowT, 0.1, fit=true)
+	add_plot_nmr(2.0, lowT, fit = true)
+	plot!(legend=:bottomleft)
+end
 
-# ╔═╡ 1bc84f68-08c9-47fa-8e3a-9dc5d7d31d47
-plot_nmr(0.5, 0.005)
+# ╔═╡ 7e90ccea-8268-4839-bd95-bdc818567d65
+begin
+	plot_nmr(2.0, highT, 0.05)
+	add_plot_nmr(2.0, highT, 0.1)
+	add_plot_nmr(2.0, highT)
+	plot!(legend=:bottomleft)
+end
 
-# ╔═╡ 1729c59d-3c4e-450d-8c68-d742372e0063
-plot_nmr(2., 0.05)
-
-# ╔═╡ 734c4847-1f03-478a-9346-90ef3e0a376b
-plot_nmr(2.,0.1)
-
-# ╔═╡ 3e95bb33-0c55-45b2-8a16-78a5f1f0fbcc
-plot_nmr(2., 0.005)
-
-# ╔═╡ f3b5afce-f8b5-4177-b6cb-86b3e9140972
-plot_nmr(2.)
-
-# ╔═╡ 28fb60ad-00c6-4423-8102-fc76c0e8711f
-plot_nmr(1.)
-
-# ╔═╡ 812d5668-44bc-4011-8ed5-7e907dc4dcde
-plot_nmr(0.5)
+# ╔═╡ 6b8708f3-6504-423b-b962-ceb69f0551a3
+pwd()
 
 # ╔═╡ Cell order:
 # ╠═838f933c-db31-4887-b206-562bd060746f
 # ╟─f4fda113-17ce-4312-93ff-fb361815b970
 # ╟─3f990c4b-97da-4336-8e34-1bd496162328
-# ╟─8bf42a6a-51eb-42b4-b9aa-e6f8a5148d2f
+# ╟─c30979b4-97dc-4252-ad32-eb8ead672c8a
+# ╠═8bf42a6a-51eb-42b4-b9aa-e6f8a5148d2f
 # ╟─dfe621e5-a860-47e0-b670-2fd4f57eae68
 # ╟─4dac8cf2-8e9d-4aa5-9061-1228332a08b9
 # ╟─9dd8334d-7664-44f9-b052-b3858d913066
-# ╠═5f036037-0e4a-42a8-be10-2e467ca1015d
-# ╠═e72e5cc9-0ad4-42d9-be50-979134a7055a
-# ╟─8c6de546-fc37-411c-8ee8-c8b331056142
-# ╟─3645514b-8f48-4607-ad2c-1ed36b15b741
-# ╟─69f9a51a-518a-46bc-9cd9-c1be6908f433
-# ╠═797747bb-6e76-47a1-8a39-f2ad99158f32
-# ╟─85b7398c-754d-43ae-93f8-2847c78581e5
-# ╟─1bc84f68-08c9-47fa-8e3a-9dc5d7d31d47
-# ╟─1729c59d-3c4e-450d-8c68-d742372e0063
-# ╟─734c4847-1f03-478a-9346-90ef3e0a376b
-# ╟─3e95bb33-0c55-45b2-8a16-78a5f1f0fbcc
-# ╠═f3b5afce-f8b5-4177-b6cb-86b3e9140972
-# ╠═28fb60ad-00c6-4423-8102-fc76c0e8711f
-# ╠═812d5668-44bc-4011-8ed5-7e907dc4dcde
-# ╠═05f4d459-5bc7-4dbf-ab13-42041c0cf8e7
-# ╠═9f3511fc-e24d-11eb-130d-15fd034ec045
+# ╟─5f036037-0e4a-42a8-be10-2e467ca1015d
+# ╟─5dfd4e3b-59ef-499a-b8cf-78f008c3a92c
+# ╟─e72e5cc9-0ad4-42d9-be50-979134a7055a
+# ╟─22b7795f-5109-4c1d-acaf-dcb128d3022e
+# ╠═fe18cbe8-bc63-4af0-bba1-52f9242373b4
+# ╠═e6968b92-f0f7-4667-8dc4-dff6941450ed
+# ╠═049e4f9a-1312-4a5e-b4a6-b1f2a21c452d
+# ╠═be7908c2-1faf-4f2b-b369-a803842af8a5
+# ╠═7e90ccea-8268-4839-bd95-bdc818567d65
+# ╟─05f4d459-5bc7-4dbf-ab13-42041c0cf8e7
+# ╟─9f3511fc-e24d-11eb-130d-15fd034ec045
+# ╟─6b8708f3-6504-423b-b962-ceb69f0551a3
