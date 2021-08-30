@@ -4,11 +4,13 @@ using DelimitedFiles
 using JLD, HDF5
 using Printf
 
-d1 = load("./data/g_1.0.jld")
+g = 1.0
+path = @sprintf "./data/g_%.1f.jld" g
+d1 = load(path);
 β = 10.0
 key = string(β)
 
-w = TFIsing(1.,1.)
+w = TFIsing(1.,g)
 ψ = d1[key][2] |> tocmps
 z = make_operator(pauli(:z), ψ)
 Nfreq = 20
