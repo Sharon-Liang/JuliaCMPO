@@ -25,7 +25,7 @@ export thermal_average, partitian, partitian!
 export free_energy, energy, specific_heat, entropy
 export correlation_2time
 export Masubara_GF, spectral_function, structure_factor
-export energy_density, ave_sx, critical_zz_cor, critical_zz_sus
+export energy_density, ave_sx, critical_zz_sus
 export critical_zz_chi
 
 include("Setup.jl")

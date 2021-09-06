@@ -178,6 +178,7 @@ end
 
 function Masubara_GF(n::Integer, A::AbstractArray,B::AbstractArray,
                         ψ::cmps, W::cmpo, β::Real)
+    # - χ(iωn)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
     m = maximum(-β * e)
@@ -197,7 +198,7 @@ end
 
 function spectral_function(ω::Real,A::AbstractArray,B::AbstractArray,
                              ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.05)
-    # A(ω) = -1/π Im G^R(ω)
+    # Imχ(ω)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
     m = maximum(-β * e)
@@ -210,7 +211,7 @@ function spectral_function(ω::Real,A::AbstractArray,B::AbstractArray,
         res = res * A[i,j] * B[j,i] * delta(ω+e[i]-e[j],η)
         num += res
     end
-    return num/den
+    return π*num/den
 end
 
 function structure_factor(ω::Real, A::AbstractArray,B::AbstractArray,
