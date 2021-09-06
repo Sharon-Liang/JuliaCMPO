@@ -67,7 +67,7 @@ function correlation_2time(J::Real,τ::Real, β::Real;Γ::Real=1.0)
     end
 end
 
-function spectral_function(J::Real, ω::Real, β::Real; η::Float64=0.05,Γ::Real=1.)
+function spectral_density(J::Real, ω::Real, β::Real; η::Float64=0.05,Γ::Real=1.)
     # Imχ(ω)
     if J/Γ == 0.
         return π*sinh(Γ*β)/cosh(Γ*β)*(delta(ω-2Γ,η) - delta(ω+2Γ,η))
@@ -87,7 +87,7 @@ end
 
 function structure_factor(J::Real, ω::Real, β::Real; η::Float64=0.05,Γ::Real=1.)
     if J/Γ == 0.
-        return 1/(1-exp(-β*ω))*spectral_function(J,ω,β,Γ=Γ,η=η)
+        return 2/(1-exp(-β*ω))*spectral_density(J,ω,β,Γ=Γ,η=η)
     elseif J/Γ == 1.
         g0 = 0.858714569; zc = J^(-1/4)
         up = zc * g0 * β^(3/4) * gamma(1/8)

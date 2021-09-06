@@ -176,9 +176,9 @@ function correlation_2time(τ::Number, A::AbstractArray,B::AbstractArray,
     return num/den
 end
 
-function Masubara_GF(n::Integer, A::AbstractArray,B::AbstractArray,
+function Masubara_freq_correlator(n::Integer, A::AbstractArray,B::AbstractArray,
                         ψ::cmps, W::cmpo, β::Real)
-    # - χ(iωn)
+    # χ(iωn)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
     m = maximum(-β * e)
@@ -195,10 +195,9 @@ function Masubara_GF(n::Integer, A::AbstractArray,B::AbstractArray,
     return num/den
 end
 
-
-function spectral_function(ω::Real,A::AbstractArray,B::AbstractArray,
+function spectral_density(ω::Real,A::AbstractArray,B::AbstractArray,
                              ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.05)
-    # Imχ(ω)
+    # ρ(ω) = Imχ(ω)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
     m = maximum(-β * e)
@@ -215,7 +214,7 @@ function spectral_function(ω::Real,A::AbstractArray,B::AbstractArray,
 end
 
 function structure_factor(ω::Real, A::AbstractArray,B::AbstractArray,
-                        ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.05, method::Symbol=:N)
+                        ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.05, method::Symbol=:S)
     if method == :S
         K = ψ * W * ψ |> symmetrize |> Hermitian
         e, v = eigen(K)
