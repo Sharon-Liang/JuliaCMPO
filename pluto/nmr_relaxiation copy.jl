@@ -20,7 +20,7 @@ end
 
 # ╔═╡ 838f933c-db31-4887-b206-562bd060746f
 #gamma = [0.1, 0.5, 1.0, 2.0, 4.0, 8.0]
-g = 8.0
+g = 4.0
 
 # ╔═╡ f4fda113-17ce-4312-93ff-fb361815b970
 begin
@@ -217,6 +217,7 @@ end
 begin
 	p1= plot_nmr(highT, 0.05, xtick = :beta, yscale=:log)
 	p1.fig
+	#plot!(ylim=(minimum(p1.ydata)*1.1, maximum(p1.ydata)*0.9 ))
 end
 
 # ╔═╡ b07be761-27f7-4b9e-83ce-d0b7891cfd85
