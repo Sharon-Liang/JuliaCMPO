@@ -74,3 +74,10 @@ Start!
 finish Γ/J = 0.3
 finish Γ/J = 0.7
 Finish!
+  Activating environment at `~/julia-code/mycMPO/Project.toml`
+Start!
+2021-09-06: TFIsing-change-gamma.jl
+finish Γ/J = 0.5
+finish Γ/J = 1.0
+finish Γ/J = 2.0
+Finish!
