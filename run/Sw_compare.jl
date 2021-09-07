@@ -4,22 +4,35 @@ using DelimitedFiles
 using JLD, HDF5
 using Printf
 #using PyPlot
-
-g = 2.0; w = TFIsing(1.,g)
-β = 10.0; key = string(β)
-
 z8 = make_operator(pauli(:z), 8)
 z16 = make_operator(pauli(:z), 16)
 
+g = 1.0; w = TFIsing(1.,g)
+β = 10.0; key = string(β)
+
 path1 = @sprintf "./data/g_%.1f.jld" g
 path2 = @sprintf "./data/chi16/g_%.1f.jld" g
-
 d8 = load(path1)
 d16 = load(path2)
 
 ψ8 = d8[key][2] |> tocmps
 ψ28 = w * ψ8
 ψ16 = d16[key][2] |> tocmps
+
+# free_energy
+omega = [i for i in range(1,20,length=100)]
+fe = [free_energy(1.,g,i) for i in omega]
+s8 = [free_energy(ψ8,w,i) for i in omega] .- fe
+s28 = [free_energy(ψ28,w,i) for i in omega] .- fe
+s16 = [free_energy(ψ16,w,i) for i in omega] .- fe
+
+path3 = @sprintf "./data/floss_g_%.1f.txt" g
+open(path3, "w") do file
+    for i = 1:length(omega)
+        writedlm(file,[omega[i] s8[i] s28[i] s16[i]])
+    end
+end
+
 
 #structure_factor
 omega = [10^i for i in range(-5,1,length=100)]
@@ -46,3 +59,6 @@ open(path3, "w") do file
         writedlm(file,[omega[i] s8[i] s28[i] s16[i]])
     end
 end
+
+
+
