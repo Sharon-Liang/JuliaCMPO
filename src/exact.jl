@@ -58,7 +58,7 @@ function correlation_2time(J::Real,τ::Real, β::Real;Γ::Real=1.0)
         T = 1/β
         num = zc * 2^(-1/4)* T^(1/4) * g0
         den = sin(π*T*τ)
-        den = down^(1/4)
+        den = den^(1/4)
         return num/den |> real
     elseif J/Γ == 0.
         return cosh(-β*Γ + 2Γ*τ)/cosh(-β*Γ)
@@ -89,12 +89,17 @@ function structure_factor(J::Real, ω::Real, β::Real; η::Float64=0.05,Γ::Real
     if J/Γ == 0.
         return 2/(1-exp(-β*ω))*spectral_density(J,ω,β,Γ=Γ,η=η)
     elseif J/Γ == 1.
-        g0 = 0.858714569; zc = J^(-1/4)
-        up = zc * g0 * β^(3/4) * gamma(1/8)
-        down = 2^(1/4) * √π * gamma(5/8)
-        return up/down
+        if ω == 0.
+            g0 = 0.858714569; zc = J^(-1/4)
+            up = zc * g0 * β^(3/4) * gamma(1/8)
+            down = 2^(1/4) * √π * gamma(5/8)
+            return up/down
+        else
+            @error "only ω=0 result avaliable"
+        end
     else
         @error "No exact results. J/Γ should be 1. or 0."
     end
 end
+
 #end
