@@ -23,7 +23,7 @@ function Masubara_freq(n::Int64, β::Real; type::Symbol= :b)
     elseif type == :f  N = 2n + 1
     else @error "type should be :b for bosons and :f for fermions" 
     end
-    return 1.0im*N*π/β
+    return N*π/β
 end
 
 function ⊗(A::AbstractMatrix, B::AbstractMatrix)

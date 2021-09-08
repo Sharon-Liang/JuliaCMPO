@@ -189,7 +189,7 @@ function Masubara_freq_correlator(n::Integer, A::AbstractArray,B::AbstractArray,
     for i = 1: length(e), j = 1: length(e)
         up = exp(- β*e[i]-m) - exp(-β * e[j]-m)
         up = up * A[i,j] * B[j,i]
-        down = Masubara_freq(n,β,type=:b) + e[i] - e[j]
+        down = 1.0im * Masubara_freq(n,β,type=:b) + e[i] - e[j]
         num += up/down
     end
     return num/den
