@@ -4,19 +4,57 @@ using DelimitedFiles
 using JLD, HDF5
 using Printf
 
-z = make_operator(pauli(:z),8)
-β = 10
-path = @sprintf "./data/b_%i_jchange.jld" β
-d = load(path)
+z = make_operator(pauli(:z),8);
+β = 20;
+path = @sprintf "./data/b_%i_jchange.jld" β;
+d = load(path);
 
-J = 0.; key =string(J)
 
-ψ = tocmps(d[key][2])
-w = TFIsing(0.,1.)
+J = 1.; key =string(J);
 
-ψ0 = init_cmps(2,w)
-z0 = make_operator(pauli(:z),ψ0)
+#apath =@sprintf "./data/a_j_%.1f.txt" J
+gpathm =@sprintf "./data/gm_j_%.1f.txt" J
+ipath = @sprintf "./data/ig_j_%.1f.txt" J
+gpathn =@sprintf "./data/gn_j_%.1f.txt" J
+ψ = tocmps(d[key][2]);
+w = TFIsing(J,1.);
 
+
+#G(iωn)
+num = 30
+freq = [Masubara_freq(i,β,type=:b) for i=1:num]
+G = [Masubara_freq_GF(i,z,z,ψ,w,β) for i=1:num]
+Gm = [Masubara_freq_T1(i,z,z,ψ,w,β) for i=1:num]
+Gn = [1.0im*freq[i]*Masubara_freq_GF(i,z,z,ψ,w,β) for i=1:num]
+
+open(ipath,"w") do file
+    for i=1:num
+        writedlm(file,[freq[i] real(1.0im*G[i]) imag(1.0im*G[i])])
+    end
+end
+
+open(gpathm,"w") do file
+    for i=1:num
+        writedlm(file,[freq[i] real(Gm[i]) imag(Gm[i])])
+    end
+end
+
+open(gpathn,"w") do file
+    for i=1:num
+        writedlm(file,[freq[i] real(Gn[i]) imag(Gn[i])])
+    end
+end
+
+#spectral_density
+#omega = [i for i in range(0,5, length=1000)]
+#a1 = [spectral_density(J,x,β,η=0.001) for x in omega]
+#open(apath,"w") do file
+#    for i=1:1000
+#        writedlm(file,[omega[i] a1[i]])
+#    end
+#end
+
+"""
 #correlation_2time
 tau = [t for t in range(0,β,length=100)]
 
@@ -50,8 +88,14 @@ PyPlot.savefig("atomic_gf_diff.pdf",bbox_inches="tight")
 PyPlot.display_figs()
 
 #spectral_density
-omega = [i for i in range(-4,4, length=100)]
-a1 = [spectral_density(0.,x,β) for x in omega]
+omega = [i for i in range(0,5, length=1000)]
+a1 = [spectral_density(1.,x,β,η=0.001) for x in omega]
+open("./data/Agamma1.txt","w") do file
+    for i=1:1000
+        writedlm(file,[omega[i] a1[i]])
+    end
+end
+
 a2 = [spectral_density(x,z,z, ψ, w,β) for x in omega]
 a3 = [spectral_density(x,z0,z0, ψ0, w,β) for x in omega]
 
@@ -98,3 +142,4 @@ ylabel("S(ω) difference (abs)")
 legend()
 title(@sprintf "β = %i" β)
 PyPlot.savefig("atomic_struc_diff.pdf",bbox_inches="tight")
+"""

@@ -9,7 +9,7 @@ z16 = make_operator(pauli(:z), 16)
 gamma = [0.5, 1.0, 2.0]
 for g in gamma
     w = TFIsing(1.,g)
-    β = 10.0; key = string(β)
+    β = 20.0; key = string(β)
 
     path1 = @sprintf "./data/g_%.1f.jld" g
     path2 = @sprintf "./data/chi16/g_%.1f.jld" g
@@ -21,25 +21,38 @@ for g in gamma
     ψ16 = d16[key][2] |> tocmps
 
     #structure_factor
-    omega = [i for i in range(0,5,length=100)]
-    s8 = [structure_factor(i,z8,z8,ψ8,w,β,method =:S) for i in omega]
-    s28 = [structure_factor(i,z16,z16,ψ28,w,β,method =:S) for i in omega]
-    s16 = [structure_factor(i,z16,z16,ψ16,w,β,method =:S) for i in omega]
+    #omega = [i for i in range(0,5,length=100)]
+    #s8 = [structure_factor(i,z8,z8,ψ8,w,β,method =:S) for i in omega]
+    #s28 = [structure_factor(i,z16,z16,ψ28,w,β,method =:S) for i in omega]
+    #s16 = [structure_factor(i,z16,z16,ψ16,w,β,method =:S) for i in omega]
 
-    path3 = @sprintf "./data/Sw_g_%.1f.txt" g
-    open(path3, "w") do file
-        for i = 1:length(omega)
-            writedlm(file,[omega[i] s8[i] s28[i] s16[i]])
-        end
-    end
+    #path3 = @sprintf "./data/Sw_g_%.1f.txt" g
+    #open(path3, "w") do file
+    #    for i = 1:length(omega)
+    #        writedlm(file,[omega[i] s8[i] s28[i] s16[i]])
+    #    end
+    #end
 
     #spectral density
-    omega = [i for i in range(-5,5,length=200)]
-    s8 = [spectral_density(i,z8,z8,ψ8,w,β) for i in omega]
-    s28 = [spectral_density(i,z16,z16,ψ28,w,β) for i in omega]
-    s16 = [spectral_density(i,z16,z16,ψ16,w,β) for i in omega]
+    #omega = [i for i in range(-5,5,length=200)]
+    #s8 = [spectral_density(i,z8,z8,ψ8,w,β) for i in omega]
+    #s28 = [spectral_density(i,z16,z16,ψ28,w,β) for i in omega]
+    #s16 = [spectral_density(i,z16,z16,ψ16,w,β) for i in omega]
 
-    path3 = @sprintf "./data/ImX_g_%.1f.txt" g
+    #path3 = @sprintf "./data/ImX_g_%.1f.txt" g
+    #open(path3, "w") do file
+    #    for i = 1:length(omega)
+    #        writedlm(file,[omega[i] s8[i] s28[i] s16[i]])
+    #    end
+    #end
+
+    # Correlation_2time
+    omega = [i for i in range(0,β,length=100)]
+    s8 = [correlation_2time(i,z8,z8,ψ8,w,β) for i in omega]
+    s28 = [correlation_2time(i,z16,z16,ψ28,w,β) for i in omega]
+    s16 = [correlation_2time(i,z16,z16,ψ16,w,β) for i in omega]
+
+    path3 = @sprintf "./data/Gt_g_%.1f_β_%i.txt" g β
     open(path3, "w") do file
         for i = 1:length(omega)
             writedlm(file,[omega[i] s8[i] s28[i] s16[i]])
@@ -62,17 +75,6 @@ open(path3, "w") do file
     end
 end
 
-# Correlation_2time
-omega = [i for i in range(0,β,length=100)]
-s8 = [correlation_2time(i,z8,z8,ψ8,w,β) for i in omega]
-s28 = [correlation_2time(i,z16,z16,ψ28,w,β) for i in omega]
-s16 = [correlation_2time(i,z16,z16,ψ16,w,β) for i in omega]
 
-path3 = @sprintf "./data/Gt_g_%.1f.txt" g
-open(path3, "w") do file
-    for i = 1:length(omega)
-        writedlm(file,[omega[i] s8[i] s28[i] s16[i]])
-    end
-end
 """
 
