@@ -176,9 +176,68 @@ function correlation_2time(τ::Number, A::AbstractArray,B::AbstractArray,
     return num/den
 end
 
-function Masubara_freq_correlator(n::Integer, A::AbstractArray,B::AbstractArray,
+function check_anomalous_term(A::AbstractArray,B::AbstractArray,
+    ψ::cmps, W::cmpo, β::Real)
+    #check anomalous term of bosonic Masubara correlations
+    K = ψ * W * ψ |> symmetrize |> Hermitian
+    e, v = eigen(K)
+    m = maximum(-β * e)
+    A = v' * A * v
+    B = v' * B * v
+    den = exp.(-β * e .- m) |> sum
+
+    c = 0.
+    for i = 1: length(e), j = 1: length(e)
+        if e[i] == e[j]
+            c +=β*exp(-β*e[j]-m) * A[i,j] * B[j,i]
+        end
+    end
+    return c       
+end
+
+function f(a::Real, x::Real)
+    #(1.0 - exp(-a*x))/x
+    if abs(x) < 1.e-10
+        return a
+    else
+        return (1.0 - exp(-a*x))/x
+    end
+end
+
+function Masubara_freq_GF(n::Integer, A::AbstractArray,B::AbstractArray,
                         ψ::cmps, W::cmpo, β::Real)
-    # χ(iωn)
+    # masubara frequency Green's functions for bosonic operators
+    ωn = Masubara_freq(n,β,type=:b)
+    λ = 1.0
+    K = ψ * W * ψ |> symmetrize |> Hermitian
+    e, v = eigen(K)
+    m = maximum(-β * e)
+    A = v' * A * v
+    B = v' * B * v
+    den = exp.(-β * e .- m) |> sum
+    num = 0.0
+    if ωn != 0
+        for i = 1: length(e), j = 1: length(e)
+            dE = e[j] - e[i]
+            up = exp(-β*e[i]-m) * (1-λ*exp(-β*dE))
+            up = up * A[i,j] * B[j,i]
+            down = 1.0im * ωn - dE
+            num += up/down
+        end
+    else
+        for i = 1: length(e), j = 1: length(e)
+            dE = e[j] - e[i]
+            num += -A[i,j]*B[j,i]*exp(-β*e[i]-m)*f(β, dE)
+        end
+    end
+    return num/den
+end
+
+function Masubara_freq_T1(n::Integer, A::AbstractArray,B::AbstractArray,
+    ψ::cmps, W::cmpo, β::Real)
+    # ∑_mn Cmn(iωn)/(Em - En) for bosonic operators
+    if n == 0 @error "Error: n should not be 0." end
+    ωn = Masubara_freq(n,β,type=:b)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
     m = maximum(-β * e)
@@ -187,9 +246,10 @@ function Masubara_freq_correlator(n::Integer, A::AbstractArray,B::AbstractArray,
     den = exp.(-β * e .- m) |> sum
     num = 0.0
     for i = 1: length(e), j = 1: length(e)
-        up = exp(- β*e[i]-m) - exp(-β * e[j]-m)
+        dE = e[j] - e[i]
+        up = exp(-β*e[i]-m) * f(β, dE)
         up = up * A[i,j] * B[j,i]
-        down = 1.0im * Masubara_freq(n,β,type=:b) + e[i] - e[j]
+        down = 1.0im * ωn - dE
         num += up/down
     end
     return num/den
@@ -197,7 +257,7 @@ end
 
 function spectral_density(ω::Real,A::AbstractArray,B::AbstractArray,
                              ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.05)
-    # ρ(ω) = Imχ(ω)
+    # ρ(ω) = 2Imχ(ω) = -2ImG(ω)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
     m = maximum(-β * e)
@@ -210,7 +270,7 @@ function spectral_density(ω::Real,A::AbstractArray,B::AbstractArray,
         res = res * A[i,j] * B[j,i] * delta(ω+e[i]-e[j],η)
         num += res
     end
-    return π*num/den
+    return 2π*num/den
 end
 
 function structure_factor(ω::Real, A::AbstractArray,B::AbstractArray,

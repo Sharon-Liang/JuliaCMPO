@@ -24,7 +24,8 @@ export TFIsing, XYmodel, HeisenbergModel
 export thermal_average, partitian, partitian!
 export free_energy, energy, specific_heat, entropy
 export correlation_2time
-export Masubara_freq_correlator, spectral_density, structure_factor
+export check_anomalous_term, Masubara_freq_GF, spectral_density, structure_factor
+export Masubara_freq_T1
 export energy_density, ave_sx, critical_zz_sus
 export critical_zz_chi
 

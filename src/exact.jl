@@ -68,9 +68,9 @@ function correlation_2time(J::Real,τ::Real, β::Real;Γ::Real=1.0)
 end
 
 function spectral_density(J::Real, ω::Real, β::Real; η::Float64=0.05,Γ::Real=1.)
-    # Imχ(ω)
+    # 2Imχ(ω)
     if J/Γ == 0.
-        return π*sinh(Γ*β)/cosh(Γ*β)*(delta(ω-2Γ,η) - delta(ω+2Γ,η))
+        return 2π*sinh(Γ*β)/cosh(Γ*β)*(delta(ω-2Γ,η) - delta(ω+2Γ,η))
     elseif J/Γ == 1.
         # Ref: PRX.4.031008(2014) A6
         g0 = 0.858714569; zc = J^(-1/4)
@@ -79,7 +79,7 @@ function spectral_density(J::Real, ω::Real, β::Real; η::Float64=0.05,Γ::Real
         down = 2^(1/4) * √π * gamma(1/8) * gamma(5/8)
         fac = up/down
         res = sinh(ω/(2*T)) * abs(gamma(1/8 - 1im*ω/(2π*T)))^2
-        return fac*res
+        return 2*fac*res
     else
         @error "No exact results. J/Γ should be 1. or 0."
     end
