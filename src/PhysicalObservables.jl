@@ -197,11 +197,10 @@ end
 
 function f(b::Real, e1::Real, e2::Real, m::Real)
     #e^(-b*e1) - e^(-b*e2) / (e2 - e1)
-    e1 -= m ; e2 -= m
     if abs(e2 - e1) < 1.e-10
-        return exp(-b*e1) * b
+        return exp(-b*e1 - m) * b
     else
-        num = exp(-b*e1) - exp(-b*e2)
+        num = exp(-b*e1 - m) - exp(-b*e2 - m)
         den = e2 - e1
         return num/den
     end
