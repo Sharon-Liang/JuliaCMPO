@@ -81,3 +81,66 @@ finish Γ/J = 0.5
 finish Γ/J = 1.0
 finish Γ/J = 2.0
 Finish!
+
+
+  Activating environment at `~/julia-code/mycMPO/Project.toml`
+Start!
+2021-10-11: scan β
+
+
+  Activating environment at `~/julia-code/mycMPO/Project.toml`
+Start!
+2021-10-11: scan β:100-101
+
+
+  Activating environment at `~/julia-code/mycMPO/Project.toml`
+Start!
+2021-10-13: TFIsing-change-gamma.jl
+finish Γ/J = 1.0
+finish Γ/J = 1.5
+finish Γ/J = 2.0
+finish Γ/J = 2.5
+finish Γ/J = 3.0
+finish Γ/J = 4.0
+finish Γ/J = 6.0
+beta in range (1.0 , 40.0)
+Finish!
+2021-10-13: scan β and g
+finish Γ/J = 1.0
+finish Γ/J = 1.5
+finish Γ/J = 2.0
+finish Γ/J = 2.5
+finish Γ/J = 3.0
+finish Γ/J = 4.0
+finish Γ/J = 6.0
+
+
+  Activating environment at `~/julia-code/mycMPO/Project.toml`
+Start!
+2021-10-14: TFIsing-change-gamma.jl
+finish Γ/J = 0.1
+finish Γ/J = 0.3
+finish Γ/J = 0.5
+finish Γ/J = 0.7
+finish Γ/J = 1.0
+finish Γ/J = 1.5
+finish Γ/J = 2.0
+finish Γ/J = 2.5
+finish Γ/J = 3.0
+finish Γ/J = 4.0
+finish Γ/J = 6.0
+finish Γ/J = 8.0
+finish Γ/J = 10.0
+beta in range (1.0 , 40.0)
+Finish!
+
+    Activating environment at `~/julia-code/mycMPO/Project.toml`
+Start!
+2021-10-14: scan β and g
+finish Γ/J = 1.0
+finish Γ/J = 1.5
+finish Γ/J = 2.0
+finish Γ/J = 2.5
+finish Γ/J = 3.0
+finish Γ/J = 4.0
+finish Γ/J = 6.0

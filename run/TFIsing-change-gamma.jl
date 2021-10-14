@@ -8,23 +8,22 @@ using JLD, HDF5
 using Printf
 """
 
-println("2021-09-06: TFIsing-change-gamma.jl")
+println("2021-10-14: TFIsing-change-gamma.jl")
 
-χ = 16
+χ = 8
 x = make_operator(pauli(:x),χ)
 
-gamma = [0.5,1.0,2.0]
-beta = [i for i in range(1,20,step=0.2)]
-#T = [i for i in range(0.1, 1.e-4, length = 200)]
-#beta = 1 ./ T
-mg = maximum(gamma)
+gamma = [0.1, 0.3, 0.5, 0.7, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 6.0, 8.0, 10.0]
+beta = [i for i in range(1.,40.,step=0.1)]
 
 pcollect1 = Vector{String}(undef, length(gamma))
 pcollect2 = Vector{String}(undef, length(gamma))
+upcollect = Vector{String}(undef, length(gamma))
 
 for i = 1:length(gamma)
-    pcollect1[i] = @sprintf "../data/chi16/g_%.1f.jld" gamma[i]
-    pcollect2[i] = @sprintf "../data/chi16/f_and_sx_g_%.1f.txt" gamma[i]
+    pcollect1[i] = @sprintf "../data/g_%.1f.jld" gamma[i]
+    pcollect2[i] = @sprintf "../data/f_and_sx_g_%.1f.txt" gamma[i]
+    upcollect[i] = @sprintf "../data/ug_%.1f.jld" gamma[i]
 end 
 
 for path in pcollect1
@@ -37,12 +36,19 @@ for path in pcollect2
     end
 end
 
+for path in upcollect
+    jldopen(path, "w") do file
+    end
+end
+
 for j = 1:length(gamma)
     g = gamma[j]
     w = TFIsing(1.0, g)
     arr = init_cmps(χ,w) |> toarray
-    path1 = @sprintf "../data/chi16/g_%.1f.jld" g
-    path2 = @sprintf "../data/chi16/f_and_sx_g_%.1f.txt" g
+    path1 = @sprintf "../data/g_%.1f.jld" g
+    path2 = @sprintf "../data/f_and_sx_g_%.1f.txt" g
+
+    upath = @sprintf "../data/ug_%.1f.jld" g
 
     for i = 1:length(beta)
         β = beta[i]; key = string(β)
@@ -58,16 +64,26 @@ for j = 1:length(gamma)
         jldopen(path1, "r+") do file
             write(file, key, res)
         end
+
+        d, r = divrem(β,10)
+        if r == 0
+            jldopen(upath, "r+") do file
+                write(file, key, res)
+            end
+        end
         
         ψ = tocmps(arr)
+        ψ2 = w * ψ
         f_exa = free_energy(1.0, g, β)
+        f2 = free_energy(ψ2, w, β)
         sx_exa = ave_sx(1.0, g, β)
         sx = thermal_average(x,ψ,w,β)
         open(path2, "a") do file2
-            writedlm(file2,[β f_exa minimum(op) sx_exa sx])
+            writedlm(file2,[β f_exa minimum(op) f2 sx_exa sx])
         end
     end
     println("finish Γ/J = ", g)
 end
 
+println("beta in range (", minimum(beta)," , ",maximum(beta),")")
 println("Finish!")
