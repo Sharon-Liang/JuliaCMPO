@@ -195,12 +195,15 @@ function check_anomalous_term(A::AbstractArray,B::AbstractArray,
     return c       
 end
 
-function f(a::Real, x::Real)
-    #(1.0 - exp(-a*x))/x
-    if abs(x) < 1.e-10
-        return a
+function f(b::Real, e1::Real, e2::Real, m::Real)
+    #e^(-b*e1) - e^(-b*e2) / (e2 - e1)
+    e1 -= m ; e2 -= m
+    if abs(e2 - e1) < 1.e-10
+        return exp(-b*e1) * b
     else
-        return (1.0 - exp(-a*x))/x
+        num = exp(-b*e1) - exp(-b*e2)
+        den = e2 - e1
+        return num/den
     end
 end
 
@@ -218,16 +221,14 @@ function Masubara_freq_GF(n::Integer, A::AbstractArray,B::AbstractArray,
     num = 0.0
     if ωn != 0
         for i = 1: length(e), j = 1: length(e)
-            dE = e[j] - e[i]
-            up = exp(-β*e[i]-m) * (1-λ*exp(-β*dE))
+            up = exp(-β*e[i]-m) - λ*exp(-β*e[j]-m)
             up = up * A[i,j] * B[j,i]
-            down = 1.0im * ωn - dE
+            down = 1.0im * ωn - e[j] + e[i]
             num += up/down
         end
     else
         for i = 1: length(e), j = 1: length(e)
-            dE = e[j] - e[i]
-            num += -A[i,j]*B[j,i]*exp(-β*e[i]-m)*f(β, dE)
+            num -= A[i,j]*B[j,i]*f(β,e[i],e[j],m)
         end
     end
     return num/den
@@ -246,10 +247,8 @@ function Masubara_freq_T1(n::Integer, A::AbstractArray,B::AbstractArray,
     den = exp.(-β * e .- m) |> sum
     num = 0.0
     for i = 1: length(e), j = 1: length(e)
-        dE = e[j] - e[i]
-        up = exp(-β*e[i]-m) * f(β, dE)
-        up = up * A[i,j] * B[j,i]
-        down = 1.0im * ωn - dE
+        up = A[i,j] * B[j,i] * f(β,e[i],e[j],m)
+        down = 1.0im * ωn - e[j] + e[i]
         num += up/down
     end
     return num/den
