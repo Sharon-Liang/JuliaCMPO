@@ -7,9 +7,9 @@ using Printf
 #using PyPlot
 """
 
-println("2021-10-14: scan β and g")
+println("2021-10-15: scan β and g")
 
-N = 20
+N = 100
 
 z8 = make_operator(pauli(:z), 8)
 z16 = make_operator(pauli(:z), 16)
@@ -25,22 +25,22 @@ for j = 1:length(gamma)
         β = beta[b]; key = string(β)
         ψ8 = d8[key][2] |> tocmps; ψ28 = w * ψ8
     
-        path1 = @sprintf "../data/gt/gt8_g_%.1f_b_%i.txt" g β
-        path2 = @sprintf "../data/gt/gt28_g_%.1f_b_%i.txt" g β
+        path1 = @sprintf "../data/gt/gf_t8_g_%.1f_b_%i.txt" g β
+        path2 = @sprintf "../data/gt/gf_t28_g_%.1f_b_%i.txt" g β
 
-        ωn = [Masubara_freq(i,β) for i=1:N]
-        Gt8 = [Masubara_freq_T1(i,z8,z8,ψ8,w,β) for i=1:N]
-        Gt28 = [Masubara_freq_T1(i,z16,z16,ψ28,w,β) for i=1:N]  
+        tau = [i for i in range(0, β, length = 100)]
+        Gt8 = [correlation_2time(i,z8,z8,ψ8,w,β) for i in tau]
+        Gt28 = [correlation_2time(i,z16,z16,ψ28,w,β) for i in tau]  
 
         open(path1,"w") do file
             for i=1:N
-                writedlm(file,[ωn[i] real(Gt8[i]) imag(Gt8[i])])
+                writedlm(file,[tau[i]/β Gt8[i]])
             end
         end
     
         open(path2,"w") do file
             for i=1:N
-                writedlm(file,[ωn[i] real(Gt28[i]) imag(Gt28[i])])
+                writedlm(file,[tau[i]/β Gt28[i]])
             end
         end
     end

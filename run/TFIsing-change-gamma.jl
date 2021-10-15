@@ -8,7 +8,7 @@ using JLD, HDF5
 using Printf
 """
 
-println("2021-10-14: TFIsing-change-gamma.jl")
+println("2021-10-15: TFIsing-change-gamma.jl")
 
 χ = 8
 x = make_operator(pauli(:x),χ)
