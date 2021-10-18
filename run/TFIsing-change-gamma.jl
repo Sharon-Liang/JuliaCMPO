@@ -13,7 +13,7 @@ println("2021-10-15: TFIsing-change-gamma.jl")
 χ = 8
 x = make_operator(pauli(:x),χ)
 
-gamma = [0.1, 0.3, 0.5, 0.7, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 6.0, 8.0, 10.0]
+gamma = [0.8, 0.9, 1.1, 1.2]
 beta = [i for i in range(1.,40.,step=0.1)]
 
 pcollect1 = Vector{String}(undef, length(gamma))

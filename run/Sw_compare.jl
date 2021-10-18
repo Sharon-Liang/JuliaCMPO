@@ -7,14 +7,14 @@ using Printf
 #using PyPlot
 """
 
-println("2021-10-15: scan β and g")
+println("2021-10-18: scan β and g")
 
-N = 100
+N = 20
 
 z8 = make_operator(pauli(:z), 8)
 z16 = make_operator(pauli(:z), 16)
 beta = [10.0, 20.0, 30.0, 40.0]
-gamma = [1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 6.0]
+gamma = [0.8, 0.9, 1.1, 1.2]
 
 for j = 1:length(gamma)
     g = gamma[j]; w = TFIsing(1.,g)
@@ -24,7 +24,8 @@ for j = 1:length(gamma)
     for b = 1:length(beta)
         β = beta[b]; key = string(β)
         ψ8 = d8[key][2] |> tocmps; ψ28 = w * ψ8
-    
+        
+        # G(τ)
         path1 = @sprintf "../data/gt/gf_t8_g_%.1f_b_%i.txt" g β
         path2 = @sprintf "../data/gt/gf_t28_g_%.1f_b_%i.txt" g β
 
@@ -33,14 +34,54 @@ for j = 1:length(gamma)
         Gt28 = [correlation_2time(i,z16,z16,ψ28,w,β) for i in tau]  
 
         open(path1,"w") do file
-            for i=1:N
+            for i=1:100
                 writedlm(file,[tau[i]/β Gt8[i]])
             end
         end
     
         open(path2,"w") do file
-            for i=1:N
+            for i=1:100
                 writedlm(file,[tau[i]/β Gt28[i]])
+            end
+        end
+
+        # G(ωn)
+        path1 = @sprintf "../data/gt/gf_w8_g_%.1f_b_%i.txt" g β
+        path2 = @sprintf "../data/gt/gf_w28_g_%.1f_b_%i.txt" g β
+
+        ωn = [Masubara_freq(i,β) for i=1:N]
+        Gt8 = [Masubara_freq_GF(i,z8,z8,ψ8,w,β) for i=1:N]
+        Gt28 = [Masubara_freq_GF(i,z16,z16,ψ28,w,β) for i=1:N]  
+
+        open(path1,"w") do file
+            for i=1:N
+                writedlm(file,[ωn[i] real(Gt8[i]) imag(Gt8[i])])
+            end
+        end
+    
+        open(path2,"w") do file
+            for i=1:N
+                writedlm(file,[ωn[i] real(Gt28[i]) imag(Gt28[i])])
+            end
+        end
+
+        # χ(ωn)/ωn
+        path1 = @sprintf "../data/gt/gt8_g_%.1f_b_%i.txt" g β
+        path2 = @sprintf "../data/gt/gt28_g_%.1f_b_%i.txt" g β
+
+        ωn = [Masubara_freq(i,β) for i=1:N]
+        Gt8 = [Masubara_freq_T1(i,z8,z8,ψ8,w,β) for i=1:N]
+        Gt28 = [Masubara_freq_T1(i,z16,z16,ψ28,w,β) for i=1:N]  
+
+        open(path1,"w") do file
+            for i=1:N
+                writedlm(file,[ωn[i] real(Gt8[i]) imag(Gt8[i])])
+            end
+        end
+    
+        open(path2,"w") do file
+            for i=1:N
+                writedlm(file,[ωn[i] real(Gt28[i]) imag(Gt28[i])])
             end
         end
     end
