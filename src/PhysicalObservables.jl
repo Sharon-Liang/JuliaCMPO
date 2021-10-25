@@ -5,11 +5,10 @@
 NN Transvers field Ising model
     H = ∑ J Zi Zj + ∑ Γ Xi
 """
-function TFIsing(J::Real, Γ::Real; field::Symbol=:N)
+function TFIsing(J::Real, Γ::Real; field::Symbol=:N, η::Float64 = 1.e-2)
     if field == :N
         h = zeros(2,2)
     else
-        η = 1.e-2
         h = η .* pauli(field)
     end
     return cmpo(Γ*pauli(:x)+h, √J*pauli(:z), √J*pauli(:z), zeros(2,2))
@@ -95,7 +94,6 @@ function thermal_average(Op::AbstractArray, ψ::cmps, β::Real)
     num = exp.(e .- m) .* diag(Op) |> sum
     return num/den
 end
-
 
 """
 Thermal dynamic quanties =============================================
@@ -310,5 +308,21 @@ function structure_factor(ω::Real, A::AbstractArray,B::AbstractArray,
     end       
 end
 
+"""Susceptibility"""
+function susceptibility_static(ψ::cmps, W::cmpo, β::Real; dh::Float64 = 0.01)
+    Op = make_operator(pauli(:z), ψ)
+    h = dh .* pauli(:z)
+    M = zeros(2); M[1] = thermal_average(Op, ψ, W, β)
+
+    w = cmpo(W.Q+h, W.R, W.L, W.P)
+    arr = ψ |> toarray
+    f = arr -> free_energy(arr, w, β)
+    gf! = gradient_function(f, arr)
+    op = optimize(f,gf!, arr, LBFGS(),Optim.Options(iterations = 10000))
+    arr = op.minimizer
+    ψ = arr |> tocmps
+    M[2] = thermal_average(Op, ψ, w, β)
+    return (M[2] - M[1])/dh  
+end
 
 #end  # module PhysicalObservables
