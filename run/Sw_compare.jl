@@ -7,14 +7,14 @@ using Printf
 #using PyPlot
 """
 
-println("2021-10-18: scan β and g")
+println("2021-10-25: scan β and g")
 
-N = 20
+N = 40
 
 z8 = make_operator(pauli(:z), 8)
 z16 = make_operator(pauli(:z), 16)
 beta = [10.0, 20.0, 30.0, 40.0]
-gamma = [0.8, 0.9, 1.1, 1.2]
+gamma = [1.0, 1.5, 2.0]
 
 for j = 1:length(gamma)
     g = gamma[j]; w = TFIsing(1.,g)
