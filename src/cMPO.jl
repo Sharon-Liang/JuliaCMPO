@@ -29,8 +29,6 @@ export Masubara_freq_T1
 export energy_density, ave_sx, critical_zz_sus
 export critical_zz_chi
 
-export susceptibility_static
-
 include("utilities.jl")
 include("Setup.jl")
 include("PhysicalObservables.jl")

@@ -308,21 +308,4 @@ function structure_factor(ω::Real, A::AbstractArray,B::AbstractArray,
     end       
 end
 
-"""Susceptibility"""
-function susceptibility_static(ψ::cmps, W::cmpo, β::Real; dh::Float64 = 0.01)
-    Op = make_operator(pauli(:z), ψ)
-    h = dh .* pauli(:z)
-    M = zeros(2); M[1] = thermal_average(Op, ψ, W, β)
-
-    w = cmpo(W.Q+h, W.R, W.L, W.P)
-    arr = ψ |> toarray
-    f = arr -> free_energy(arr, w, β)
-    gf! = gradient_function(f, arr)
-    op = optimize(f,gf!, arr, LBFGS(),Optim.Options(iterations = 10000))
-    arr = op.minimizer
-    ψ = arr |> tocmps
-    M[2] = thermal_average(Op, ψ, w, β)
-    return (M[2] - M[1])/dh  
-end
-
 #end  # module PhysicalObservables
