@@ -9,6 +9,6 @@ using Printf
 
 
 println("Start!")
-#include("TFIsing-change-gamma.jl")
-include("Sw_compare.jl")
+include("TFIsing-change-gamma.jl")
+#include("Sw_compare.jl")
 
