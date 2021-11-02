@@ -8,12 +8,12 @@ using JLD, HDF5
 using Printf
 """
 
-println("2021-10-15: TFIsing-change-gamma.jl")
+println("2021-11-02: TFIsing-change-gamma.jl")
 
 χ = 8
 x = make_operator(pauli(:x),χ)
 
-gamma = [0.8, 0.9, 1.1, 1.2]
+gamma = [1.0, 1.5, 2.0]
 beta = [i for i in range(1.,40.,step=0.1)]
 
 pcollect1 = Vector{String}(undef, length(gamma))
