@@ -1,4 +1,4 @@
-#module Setup
+#module setup
 #using LinearAlgebra
 import Base: zeros
 struct cmps
@@ -119,4 +119,4 @@ function ovlp(s::cmps, β::Real)
     -β*(s*s) |> trexp |> value
 end
 
-#end # module
+#end module setup
