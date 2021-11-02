@@ -30,7 +30,8 @@ export energy_density, ave_sx, critical_zz_sus
 export critical_zz_chi
 
 include("utilities.jl")
-include("Setup.jl")
+include("setup.jl")
+include("PhysicalModels.jl")
 include("PhysicalObservables.jl")
 
 
