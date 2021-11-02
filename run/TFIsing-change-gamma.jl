@@ -8,12 +8,31 @@ using JLD, HDF5
 using Printf
 """
 
-println("2021-10-15: TFIsing-change-gamma.jl")
+"""Convert time t in seconds to DD:HH:MM:SS"""
+function converttime(t::Number)
+    (m, s) = divrem(t, 60)
+    (h, m) = divrem(m, 60)
+    (d, h) = divrem(m, 24)
+    if d == 0
+        if h == 0
+            if m == 0 return @sprintf "time=%.3fs" s
+            else return @sprintf "time=%imin %.3f s" m s
+            end
+        else
+            return @sprintf "time=%ih %imin %.3fs" h m s
+        end
+    else
+        return @sprintf "time=%id %ih %imin %.3fs" d h m s
+    end
+end
+
+println("2021-11-02: TFIsing-change-gamma.jl")
+println("NewtonTrustRegion")
 
 χ = 8
 x = make_operator(pauli(:x),χ)
 
-gamma = [0.8, 0.9, 1.1, 1.2]
+gamma = [1.0, 1.5, 2.0]
 beta = [i for i in range(1.,40.,step=0.1)]
 
 pcollect1 = Vector{String}(undef, length(gamma))
@@ -21,9 +40,9 @@ pcollect2 = Vector{String}(undef, length(gamma))
 upcollect = Vector{String}(undef, length(gamma))
 
 for i = 1:length(gamma)
-    pcollect1[i] = @sprintf "../data/g_%.1f.jld" gamma[i]
-    pcollect2[i] = @sprintf "../data/f_and_sx_g_%.1f.txt" gamma[i]
-    upcollect[i] = @sprintf "../data/ug_%.1f.jld" gamma[i]
+    pcollect1[i] = @sprintf "../data/Ng_%.1f.jld" gamma[i]
+    pcollect2[i] = @sprintf "../data/Nf_and_sx_g_%.1f.txt" gamma[i]
+    upcollect[i] = @sprintf "../data/Nug_%.1f.jld" gamma[i]
 end 
 
 for path in pcollect1
@@ -41,20 +60,25 @@ for path in upcollect
     end
 end
 
+start = time()
 for j = 1:length(gamma)
+    t1 = time()
     g = gamma[j]
     w = TFIsing(1.0, g)
     arr = init_cmps(χ,w) |> toarray
-    path1 = @sprintf "../data/g_%.1f.jld" g
-    path2 = @sprintf "../data/f_and_sx_g_%.1f.txt" g
-
-    upath = @sprintf "../data/ug_%.1f.jld" g
+    path1 = @sprintf "../data/Ng_%.1f.jld" g
+    path2 = @sprintf "../data/Nf_and_sx_g_%.1f.txt" g
+    
+    #output file path
+    upath = @sprintf "../data/Nug_%.1f.jld" g
 
     for i = 1:length(beta)
         β = beta[i]; key = string(β)
         f = arr -> free_energy(arr, w, β)
-        gf! = gradient_function(f, arr)
-        op = optimize(f,gf!, arr, LBFGS(),Optim.Options(iterations = 10000))
+        g! = gradient_function(f)
+        h! = hessian_function(f)
+        op = optimize(f, g!, h!, arr, NewtonTrustRegion(),Optim.Options(iterations = 10000))
+        #op = optimize(f,gf!, arr, LBFGS(),Optim.Options(iterations = 10000))
         arr = op.minimizer
         res = (minimum(op), arr, Optim.converged(op))
         if res[3] == false 
@@ -82,8 +106,13 @@ for j = 1:length(gamma)
             writedlm(file2,[β f_exa minimum(op) f2 sx_exa sx])
         end
     end
+    t2 = time()
     println("finish Γ/J = ", g)
+    println(converttime(t2 - t1))
 end
+finish = time()
 
 println("beta in range (", minimum(beta)," , ",maximum(beta),")")
 println("Finish!")
+println(converttime(finish - start))
+

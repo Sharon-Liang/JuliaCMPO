@@ -65,6 +65,10 @@ function free_energy(param::Array{T,3} where T<:Number, W::cmpo, β::Real)
     free_energy(tocmps(param), W, β)
 end
 
+function free_energy(param::Vector{T} where T<:Number, dim::Tuple, W::cmpo, β::Real)
+    free_energy(tocmps(param, dim), W, β)
+end
+
 function energy(ψ::cmps, W::cmpo, β::Real)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     H = ψ * ψ |> symmetrize |> Hermitian
