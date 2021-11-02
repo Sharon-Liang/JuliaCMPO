@@ -6,12 +6,22 @@ using Printf
 using Random; Random.seed!()
 using LinearAlgebra
 
-g = 2.
-path = @sprintf "./data/g_%.1f.jld" g
+g = 1.0
+beta = [10.0, 20.0, 30.0, 40.0]
+path = @sprintf "./data/ug_%.1f.jld" g
 d = load(path)
 w = TFIsing(1.,g)
-beta = [i for i in range(1,20,step=0.2)]
-z = make_operator(pauli(:z),8)
+#beta = [i for i in range(1,20,step=0.2)]
+z = make_operator(pauli(:z),16)
+
+for i = 1:4
+    β = beta[i]; key=string(β)
+    ψ = d[key][2] |>tocmps
+    ψ = w * ψ
+    c = -Masubara_freq_GF(0, z,z,ψ, w, β)
+    s = @sprintf "β = %i, c = %.5f" β c*2π
+    println(s)
+end
 
 R = 50 #random sampling times
 D = 8 # matrix dimension
