@@ -29,9 +29,11 @@ export Masubara_freq_T1
 export energy_density, ave_sx, critical_zz_sus
 export critical_zz_chi
 
-include("Setup.jl")
-include("PhysicalObservables.jl")
 include("utilities.jl")
+include("setup.jl")
+include("PhysicalModels.jl")
+include("PhysicalObservables.jl")
+
 
 include("exact.jl")
 

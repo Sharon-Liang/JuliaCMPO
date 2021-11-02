@@ -1,66 +1,6 @@
 #module PhysicalObservables
 #include("Setup.jl")
 
-"""
-NN Transvers field Ising model
-    H = ∑ J Zi Zj + ∑ Γ Xi
-"""
-function TFIsing(J::Real, Γ::Real; field::Symbol=:N)
-    if field == :N
-        h = zeros(2,2)
-    else
-        η = 1.e-2
-        h = η .* pauli(field)
-    end
-    return cmpo(Γ*pauli(:x)+h, √J*pauli(:z), √J*pauli(:z), zeros(2,2))
-end
-
-"""
-function XYmodel(; J::Real = 1.0)
-    sgn = sign(J) 
-    sp = pauli(:+); sm = pauli(:-);
-    L = zeros(2,2,2)
-    L[:,:,1] = 1/√2 * sp ; L[:,:,2] = 1/√2 * sm
-    R = zeros(2,2,2)
-    R[:,:,1] = -sgn*1/√2 * sm ; R[:,:,2] = -sgn*1/√2 * sp
-    Q = zeros(2,2)
-    P = zeros(2,2,2,2)
-    return cmpo(Q,R,L,P)
-end
-"""
-function HeisenbergModel(; J::Real=1.0)
-    #AFM Heisenberg model
-    sp = pauli(:+); sm = pauli(:-);
-    LR = zeros(2,2,3)
-    LR[:,:,1] = 1/√2 * sp ; LR[:,:,2] = 1/√2 * sm; LR[:,:,3] = pauli(:z)
-    Q = zeros(2,2)
-    P = zeros(2,2,3,3) 
-    return cmpo(Q,LR,LR,P)
-end
-
-"""
-function XXZmodel(Jx::Real, Jz::Real)
-    if Jx == Jz 
-        return HeisenbergModel(J=Jz)
-    elseif Jz == 0
-        return XYmodel(J=Jx)
-    elseif Jx == 0
-        return TFIsing(Jz, 0.0)
-    else
-        sgnz = sign(Jz) ; sgnx = sign(Jx)
-        Jz = abs(Jz); Jx = abs(Jx)
-        sp = pauli(:+); sm = pauli(:-);
-        L = zeros(2,2,3)
-        L[:,:,1] = √(Jx/2) * sp ; L[:,:,2] = √(Jx/2) * sm; L[:,:,3] = √(Jz) *pauli(:z)
-        R = zeros(2,2,3)
-        R[:,:,1] = -sgn * √(Jx/2) * sm ; R[:,:,2] = -sgn * √(Jx/2) * sp; R[:,:,3] = -sgn * √(Jz) *pauli(:z)
-        Q = zeros(2,2)
-        P = zeros(2,2,3,3)
-        return cmpo(Q,R,L,P)
-    end
-end
-"""
-
 function make_operator(Op::AbstractArray, dim::Int)
     eye = Matrix(1.0I, dim, dim)
     return eye ⊗ Op ⊗ eye
@@ -75,27 +15,24 @@ end
 The thermal average of local opeartors ===============================
 """
 function thermal_average(Op::AbstractArray, ψ::cmps, W::cmpo, β::Real)
-    #eye = Matrix(1.0I, size(ψ.Q))
-    #Op = eye ⊗ Op ⊗ eye
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(-β*K)
     m = maximum(e)
     Op = v' * Op * v
-    den = exp.(e .- m) |> sum
-    num = exp.(e .- m) .* diag(Op) |> sum
+    den = exp.(e) |> sum
+    num = exp.(e) .* diag(Op) |> sum
     return num/den
 end
 
 function thermal_average(Op::AbstractArray, ψ::cmps, β::Real)
     K = ψ * ψ |> symmetrize |> Hermitian
     e, v = eigen(-β*K)
-    m = maximum(e)
+    m = maximum(e) ; e = e .- m
     Op = v' * Op * v
-    den = exp.(e .- m) |> sum
-    num = exp.(e .- m) .* diag(Op) |> sum
+    den = exp.(e) |> sum
+    num = exp.(e) .* diag(Op) |> sum
     return num/den
 end
-
 
 """
 Thermal dynamic quanties =============================================
@@ -165,150 +102,255 @@ function correlation_2time(τ::Number, A::AbstractArray,B::AbstractArray,
                            ψ::cmps, W::cmpo, β::Real)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
-    m = maximum(-β * e)
+    min = minimum(e); e = e .- min
+    #m = maximum(-β * e)
     A = v' * A * v
     B = v' * B * v
-    den = exp.(-β * e .- m) |> sum
+    #den = exp.(-β * e .- m) |> sum
+    den = exp.(-β * e) |> sum
     num = 0.0
     for i = 1: length(e), j = 1: length(e)
-        num += exp(-β*e[i]- m + τ*(e[i] - e[j])) * A[i,j] * B[j,i]
+        #num += exp(-β*e[i]- m + τ*(e[i] - e[j])) * A[i,j] * B[j,i]
+        num += exp(-β*e[i] + τ*(e[i] - e[j])) * A[i,j] * B[j,i]
     end
     return num/den
 end
 
+"""
+check anomalous term of bosonic Masubara correlations
+n = 0  and Em = En terms
+"""
 function check_anomalous_term(A::AbstractArray,B::AbstractArray,
     ψ::cmps, W::cmpo, β::Real)
-    #check anomalous term of bosonic Masubara correlations
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
-    m = maximum(-β * e)
+    min = minimum(e); e = e .- min
+    #m = maximum(-β * e)
     A = v' * A * v
     B = v' * B * v
-    den = exp.(-β * e .- m) |> sum
-
+    #den = exp.(-β * e .- m) |> sum
+    den = exp.(-β * e) |> sum
     c = 0.
     for i = 1: length(e), j = 1: length(e)
         if e[i] == e[j]
-            c +=β*exp(-β*e[j]-m) * A[i,j] * B[j,i]
+            c += exp(-β*e[j]) * A[i,j] * B[j,i]
         end
     end
-    return c       
+    return β*c/den       
 end
 
-function f(b::Real, e1::Real, e2::Real, m::Real)
-    #e^(-b*e1) - e^(-b*e2) / (e2 - e1)
+"""
+A useful function: f = e^(-b*e1) - e^(-b*e2) / (e2 - e1)
+"""
+function diffaddexp(b::Real, e1::Real, e2::Real)
     if abs(e2 - e1) < 1.e-10
-        return exp(-b*e1 - m) * b
+        return exp(-b*e1) * b
     else
-        num = exp(-b*e1 - m) - exp(-b*e2 - m)
+        num = exp(-b*e1) - exp(-b*e2)
         den = e2 - e1
         return num/den
     end
 end
 
+"""
+Masubara frequency Green's functions: defalt type = :b
+"""
 function Masubara_freq_GF(n::Integer, A::AbstractArray,B::AbstractArray,
                         ψ::cmps, W::cmpo, β::Real)
-    # masubara frequency Green's functions for bosonic operators
-    ωn = Masubara_freq(n,β,type=:b)
     λ = 1.0
+    ωn = Masubara_freq(n,β,type=type)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
-    m = maximum(-β * e)
+    min = minimum(e); e = e .- min
+    #m = maximum(-β * e)
     A = v' * A * v
     B = v' * B * v
-    den = exp.(-β * e .- m) |> sum
+    den = exp.(-β * e) |> sum
+    #den = exp.(-β * e .- m) |> sum
     num = 0.0
     if ωn != 0
         for i = 1: length(e), j = 1: length(e)
-            up = exp(-β*e[i]-m) - λ*exp(-β*e[j]-m)
+            up = exp(-β*e[i]) - λ*exp(-β*e[j])
+            #up = exp(-β*e[i]-m) - λ*exp(-β*e[j]-m)
             up = up * A[i,j] * B[j,i]
             down = 1.0im * ωn - e[j] + e[i]
             num += up/down
         end
     else
         for i = 1: length(e), j = 1: length(e)
-            num -= A[i,j]*B[j,i]*f(β,e[i],e[j],m)
+            num -= A[i,j]*B[j,i]*diffaddexp(β,e[i],e[j])
         end
     end
     return num/den
 end
 
-function Masubara_freq_T1(n::Integer, A::AbstractArray,B::AbstractArray,
-    ψ::cmps, W::cmpo, β::Real)
-    # ∑_mn Cmn(iωn)/(Em - En) for bosonic operators
+function Masubara_freq_GF(n::Integer, A::AbstractArray,
+                        ψ::cmps, W::cmpo, β::Real)
+    λ = 1.0
+    ωn = Masubara_freq(n,β,type=type)
+    K = ψ * W * ψ |> symmetrize |> Hermitian
+    e, v = eigen(K)
+    min = minimum(e); e = e .- min
+    #m = maximum(-β * e)
+    A = v' * A * v
+    den = exp.(-β * e) |> sum
+    #den = exp.(-β * e .- m) |> sum
+    num = 0.0
+    if ωn != 0
+        for i = 1: length(e), j = 1: length(e)
+        up = exp(-β*e[i]) - λ*exp(-β*e[j])
+        #up = exp(-β*e[i]-m) - λ*exp(-β*e[j]-m)
+        up = up * A[i,j]' * A[j,i]
+        down = 1.0im * ωn - e[j] + e[i]
+        num += up/down
+    end
+    else
+        for i = 1: length(e), j = 1: length(e)
+            num -= A[i,j]'*A[j,i]*diffaddexp(β,e[i],e[j])
+        end
+    end
+    return num/den
+end
+
+"""
+Masubara frequency G(iωn)/iωn = ∑_mn Cmn(iωn)/(Em - En): defalt type = :b
+"""
+function Masubara_freq_GFdivOmega(n::Integer, A::AbstractArray,B::AbstractArray,
+                                ψ::cmps, W::cmpo, β::Real)
     if n == 0 @error "Error: n should not be 0." end
     ωn = Masubara_freq(n,β,type=:b)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
-    m = maximum(-β * e)
+    min = minimum(e); e = e .- min
+    #m = maximum(-β * e)
     A = v' * A * v
     B = v' * B * v
-    den = exp.(-β * e .- m) |> sum
+    den = exp.(-β * e) |> sum
+    #den = exp.(-β * e .- m) |> sum
     num = 0.0
     for i = 1: length(e), j = 1: length(e)
-        up = A[i,j] * B[j,i] * f(β,e[i],e[j],m)
+        up = A[i,j] * B[j,i] * adffaddexp(β,e[i],e[j])
         down = 1.0im * ωn - e[j] + e[i]
         num += up/down
     end
     return num/den
 end
 
-function spectral_density(ω::Real,A::AbstractArray,B::AbstractArray,
-                             ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.05)
-    # ρ(ω) = 2Imχ(ω) = -2ImG(ω)
+function Masubara_freq_GFdivOmega(n::Integer, A::AbstractArray,
+                                ψ::cmps, W::cmpo, β::Real)
+    if n == 0 @error "Error: n should not be 0." end
+    ωn = Masubara_freq(n,β,type=:b)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
-    m = maximum(-β * e)
+    min = minimum(e); e = e .- min
+    #m = maximum(-β * e)
     A = v' * A * v
-    B = v' * B * v
-    den = exp.(-β * e .- m) |> sum
+    den = exp.(-β * e) |> sum
+    #den = exp.(-β * e .- m) |> sum
     num = 0.0
     for i = 1: length(e), j = 1: length(e)
-        res = exp(-β*e[i]-m) - exp(-β*e[j]-m)
+        up = A[i,j]' * A[j,i] * adffaddexp(β,e[i],e[j])
+        down = 1.0im * ωn - e[j] + e[i]
+        num += up/down
+    end
+    return num/den
+end
+
+"""
+spectral density: ρ(ω) = 2Imχ(ω) = -2ImG(ω)
+"""
+function spectral_density(ω::Real,A::AbstractArray,B::AbstractArray,
+                             ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.001)
+    K = ψ * W * ψ |> symmetrize |> Hermitian
+    e, v = eigen(K)
+    min = minimum(e); e = e .- min
+    #m = maximum(-β * e)
+    A = v' * A * v
+    B = v' * B * v
+    den = exp.(-β * e) |> sum
+    #den = exp.(-β * e .- m) |> sum
+    num = 0.0
+    for i = 1: length(e), j = 1: length(e)
+        res = exp(-β*e[i]) - exp(-β*e[j])
+        #res = exp(-β*e[i]-m) - exp(-β*e[j]-m)
         res = res * A[i,j] * B[j,i] * delta(ω+e[i]-e[j],η)
         num += res
     end
     return 2π*num/den
 end
 
-function structure_factor(ω::Real, A::AbstractArray,B::AbstractArray,
-                        ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.05, method::Symbol=:S)
-    if method == :S
-        K = ψ * W * ψ |> symmetrize |> Hermitian
-        e, v = eigen(K)
-        m = maximum(-β * e)
-        A = v' * A * v
-        B = v' * B * v
-        den = exp.(-β * e .- m) |> sum
-        num = 0.0
-        for i = 1: length(e), j = 1: length(e)
-            num += exp(-β*e[i]-m)*A[i,j]*B[j,i]*delta(ω+e[i]-e[j], η)
-        end
-        return num/den * 2π
-    elseif method == :F 
-        if ω != 0
-            fac = 2/(1 - exp(-β*ω))
-            K = ψ * W * ψ |> symmetrize |> Hermitian
-            e, v = eigen(K)
-            m = maximum(-β * e)
-            A = v' * A * v
-            B = v' * B * v
-            den = exp.(-β * e .- m) |> sum
-            num = 0.0
-            for i = 1: length(e), j = 1: length(e)
-                res = exp(-β*e[i]-m) - exp(-β*e[j]-m)
-                res = res * A[i,j] * B[j,i] * delta(ω+e[i]-e[j],η)
-                num += res
-            end
-            return fac*π*num/den
-        else
-            @error "ω should not be 0!"
-        end
+function spectral_density(ω::Real,A::AbstractArray,
+                        ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.001)
+    K = ψ * W * ψ |> symmetrize |> Hermitian
+    e, v = eigen(K)
+    min = minimum(e); e = e .- min
+    #m = maximum(-β * e)
+    A = v' * A * v
+    den = exp.(-β * e) |> sum
+    #den = exp.(-β * e .- m) |> sum
+    num = 0.0
+    for i = 1: length(e), j = 1: length(e)
+        res = exp(-β*e[i]) - exp(-β*e[j])
+        #res = exp(-β*e[i]-m) - exp(-β*e[j]-m)
+        res = res * A[i,j]' * A[j,i] * delta(ω+e[i]-e[j],η)
+        num += res
+    end
+    return 2π*num/den
+end
+
+"""
+spectral density when A = B'
+"""
+function susceptibility(ω::Real,A::AbstractArray,
+    ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.001)
+    return spectral_density(ω, A, ψ, W, β; η=η)
+end
+
+function susceptibility(ω::Real, A::AbstractArray, B::AbstractArray,
+    ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.001)
+    if A' == B
+        return spectral_density(ω, B, ψ, W, β; η=η)
     else
-        @error "method should be :S for 'spectral representation' 
-                or :F for 'fluctuation-dissipation theorem'."
-    end       
+        @error "A' == B or use spectral_density function"
+    end
 end
 
 
+"""
+structure factor(spectral representation)
+"""
+function structure_factor(ω::Real, A::AbstractArray,B::AbstractArray,
+                        ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.001)
+    K = ψ * W * ψ |> symmetrize |> Hermitian
+    e, v = eigen(K)
+    min = minimum(e); e = e .- min
+    #m = maximum(-β * e)
+    A = v' * A * v
+    B = v' * B * v
+    den = exp.(-β * e) |> sum
+    #den = exp.(-β * e .- m) |> sum
+    num = 0.0
+    for i = 1: length(e), j = 1: length(e)
+        num += exp(-β*e[i])*A[i,j]*B[j,i]*delta(ω+e[i]-e[j], η)
+        #num += exp(-β*e[i]-m)*A[i,j]*B[j,i]*delta(ω+e[i]-e[j], η)
+    end
+    return num/den * 2π
+end
+
+function structure_factor(ω::Real, A::AbstractArray,
+                        ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.001)
+    K = ψ * W * ψ |> symmetrize |> Hermitian
+    e, v = eigen(K)
+    min = minimum(e); e = e .- min
+    #m = maximum(-β * e)
+    A = v' * A * v
+    den = exp.(-β * e) |> sum
+    #den = exp.(-β * e .- m) |> sum
+    num = 0.0
+    for i = 1: length(e), j = 1: length(e)
+        num += exp(-β*e[i])*A[i,j]'*A[j,i]*delta(ω+e[i]-e[j], η)
+        #num += exp(-β*e[i]-m)*A[i,j]*B[j,i]*delta(ω+e[i]-e[j], η)
+    end
+    return num/den * 2π
+end
 #end  # module PhysicalObservables
