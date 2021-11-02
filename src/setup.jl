@@ -15,8 +15,8 @@ end
 
 function toarray(ψ::cmps)
     sq = size(ψ.Q)
-    sr = size(ψ.R)
-    if length(sr) == 2
+    sr = size(ψ.R) #sr: dimension of ψ.R array
+    if length(sr) == 2 #sr = 2, ψ.R is a matrix
         Q = reshape(ψ.Q, sq[1],sq[2],1)
         R = reshape(ψ.R, sr[1],sr[2],1)
     elseif length(sr) > 2
@@ -28,6 +28,11 @@ function toarray(ψ::cmps)
     return cat(Q,R,dims=3)
 end
 
+function tovector(ψ::cmps)
+    arr = ψ |> toarray
+    dim = size(arr)
+    return vec(arr), dim
+end
 
 function tocmps(A::Array{T, 3}) where T <: Number
     d = size(A)[3]
@@ -37,6 +42,12 @@ function tocmps(A::Array{T, 3}) where T <: Number
         return cmps(A[:,:,1],A[:,:,2:end])
     end
 end
+
+function tocmps(V::Vector{T}, dim::Tuple) where T<:Number
+    arr = reshape(V, dim)
+    return tocmps(arr)
+end
+
 
 """multiplications of cmps and cmpo"""
 function *(sl::cmps, sr::cmps)

@@ -16,7 +16,8 @@ export pauli, delta, Masubara_freq, ⊗
 export symmetrize, trexp, value, logtrexp
 export gradient_function, hessian_function
 export cmps, cmpo
-export toarray, init_cmps, ovlp, tocmps
+export toarray, tovector, tocmps
+export init_cmps, ovlp
 
 export make_operator
 export TFIsing, XYmodel, HeisenbergModel
