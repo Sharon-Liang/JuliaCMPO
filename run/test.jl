@@ -21,9 +21,8 @@ function converttime(t::Number)
     end
 end
 
-
-"""timing g = 1.0, β = 20"""
-
+println("2021-11-02:test NewtonTrustRegion time")
+println("χ = 8; β = 1.0")
 χ = 8; β = 1.0
 w = TFIsing(1.0, 1.0);
 arr = init_cmps(χ,w) |> toarray;
@@ -46,4 +45,3 @@ t1 = time();
 op2 = optimize(f2, g2, h, vec, NewtonTrustRegion());
 t2 = time();
 println("NewtonTrustRegion ", converttime(t2-t1))
-
