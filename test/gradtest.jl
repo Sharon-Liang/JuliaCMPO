@@ -1,6 +1,6 @@
 #https://github.com/FluxML/Zygote.jl/blob/master/test/gradcheck.jl
 
-function ngradient(f, xs::AbstractArray...)
+function ngradient(f, xs::AbstractArray...) #finite difference
     grads = zero.(xs)
     for (x, Δ) in zip(xs, grads), i in 1:length(x)
       δ = sqrt(eps())
@@ -24,6 +24,7 @@ end
 gradtest(f, xs::AbstractArray...) = gradcheck((xs...) -> sum(sin.(f(xs...))), xs...)
 #gradtest(f, xs::AbstractArray...) = gradcheck((xs...) -> sum( abs.(sin.(f(xs...)))), xs...)
 gradtest(f, dims...) = gradtest(f, rand.(Float64, dims)...)
+
 
 Dtype = [Float64] #Fail for ComplexF32
 for dtype in Dtype
