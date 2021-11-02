@@ -85,9 +85,13 @@ function spectral_density(J::Real, ω::Real, β::Real; η::Float64=0.05,Γ::Real
     end
 end
 
+function susceptibility(J::Real, ω::Real, β::Real; η::Float64=0.05,Γ::Real=1.)
+    return spectral_density(J, ω, β; η=η,Γ=Γ)
+end
+
 function structure_factor(J::Real, ω::Real, β::Real; η::Float64=0.05,Γ::Real=1.)
     if J/Γ == 0.
-        return 2/(1-exp(-β*ω))*spectral_density(J,ω,β,Γ=Γ,η=η)
+        return 1/(1-exp(-β*ω))*spectral_density(J,ω,β,Γ=Γ,η=η)
     elseif J/Γ == 1.
         if ω == 0.
             g0 = 0.858714569; zc = J^(-1/4)
