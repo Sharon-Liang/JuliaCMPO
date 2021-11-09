@@ -1,12 +1,12 @@
 #module PhysicalObservables
 #include("Setup.jl")
 
-function make_operator(Op::AbstractArray, dim::Int)
+function make_operator(Op::Matrix{<:Number}, dim::Int64)
     eye = Matrix(1.0I, dim, dim)
     return eye ⊗ Op ⊗ eye
 end
 
-function make_operator(Op::AbstractArray, ψ::cmps)
+function make_operator(Op::Matrix{<:Number}, ψ::CMPS)
     eye = Matrix(1.0I, size(ψ.Q))
     return eye ⊗ Op ⊗ eye
 end
@@ -14,7 +14,7 @@ end
 """
 The thermal average of local opeartors ===============================
 """
-function thermal_average(Op::AbstractArray, ψ::cmps, W::cmpo, β::Real)
+function thermal_average(Op::Matrix{<:Number}, ψ::CMPS, W::CMPO, β::Real)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(-β*K)
     m = maximum(e)
@@ -24,7 +24,7 @@ function thermal_average(Op::AbstractArray, ψ::cmps, W::cmpo, β::Real)
     return num/den
 end
 
-function thermal_average(Op::AbstractArray, ψ::cmps, β::Real)
+function thermal_average(Op::Matrix{<:Number}, ψ::CMPS, β::Real)
     K = ψ * ψ |> symmetrize |> Hermitian
     e, v = eigen(-β*K)
     m = maximum(e) ; e = e .- m
@@ -37,7 +37,7 @@ end
 """
 Thermal dynamic quanties =============================================
 """
-function partitian(ψ::cmps, W::cmpo, β::Real)
+function partitian(ψ::CMPS, W::CMPO, β::Real)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     H = ψ * ψ |> symmetrize |> Hermitian
     num = trexp(-β*K)
@@ -45,7 +45,7 @@ function partitian(ψ::cmps, W::cmpo, β::Real)
     return exp(num.max - den.max) * num.res/den.res
 end
 
-function partitian!(ψ::cmps, W::cmpo, β::Real)
+function partitian!(ψ::CMPS, W::CMPO, β::Real)
     """
     no correspondence to a physical partitian function
     (ψ is not a normalized eigen state)
@@ -54,29 +54,29 @@ function partitian!(ψ::cmps, W::cmpo, β::Real)
     return trexp(-β*K)
 end
 
-function free_energy(ψ::cmps, W::cmpo, β::Real)
+function free_energy(ψ::CMPS, W::CMPO, β::Real)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     H = ψ * ψ |> symmetrize |> Hermitian
     res = logtrexp(-β*K)- logtrexp(-β*H)
     return -1/β * res
 end
 
-function free_energy(param::Array{T,3} where T<:Number, W::cmpo, β::Real)
+function free_energy(param::Array{<:Number,3}, W::CMPO, β::Real)
     free_energy(tocmps(param), W, β)
 end
 
-function free_energy(param::Vector{T} where T<:Number, dim::Tuple, W::cmpo, β::Real)
+function free_energy(param::Vector{<:Number}, dim::Tuple, W::CMPO, β::Real)
     free_energy(tocmps(param, dim), W, β)
 end
 
-function energy(ψ::cmps, W::cmpo, β::Real)
+function energy(ψ::CMPS, W::CMPO, β::Real)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     H = ψ * ψ |> symmetrize |> Hermitian
     eng = thermal_average(K, ψ, W, β) - thermal_average(H, ψ, β)
     return eng
 end
 
-function specific_heat(ψ::cmps, W::cmpo, β::Real; method::Symbol = :ndiff)
+function specific_heat(ψ::CMPS, W::CMPO, β::Real; method::Symbol = :ndiff)
     if method == :adiff
         K = ψ * W * ψ |> symmetrize |> Hermitian
         H = ψ * ψ |> symmetrize |> Hermitian
@@ -93,7 +93,7 @@ function specific_heat(ψ::cmps, W::cmpo, β::Real; method::Symbol = :ndiff)
 end
 
 
-function entropy(ψ::cmps, W::cmpo, β::Real)
+function entropy(ψ::CMPS, W::CMPO, β::Real)
     s = energy(ψ,W,β) - free_energy(ψ,W,β)
     return β*s
 end
@@ -102,8 +102,8 @@ end
 """
 The local two-time correlation functions
 """
-function correlation_2time(τ::Number, A::AbstractArray,B::AbstractArray,
-                           ψ::cmps, W::cmpo, β::Real)
+function correlation_2time(τ::Number, A::Matrix{<:Number},B::Matrix{<:Number},
+                           ψ::CMPS, W::CMPO, β::Real)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
     min = minimum(e); e = e .- min
@@ -124,8 +124,8 @@ end
 check anomalous term of bosonic Masubara correlations
 n = 0  and Em = En terms
 """
-function check_anomalous_term(A::AbstractArray,B::AbstractArray,
-    ψ::cmps, W::cmpo, β::Real)
+function check_anomalous_term(A::Matrix{<:Number},B::Matrix{<:Number},
+    ψ::CMPS, W::CMPO, β::Real)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
     min = minimum(e); e = e .- min
@@ -159,8 +159,8 @@ end
 """
 Masubara frequency Green's functions: defalt type = :b
 """
-function Masubara_freq_GF(n::Integer, A::AbstractArray,B::AbstractArray,
-                        ψ::cmps, W::cmpo, β::Real)
+function Masubara_freq_GF(n::Integer, A::Matrix{<:Number},B::Matrix{<:Number},
+                        ψ::CMPS, W::CMPO, β::Real)
     λ = 1.0
     ωn = Masubara_freq(n,β,type=type)
     K = ψ * W * ψ |> symmetrize |> Hermitian
@@ -188,8 +188,8 @@ function Masubara_freq_GF(n::Integer, A::AbstractArray,B::AbstractArray,
     return num/den
 end
 
-function Masubara_freq_GF(n::Integer, A::AbstractArray,
-                        ψ::cmps, W::cmpo, β::Real)
+function Masubara_freq_GF(n::Integer, A::Matrix{<:Number},
+                        ψ::CMPS, W::CMPO, β::Real)
     λ = 1.0
     ωn = Masubara_freq(n,β,type=type)
     K = ψ * W * ψ |> symmetrize |> Hermitian
@@ -219,8 +219,8 @@ end
 """
 Masubara frequency G(iωn)/iωn = ∑_mn Cmn(iωn)/(Em - En): defalt type = :b
 """
-function Masubara_freq_GFdivOmega(n::Integer, A::AbstractArray,B::AbstractArray,
-                                ψ::cmps, W::cmpo, β::Real)
+function Masubara_freq_GFdivOmega(n::Integer, A::Matrix{<:Number},B::Matrix{<:Number},
+                                ψ::CMPS, W::CMPO, β::Real)
     if n == 0 @error "Error: n should not be 0." end
     ωn = Masubara_freq(n,β,type=:b)
     K = ψ * W * ψ |> symmetrize |> Hermitian
@@ -240,8 +240,8 @@ function Masubara_freq_GFdivOmega(n::Integer, A::AbstractArray,B::AbstractArray,
     return num/den
 end
 
-function Masubara_freq_GFdivOmega(n::Integer, A::AbstractArray,
-                                ψ::cmps, W::cmpo, β::Real)
+function Masubara_freq_GFdivOmega(n::Integer, A::Matrix{<:Number},
+                                ψ::CMPS, W::CMPO, β::Real)
     if n == 0 @error "Error: n should not be 0." end
     ωn = Masubara_freq(n,β,type=:b)
     K = ψ * W * ψ |> symmetrize |> Hermitian
@@ -263,8 +263,8 @@ end
 """
 spectral density: ρ(ω) = 2Imχ(ω) = -2ImG(ω)
 """
-function spectral_density(ω::Real,A::AbstractArray,B::AbstractArray,
-                             ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.001)
+function spectral_density(ω::Real,A::Matrix{<:Number},B::Matrix{<:Number},
+                             ψ::CMPS, W::CMPO, β::Real; η::Float64 = 0.001)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
     min = minimum(e); e = e .- min
@@ -283,8 +283,8 @@ function spectral_density(ω::Real,A::AbstractArray,B::AbstractArray,
     return 2π*num/den
 end
 
-function spectral_density(ω::Real,A::AbstractArray,
-                        ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.001)
+function spectral_density(ω::Real,A::Matrix{<:Number},
+                        ψ::CMPS, W::CMPO, β::Real; η::Float64 = 0.001)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
     min = minimum(e); e = e .- min
@@ -305,13 +305,13 @@ end
 """
 spectral density when A = B'
 """
-function susceptibility(ω::Real,A::AbstractArray,
-    ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.001)
+function susceptibility(ω::Real,A::Matrix{<:Number},
+    ψ::CMPS, W::CMPO, β::Real; η::Float64 = 0.001)
     return spectral_density(ω, A, ψ, W, β; η=η)
 end
 
-function susceptibility(ω::Real, A::AbstractArray, B::AbstractArray,
-    ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.001)
+function susceptibility(ω::Real, A::Matrix{<:Number}, B::Matrix{<:Number},
+    ψ::CMPS, W::CMPO, β::Real; η::Float64 = 0.001)
     if A' == B
         return spectral_density(ω, B, ψ, W, β; η=η)
     else
@@ -323,8 +323,8 @@ end
 """
 structure factor(spectral representation)
 """
-function structure_factor(ω::Real, A::AbstractArray,B::AbstractArray,
-                        ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.001)
+function structure_factor(ω::Real, A::Matrix{<:Number},B::Matrix{<:Number},
+                        ψ::CMPS, W::CMPO, β::Real; η::Float64 = 0.001)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
     min = minimum(e); e = e .- min
@@ -341,8 +341,8 @@ function structure_factor(ω::Real, A::AbstractArray,B::AbstractArray,
     return num/den * 2π
 end
 
-function structure_factor(ω::Real, A::AbstractArray,
-                        ψ::cmps, W::cmpo, β::Real; η::Float64 = 0.001)
+function structure_factor(ω::Real, A::Matrix{<:Number},
+                        ψ::CMPS, W::CMPO, β::Real; η::Float64 = 0.001)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
     min = minimum(e); e = e .- min

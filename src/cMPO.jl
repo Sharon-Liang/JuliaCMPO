@@ -1,7 +1,7 @@
 module cMPO
 __precompile__()
 
-using LinearAlgebra
+using LinearAlgebra, GenericLinearAlgebra
 using Zygote, FiniteDifferences
 using Optim
 using Random; Random.seed!()
@@ -15,7 +15,7 @@ export pauli, delta, Masubara_freq, ⊗
 
 export symmetrize, trexp, value, logtrexp
 export gradient_function, hessian_function
-export cmps, cmpo
+export CMPS, CMPO
 export toarray, tovector, tocmps
 export init_cmps, ovlp
 
