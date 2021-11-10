@@ -26,53 +26,53 @@ function Masubara_freq(n::Int64, β::Real; type::Symbol=:b)
     return N*π/β
 end
 
-function ⊗(A::AbstractMatrix, B::AbstractMatrix)
+function ⊗(A::Matrix{<:Number}, B::Matrix{<:Number})
     (r1, c1) = size(A)
     (r2,c2) = size(B)
     return reshape(ein"ij,kl->kilj"(A, B), r1*r2, c1*c2)
 end
 
-function ⊗(A::AbstractMatrix, B::Array{T,3} where T) 
+function ⊗(A::Matrix{<:Number}, B::Array{<:Number,3})
     (r1,c1) = size(A)
     (r2,c2,d) = size(B)
     return reshape(ein"ij,klm->kiljm"(A, B), r1*r2, c1*c2, d)
 end
 
-function ⊗(A::Array{T,3} where T, B::AbstractMatrix) 
+function ⊗(A::Array{<:Number,3}, B::Matrix{<:Number})
     (r1,c1,d) = size(A)
     (r2,c2) = size(B)
     return reshape(ein"ijm,kl->kiljm"(A, B), r1*r2, c1*c2, d)
 end
 
-function ⊗(A::Array{T1,3} where T1 , B::Array{T2,3} where T2)
+function ⊗(A::Array{<:Number,3}, B::Array{<:Number,3})
     (r1,c1,d1) = size(A)
     (r2,c2,d2) = size(B)
     if d1 != d2 @error "Dimension mismatch!" end
     return reshape(ein"ijm,klm->kilj"(A, B), r1*r2, c1*c2)
 end
 
-function ⊗(A::Array{T1,4} where T1, B::Array{T2,3} where T2)
+function ⊗(A::Array{<:Number,4}, B::Array{<:Number,3})
     (r1,c1,d1,f) = size(A)
     (r2,c2,d2) = size(B)
     if f != d2 @error "Dimension mismatch!" end
     return reshape(ein"ijnm,klm->kiljn"(A, B), r1*r2, c1*c2, d1)    
 end
 
-function ⊗(A::Array{T1,3} where T1, B::Array{T2,4} where T2)
+function ⊗(A::Array{<:Number,3}, B::Array{<:Number,4}) 
     (r1,c1,d1) = size(A)
     (r2,c2,d2,f) = size(B)
     if d1 != d2 @error "Dimension mismatch!" end
     return reshape(ein"ijm,klmn->kiljn"(A, B), r1*r2, c1*c2, f)    
 end
 
-function ⊗(A::Array{T1,4} where T1, B::Array{T2,4} where T2)
+function ⊗(A::Array{<:Number,4}, B::Array{<:Number,4})
     (r1,c1,d1,f1) = size(A)
     (r2,c2,d2,f2) = size(B)
     if f1 != d2 @error "Dimension mismatch!" end
     return reshape(ein"ijpm,klmq->kiljpq"(A, B), r1*r2, c1*c2, d1, f2)    
 end
 
-function symmetrize(A::AbstractMatrix)
+function symmetrize(A::T where T<:AbstractMatrix)
     (A + A')/2
 end
 
@@ -85,37 +85,37 @@ function value(x::trexp)
     exp(x.max) * x.res
 end
 
-function trexp(A::AbstractMatrix)
+function trexp(A::T where T<:AbstractMatrix)
     #if ishermitian(A) == false
     if isapprox(A,A') == false
         error("The input matrix should be hermitian")
     end
     A = symmetrize(A) |> Hermitian
-    val= eigvals(A)
+    val = eigvals(A)
     max = maximum(val)
     res = exp.(val .- max) |> sum
-    trexp(max, res)
+    return trexp(max, res)
 end
 
-function logtrexp(A::AbstractMatrix)
+function logtrexp(A::T where T<:AbstractMatrix)
     #if ishermitian(A) == false
     if isapprox(A,A') == false
         error("The input matrix should be hermitian")
     end
     A = symmetrize(A) |> Hermitian
-    eigvals(A) |> logsumexp
+    return eigvals(A) |> logsumexp
 end
 
 """function manipulation"""
 function gradient_function(f::Function)
-    function func(val::AbstractArray, var::AbstractArray)
+    function func(val::Array{T}, var::Array{T}) where T<:Number
         val[1:end] = gradient(f,var)[1][1:end]
     end
     return func
 end
 
 function hessian_function(f::Function)
-    function func(val::AbstractMatrix, var::AbstractArray)
+    function func(val::Matrix{T}, var::Vector{T}) where T<:Number
         val[1:end] = hessian(f,var)[1:end]
     end
     return func

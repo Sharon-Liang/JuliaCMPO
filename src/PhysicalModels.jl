@@ -11,7 +11,7 @@ function TFIsing(J::Real, Γ::Real; field::Symbol=:N, η::Float64 = 1.e-2)
     else
         h = η .* pauli(field)
     end
-    return cmpo(Γ*pauli(:x)+h, √J*pauli(:z), √J*pauli(:z), zeros(2,2))
+    return CMPO(Γ*pauli(:x)+h, √J*pauli(:z), √J*pauli(:z), zeros(2,2))
 end
 
 """

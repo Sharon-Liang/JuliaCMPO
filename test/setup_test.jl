@@ -28,11 +28,11 @@ for dtype in Dtype
         end
 
         @testset "⊗" begin
-            function otimes(A::AbstractMatrix, B::AbstractMatrix)
+            function otimes(A::Matrix{<:Number}, B::Matrix{<:Number})
                 kron(A,B)
             end
         
-            function otimes(A::AbstractMatrix, B::Array{T,3} where T)
+            function otimes(A::Matrix{<:Number}, B::Array{<:Number,3})
                 χ1 = size(A)[1]; χ2 = size(B)[1]; D = size(B)[3]
                 res = zeros(eltype(A), χ1*χ2, χ1*χ2, D)
                 for d = 1:D
@@ -41,7 +41,7 @@ for dtype in Dtype
                 return res
             end
         
-            function otimes(A::Array{T,3} where T, B::AbstractMatrix)
+            function otimes(A::Array{<:Number,3}, B::Matrix{<:Number})
                 χ1 = size(A)[1]; χ2 = size(B)[1]; D = size(A)[3]
                 res = zeros(eltype(A), χ1*χ2, χ1*χ2, D)
                 for d = 1:D
@@ -50,7 +50,7 @@ for dtype in Dtype
                 return res
             end
         
-            function otimes(A::Array{T1,3} where T1, B::Array{T2,3} where T2)
+            function otimes(A::Array{<:Number,3}, B::Array{<:Number,3})
                 χ1 = size(A)[1]; χ2 = size(B)[1]; D = size(A)[3]
                 res = zeros(eltype(A), χ1*χ2, χ1*χ2)
                 for d = 1:D
@@ -59,7 +59,7 @@ for dtype in Dtype
                 return res
             end
         
-            function otimes(A::Array{T1,4} where T1, B::Array{T2,3} where T2)
+            function otimes(A::Array{<:Number,4}, B::Array{<:Number,3})
                 χ1 = size(A)[1]; χ2 = size(B)[1]; D = size(B)[3]
                 res = zeros(eltype(A), χ1*χ2, χ1*χ2,D)
                 for d = 1:D
@@ -68,7 +68,7 @@ for dtype in Dtype
                 return res
             end
         
-            function otimes(A::Array{T1,3} where T1, B::Array{T2,4} where T2)
+            function otimes(A::Array{<:Number,3}, B::Array{<:Number,4})
                 χ1 = size(A)[1]; χ2 = size(B)[1]; D = size(A)[3]
                 res = zeros(eltype(A),χ1*χ2, χ1*χ2, D)
                 for d = 1:D
@@ -77,7 +77,7 @@ for dtype in Dtype
                 return res
             end
         
-            function otimes(A::Array{T1,4} where T1, B::Array{T2,4} where T2)
+            function otimes(A::Array{<:Number,4}, B::Array{<:Number,4})
                 χ1 = size(A)[1]; χ2 = size(B)[1]; D = size(A)[3]
                 res = zeros(eltype(A), χ1*χ2, χ1*χ2, D, D)
                 for d1 = 1:D, d2 = 1:D
@@ -86,7 +86,7 @@ for dtype in Dtype
                 return res
             end
 
-            function testotimes(A::AbstractArray, B::AbstractArray)
+            function testotimes(A::T1 where T1<:AbstractArray, B::T2 where T2<:AbstractArray)
                 return all(isapprox.(A⊗B, otimes(A,B)))
             end
 
@@ -105,8 +105,8 @@ for dtype in Dtype
         @testset "multiplications of cmps and cmpo: D-1 = 1" begin
             x = rand(dtype,2,2) |> symmetrize
             z = rand(dtype,2,2) |> symmetrize
-            s = cmps(x, z)
-            o = cmpo(x, x, z, zeros(dtype,2,2))
+            s = CMPS(x, z)
+            o = CMPO(x, x, z, zeros(dtype,2,2))
 
             s_arr = zeros(dtype,2,2,2)
             s_arr[:,:,1] = x; s_arr[:,:,2] = z
@@ -148,8 +148,8 @@ for dtype in Dtype
             z = rand(dtype,2,2) |> symmetrize
             R = zeros(dtype,2,2,2); R[:,:,1] = x ; R[:,:,2] = x
             L = zeros(dtype,2,2,2); L[:,:,1] = z ; L[:,:,2] = z
-            s = cmps(x, R)
-            o = cmpo(x, R, L, zeros(dtype,2,2,2,2))
+            s = CMPS(x, R)
+            o = CMPO(x, R, L, zeros(dtype,2,2,2,2))
 
             s_arr = zeros(dtype,2,2,3)
             s_arr[:,:,1] = x; s_arr[:,:,2] = x; s_arr[:,:,3] = x;
