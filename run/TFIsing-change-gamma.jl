@@ -26,13 +26,13 @@ function converttime(t::Number)
     end
 end
 
-println("2021-11-02: TFIsing-change-gamma.jl")
-println("NewtonTrustRegion")
+println("2021-11-05: TFIsing-change-gamma.jl")
+println("χ = 16")
 
-χ = 8
+χ = 16
 x = make_operator(pauli(:x),χ)
 
-gamma = [1.0, 1.5, 2.0]
+gamma = [0.5, 1.0, 1.5, 2.0]
 beta = [i for i in range(1.,40.,step=0.1)]
 
 pcollect1 = Vector{String}(undef, length(gamma))
@@ -40,9 +40,9 @@ pcollect2 = Vector{String}(undef, length(gamma))
 upcollect = Vector{String}(undef, length(gamma))
 
 for i = 1:length(gamma)
-    pcollect1[i] = @sprintf "../data/Ng_%.1f.jld" gamma[i]
-    pcollect2[i] = @sprintf "../data/Nf_and_sx_g_%.1f.txt" gamma[i]
-    upcollect[i] = @sprintf "../data/Nug_%.1f.jld" gamma[i]
+    pcollect1[i] = @sprintf "../data/chi16/g_%.1f.jld" gamma[i]
+    pcollect2[i] = @sprintf "../data/chi16/f_and_sx_g_%.1f.txt" gamma[i]
+    upcollect[i] = @sprintf "../data/chi16/ug_%.1f.jld" gamma[i]
 end 
 
 for path in pcollect1
@@ -66,19 +66,17 @@ for j = 1:length(gamma)
     g = gamma[j]
     w = TFIsing(1.0, g)
     arr = init_cmps(χ,w) |> toarray
-    path1 = @sprintf "../data/Ng_%.1f.jld" g
-    path2 = @sprintf "../data/Nf_and_sx_g_%.1f.txt" g
+    path1 = @sprintf "../data/chi16/g_%.1f.jld" g
+    path2 = @sprintf "../data/chi16/f_and_sx_g_%.1f.txt" g
     
     #output file path
-    upath = @sprintf "../data/Nug_%.1f.jld" g
+    upath = @sprintf "../data/chi16/ug_%.1f.jld" g
 
     for i = 1:length(beta)
         β = beta[i]; key = string(β)
         f = arr -> free_energy(arr, w, β)
-        g! = gradient_function(f)
-        h! = hessian_function(f)
-        op = optimize(f, g!, h!, arr, NewtonTrustRegion(),Optim.Options(iterations = 10000))
-        #op = optimize(f,gf!, arr, LBFGS(),Optim.Options(iterations = 10000))
+        gf! = gradient_function(f)
+        op = optimize(f,gf!, arr, LBFGS(),Optim.Options(iterations = 10000))
         arr = op.minimizer
         res = (minimum(op), arr, Optim.converged(op))
         if res[3] == false 
