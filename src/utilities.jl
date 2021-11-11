@@ -26,53 +26,53 @@ function Masubara_freq(n::Int64, β::Real; type::Symbol=:b)
     return N*π/β
 end
 
-function ⊗(A::Matrix{<:Number}, B::Matrix{<:Number})
+function ⊗(A::Matrix, B::Matrix)
     (r1, c1) = size(A)
     (r2,c2) = size(B)
     return reshape(ein"ij,kl->kilj"(A, B), r1*r2, c1*c2)
 end
 
-function ⊗(A::Matrix{<:Number}, B::Array{<:Number,3})
+function ⊗(A::Matrix, B::Array{T,3} where T)
     (r1,c1) = size(A)
     (r2,c2,d) = size(B)
     return reshape(ein"ij,klm->kiljm"(A, B), r1*r2, c1*c2, d)
 end
 
-function ⊗(A::Array{<:Number,3}, B::Matrix{<:Number})
+function ⊗(A::Array{T,3} where T, B::Matrix)
     (r1,c1,d) = size(A)
     (r2,c2) = size(B)
     return reshape(ein"ijm,kl->kiljm"(A, B), r1*r2, c1*c2, d)
 end
 
-function ⊗(A::Array{<:Number,3}, B::Array{<:Number,3})
+function ⊗(A::Array{T,3} where T, B::Array{T,3} where T)
     (r1,c1,d1) = size(A)
     (r2,c2,d2) = size(B)
     if d1 != d2 @error "Dimension mismatch!" end
     return reshape(ein"ijm,klm->kilj"(A, B), r1*r2, c1*c2)
 end
 
-function ⊗(A::Array{<:Number,4}, B::Array{<:Number,3})
+function ⊗(A::Array{T,4} where T, B::Array{T,3} where T)
     (r1,c1,d1,f) = size(A)
     (r2,c2,d2) = size(B)
     if f != d2 @error "Dimension mismatch!" end
     return reshape(ein"ijnm,klm->kiljn"(A, B), r1*r2, c1*c2, d1)    
 end
 
-function ⊗(A::Array{<:Number,3}, B::Array{<:Number,4}) 
+function ⊗(A::Array{T,3} where T, B::Array{T,4} where T) 
     (r1,c1,d1) = size(A)
     (r2,c2,d2,f) = size(B)
     if d1 != d2 @error "Dimension mismatch!" end
     return reshape(ein"ijm,klmn->kiljn"(A, B), r1*r2, c1*c2, f)    
 end
 
-function ⊗(A::Array{<:Number,4}, B::Array{<:Number,4})
+function ⊗(A::Array{T,4} where T, B::Array{T,4} where T)
     (r1,c1,d1,f1) = size(A)
     (r2,c2,d2,f2) = size(B)
     if f1 != d2 @error "Dimension mismatch!" end
     return reshape(ein"ijpm,klmq->kiljpq"(A, B), r1*r2, c1*c2, d1, f2)    
 end
 
-function symmetrize(A::T where T<:AbstractMatrix)
+function symmetrize(A::Matrix)
     (A + A')/2
 end
 
@@ -85,7 +85,7 @@ function value(x::trexp)
     exp(x.max) * x.res
 end
 
-function trexp(A::T where T<:AbstractMatrix)
+function trexp(A::Matrix)
     #if ishermitian(A) == false
     if isapprox(A,A') == false
         error("The input matrix should be hermitian")
@@ -97,7 +97,7 @@ function trexp(A::T where T<:AbstractMatrix)
     return trexp(max, res)
 end
 
-function logtrexp(A::T where T<:AbstractMatrix)
+function logtrexp(A::Matrix)
     #if ishermitian(A) == false
     if isapprox(A,A') == false
         error("The input matrix should be hermitian")
