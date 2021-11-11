@@ -8,25 +8,7 @@ using JLD, HDF5
 using Printf
 """
 
-"""Convert time t in seconds to DD:HH:MM:SS"""
-function converttime(t::Number)
-    (m, s) = divrem(t, 60)
-    (h, m) = divrem(m, 60)
-    (d, h) = divrem(m, 24)
-    if d == 0
-        if h == 0
-            if m == 0 return @sprintf "time=%.3fs" s
-            else return @sprintf "time=%imin %.3f s" m s
-            end
-        else
-            return @sprintf "time=%ih %imin %.3fs" h m s
-        end
-    else
-        return @sprintf "time=%id %ih %imin %.3fs" d h m s
-    end
-end
-
-println("2021-11-05: TFIsing-change-gamma.jl")
+println("2021-11-10: TFIsing-change-gamma.jl")
 println("χ = 16")
 
 χ = 16
@@ -60,7 +42,6 @@ for path in upcollect
     end
 end
 
-start = time()
 for j = 1:length(gamma)
     t1 = time()
     g = gamma[j]
@@ -104,13 +85,11 @@ for j = 1:length(gamma)
             writedlm(file2,[β f_exa minimum(op) f2 sx_exa sx])
         end
     end
-    t2 = time()
     println("finish Γ/J = ", g)
-    println(converttime(t2 - t1))
+
 end
-finish = time()
 
 println("beta in range (", minimum(beta)," , ",maximum(beta),")")
 println("Finish!")
-println(converttime(finish - start))
+
 
