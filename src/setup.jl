@@ -7,16 +7,16 @@ struct CMPS
 end
 
 struct CMPO
-    Q::Array{<:Number}  # onsite
-    R::Array{<:Number}  # interaction, column vector
-    L::Array{<:Number}  # interaction, row vector
-    P::Array{<:Number}  # long-range
+    Q::Array{<:Number}  #onsite
+    R::Array{<:Number}  #interaction, column vector
+    L::Array{<:Number}  #interaction, row vector
+    P::Array{<:Number}  #long-range
 end
 
 function toarray(ψ::CMPS)
     sq = size(ψ.Q)
-    sr = size(ψ.R) #sr: dimension of ψ.R array
-    if length(sr) == 2 #sr = 2, ψ.R is a matrix
+    sr = size(ψ.R)  #sr: dimension of ψ.R array
+    if length(sr) == 2  #sr = 2, ψ.R is a matrix
         Q = reshape(ψ.Q, sq[1],sq[2],1)
         R = reshape(ψ.R, sr[1],sr[2],1)
     elseif length(sr) > 2
@@ -34,7 +34,7 @@ function tovector(ψ::CMPS)
     return vec(arr), dim
 end
 
-function tocmps(A::Array{<:Number,3})
+function tocmps(A::Array{T,3} where T)
     d = size(A)[3]
     if d == 2
         return CMPS(A[:,:,1],A[:,:,2])
@@ -43,7 +43,7 @@ function tocmps(A::Array{<:Number,3})
     end
 end
 
-function tocmps(V::Vector{<:Number}, dim::Tuple)
+function tocmps(V::Vector , dim::Tuple)
     arr = reshape(V, dim)
     return tocmps(arr)
 end
