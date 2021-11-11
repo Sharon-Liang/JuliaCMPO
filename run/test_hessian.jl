@@ -36,7 +36,7 @@ function TFIsing(J::Real, Γ::Real; field::Symbol=:N, η::Float64 = 1.e-2)
     else
         h = η .* pauli(field)
     end
-    return cmpo(Γ*pauli(:x)+h, √J*pauli(:z), √J*pauli(:z), zeros(2,2))
+    return CMPO(Γ*pauli(:x)+h, √J*pauli(:z), √J*pauli(:z), zeros(2,2))
 end
 
 function init_cmps(χ::Int64, W::CMPO)
@@ -150,11 +150,11 @@ function tocmps(A::Array{<:Number,3})
     end
 end
 
-function symmetrize(A::Matrix{<:Number})
+function symmetrize(A::T where T<:AbstractMatrix)
     (A + A')/2
 end
 
-function logtrexp(A::Matrix{<:Number})
+function logtrexp(A::T where T<:AbstractMatrix)
     #if ishermitian(A) == false
     if isapprox(A,A') == false
         error("The input matrix should be hermitian")
@@ -174,10 +174,17 @@ function free_energy(param::Array{<:Number,3}, W::CMPO, β::Real)
     free_energy(tocmps(param), W, β)
 end
 
+hessian_reverse(f, x::AbstractArray) = jacobian(x -> gradient(f, x)[1], x)[1]
 
 """
 test begin: compare gradient
 """
+w = TFIsing(1.0,1.0)
+arr = init_cmps(2,w) |> toarray |> vec
+f = x -> free_energy(reshape(x,2,2,2), w, 20)
+
+
+
 function test2(A::AbstractArray)
     ψ = A |> tocmps  
     K = ψ * w * ψ
@@ -246,9 +253,7 @@ end
 
 
 
-χ = 2; β = 20
-w = TFIsing(1.0,1.0)
-arr = init_cmps(χ,w) |> toarray
+
 
 f1 = x -> free_energy(x, w, β)
 
