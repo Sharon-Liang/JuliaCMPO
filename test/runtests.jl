@@ -1,17 +1,10 @@
-using Test
-using Zygote
-using Optim
-using LinearAlgebra
-using Random ; Random.seed!()
-using Printf
-using cMPO
+using cMPO, Test
 
-
-@testset "setup_test.jl" begin
-    include("setup_test.jl")
+@testset "setup" begin
+    include("setup.jl")
 end
 
-@testset "gradtest.jl" begin
+@testset "gradtest" begin
     include("gradtest.jl")
 end
 

@@ -72,7 +72,7 @@ function ⊗(A::Array{T,4} where T, B::Array{T,4} where T)
     return reshape(ein"ijpm,klmq->kiljpq"(A, B), r1*r2, c1*c2, d1, f2)    
 end
 
-function symmetrize(A::Matrix)
+function symmetrize(A::AbstractMatrix)
     (A + A')/2
 end
 
@@ -85,7 +85,7 @@ function value(x::trexp)
     exp(x.max) * x.res
 end
 
-function trexp(A::Matrix)
+function trexp(A::AbstractMatrix)
     #if ishermitian(A) == false
     if isapprox(A,A') == false
         error("The input matrix should be hermitian")
@@ -97,7 +97,7 @@ function trexp(A::Matrix)
     return trexp(max, res)
 end
 
-function logtrexp(A::Matrix)
+function logtrexp(A::AbstractMatrix)
     #if ishermitian(A) == false
     if isapprox(A,A') == false
         error("The input matrix should be hermitian")
