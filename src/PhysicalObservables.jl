@@ -162,7 +162,7 @@ Masubara frequency Green's functions: defalt type = :b
 function Masubara_freq_GF(n::Integer, A::Matrix{<:Number},B::Matrix{<:Number},
                         ψ::CMPS, W::CMPO, β::Real)
     λ = 1.0
-    ωn = Masubara_freq(n,β,type=type)
+    ωn = Masubara_freq(n,β,type=:b)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
     min = minimum(e); e = e .- min
@@ -191,7 +191,7 @@ end
 function Masubara_freq_GF(n::Integer, A::Matrix{<:Number},
                         ψ::CMPS, W::CMPO, β::Real)
     λ = 1.0
-    ωn = Masubara_freq(n,β,type=type)
+    ωn = Masubara_freq(n,β,type=:b)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
     min = minimum(e); e = e .- min
