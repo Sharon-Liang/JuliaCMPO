@@ -20,7 +20,7 @@ z2 = make_operator(pauli(:z), 2D)
 
 for j = 1:length(gamma)
     g = gamma[j]; w = TFIsing(1.,g)
-    dpath = @sprintf "../data/ug_%.1f.jld" g
+    dpath = @sprintf "../data/chi16/ug_%.1f.jld" g
     d1 = load(dpath)
     for b = 1:length(beta)
         β = beta[b]; key = string(β)
