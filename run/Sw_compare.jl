@@ -6,9 +6,9 @@ using DelimitedFiles
 using JLD, HDF5
 using Printf
 
-println("2021-11-15: G(τ) and g(iωn)")
+println("2021-11-15: G(τ) and g(iωn): D=8")
 
-D = 16
+D = 8
 z1 = make_operator(pauli(:z), D)
 z2 = make_operator(pauli(:z), 2D)
 
@@ -20,7 +20,7 @@ len = 1601
 
 for j = 1:length(gamma)
     g = gamma[j]; w = TFIsing(1.,g)
-    dpath = @sprintf "../data/chi16/ug_%.1f.jld" g
+    dpath = @sprintf "../data/ug_%.1f.jld" g
     d1 = load(dpath)
     for b = 1:length(beta)
         β = beta[b]; key = string(β)
@@ -89,68 +89,42 @@ for j = 1:length(gamma)
     println("finish Γ/J = ", g)
 end
 
-
-    #structure_factor
-    #omega = [i for i in range(0,5,length=100)]
-    #s8 = [structure_factor(i,z8,z8,ψ8,w,β,method =:S) for i in omega]
-    #s28 = [structure_factor(i,z16,z16,ψ28,w,β,method =:S) for i in omega]
-    #s16 = [structure_factor(i,z16,z16,ψ16,w,β,method =:S) for i in omega]
-
-    #path3 = @sprintf "./data/Sw_g_%.1f.txt" g
-    #open(path3, "w") do file
-    #    for i = 1:length(omega)
-    #        writedlm(file,[omega[i] s8[i] s28[i] s16[i]])
-    #    end
-    #end
-
-    #spectral density
-    #omega = [i for i in range(-5,5,length=200)]
-    #s8 = [spectral_density(i,z8,z8,ψ8,w,β) for i in omega]
-    #s28 = [spectral_density(i,z16,z16,ψ28,w,β) for i in omega]
-    #s16 = [spectral_density(i,z16,z16,ψ16,w,β) for i in omega]
-
-    #path3 = @sprintf "./data/ImX_g_%.1f.txt" g
-    #open(path3, "w") do file
-    #    for i = 1:length(omega)
-    #        writedlm(file,[omega[i] s8[i] s28[i] s16[i]])
-    #    end
-    #end
-
-    # Correlation_2time
-    #omega = [i for i in range(0,β,length=100)]
-    #s8 = [correlation_2time(i,z8,z8,ψ8,w,β) for i in omega]
-    #s28 = [correlation_2time(i,z16,z16,ψ28,w,β) for i in omega]
-    #s16 = [correlation_2time(i,z16,z16,ψ16,w,β) for i in omega]
-
-    #path3 = @sprintf "./data/Gt_g_%.1f_β_%i.txt" g β
-    #open(path3, "w") do file
-        #for i = 1:length(omega)
-            #writedlm(file,[omega[i] s8[i] s28[i] s16[i]])
-        #end
-    #end
-
-
-    """
-    #free_energy compare
-    p1 = @sprintf "../data/f_and_sx_g_%.1f.txt" g
-    p2 = @sprintf "../data/chi16/f_and_sx_g_%.1f.txt" g
+"""
+#==free_energy compare==#
+for j = 1:length(gamma)
+    g = gamma[j]; w = TFIsing(1.,g)
+    p1 = @sprintf "./data/f_and_sx_g_%.1f.txt" g
+    p2 = @sprintf "./data/chi16/f_and_sx_g_%.1f.txt" g
 
     d1 = readdlm(p1)
     d2 = readdlm(p2)
 
-    if all(d1[:,1] .== d2[:,1]) 
-        for   
-    b = [i for i in range(1,40,length=200)]
-    f0 = [free_energy(1.,g,i) for i in omega]
-    s8 = [free_energy(ψ8,w,i) for i in omega] .- fe
-    s28 = [free_energy(ψ28,w,i) for i in omega] .- fe
-    s16 = [free_energy(ψ16,w,i) for i in omega] .- fe
-
-    path3 = @sprintf "./data/floss_g_%.1f.txt" g
-    open(path3, "w") do file
-        for i = 1:length(omega)
-            writedlm(file,[omega[i] s8[i] s28[i] s16[i]])
-        end
+    dpath = @sprintf "./data/g_%.1f.jld" g
+    d3 = load(dpath)
+    f = similar(d1[:,1])
+    for i = 1:length(d1[:,1])
+        β = d1[i,1]; key = string(β)
+        ψ = d3[key][2] |> tocmps; ψ = w * w * ψ
+        f[i] = free_energy(ψ, w, β) 
     end
-    """
+    println("finish w * w * ψ")
+
+    if all(d1[:,1] .== d2[:,1]) 
+        d1[:,3] = d1[:,3] .- d1[:,2]
+        d1[:,4] = d1[:,4] .- d1[:,2]
+        d2[:,3] = d2[:,3] .- d2[:,2]
+        d2[:,4] = d2[:,4] .- d2[:,2]
+        f = f .- d1[:,2]
+        p3 = @sprintf "./data/floss_g_%.1f.txt" g
+        open(p3, "w") do file
+            for i = 1:length(d1[:,1])
+                # ω D=8 D=2*8
+                writedlm(file,[d1[i,1] d1[i,3] d1[i,4] d2[i,3] d2[i,4] f[i]])
+            end
+        end
+    else
+        printf("please check ω")
+    end
+end
+"""
 
