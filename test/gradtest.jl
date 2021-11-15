@@ -1,5 +1,8 @@
-#https://github.com/FluxML/Zygote.jl/blob/master/test/gradcheck.jl
+using cMPO, Test
+using Zygote, ForwardDiff, FiniteDifferences
+using Random; Random; Random.seed!()
 
+#https://github.com/FluxML/Zygote.jl/blob/master/test/gradcheck.jl
 function ngradient(f, xs::AbstractArray...) #finite difference
     grads = zero.(xs)
     for (x, Δ) in zip(xs, grads), i in 1:length(x)
