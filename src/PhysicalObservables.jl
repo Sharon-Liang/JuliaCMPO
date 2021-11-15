@@ -233,7 +233,7 @@ function Masubara_freq_GFdivOmega(n::Integer, A::AbstractArray,B::AbstractArray,
     #den = exp.(-β * e .- m) |> sum
     num = 0.0
     for i = 1: length(e), j = 1: length(e)
-        up = A[i,j] * B[j,i] * adffaddexp(β,e[i],e[j])
+        up = A[i,j] * B[j,i] * diffaddexp(β,e[i],e[j])
         down = 1.0im * ωn - e[j] + e[i]
         num += up/down
     end
@@ -253,7 +253,7 @@ function Masubara_freq_GFdivOmega(n::Integer, A::AbstractArray,
     #den = exp.(-β * e .- m) |> sum
     num = 0.0
     for i = 1: length(e), j = 1: length(e)
-        up = A[i,j]' * A[j,i] * adffaddexp(β,e[i],e[j])
+        up = A[i,j]' * A[j,i] * diffaddexp(β,e[i],e[j])
         down = 1.0im * ωn - e[j] + e[i]
         num += up/down
     end
