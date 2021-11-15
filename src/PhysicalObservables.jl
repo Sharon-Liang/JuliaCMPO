@@ -162,7 +162,7 @@ Masubara frequency Green's functions: defalt type = :b
 function Masubara_freq_GF(n::Integer, A::Matrix{<:Number},B::Matrix{<:Number},
                         ψ::CMPS, W::CMPO, β::Real)
     λ = 1.0
-    ωn = Masubara_freq(n,β,type=type)
+    ωn = Masubara_freq(n,β,type=:b)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
     min = minimum(e); e = e .- min
@@ -191,7 +191,7 @@ end
 function Masubara_freq_GF(n::Integer, A::Matrix{<:Number},
                         ψ::CMPS, W::CMPO, β::Real)
     λ = 1.0
-    ωn = Masubara_freq(n,β,type=type)
+    ωn = Masubara_freq(n,β,type=:b)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
     min = minimum(e); e = e .- min
@@ -233,7 +233,7 @@ function Masubara_freq_GFdivOmega(n::Integer, A::Matrix{<:Number},B::Matrix{<:Nu
     #den = exp.(-β * e .- m) |> sum
     num = 0.0
     for i = 1: length(e), j = 1: length(e)
-        up = A[i,j] * B[j,i] * adffaddexp(β,e[i],e[j])
+        up = A[i,j] * B[j,i] * diffaddexp(β,e[i],e[j])
         down = 1.0im * ωn - e[j] + e[i]
         num += up/down
     end
@@ -253,7 +253,7 @@ function Masubara_freq_GFdivOmega(n::Integer, A::Matrix{<:Number},
     #den = exp.(-β * e .- m) |> sum
     num = 0.0
     for i = 1: length(e), j = 1: length(e)
-        up = A[i,j]' * A[j,i] * adffaddexp(β,e[i],e[j])
+        up = A[i,j]' * A[j,i] * diffaddexp(β,e[i],e[j])
         down = 1.0im * ωn - e[j] + e[i]
         num += up/down
     end
