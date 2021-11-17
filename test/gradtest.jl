@@ -2,6 +2,26 @@ using cMPO, Test
 using Random; Random.seed!()
 using Zygote, ForwardDiff, FiniteDifferences
 
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+
+
+
+
+
+
+
+
+
+
+
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 function ngradient(f, xs::AbstractArray...)
     #https://github.com/FluxML/Zygote.jl/blob/master/test/gradcheck.jl
     grads = zero.(xs)
