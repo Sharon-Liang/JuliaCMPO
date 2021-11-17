@@ -24,11 +24,12 @@ function fk(k::Real,J::Real, Γ::Real, β::Real)
 end
 
 function free_energy(J::Real, Γ::Real, β::Real; err::Float64=eps())
-    res = hquadrature(k->fk(k,J,Γ,β), 0, 2π,rtol=err)
-    return res/2π
+    res = hquadrature(k->fk(k,J,Γ,β)/2π, 0, 2π,rtol=err)
+    return res
 end
 
-function free_energy(J::Real, Γ::Real, β::Real, L = 10000)
+"""
+function free_energy(J::Real, Γ::Real, β::Real; L::Integer = 10000)
     f = 0.
     for n = 1:L
         k = 2*π/L * n
@@ -37,6 +38,7 @@ function free_energy(J::Real, Γ::Real, β::Real, L = 10000)
     end
     return -f/(β*L)
 end
+"""
 
 function entropy(J::Real, Γ::Real, β::Real; L = 10000)
     s = energy(J, Γ, β; L) - free_energy(J, Γ, β; L)
