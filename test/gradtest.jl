@@ -1,9 +1,9 @@
 using cMPO, Test
+using Random; Random.seed!()
 using Zygote, ForwardDiff, FiniteDifferences
-using Random; Random; Random.seed!()
 
-#https://github.com/FluxML/Zygote.jl/blob/master/test/gradcheck.jl
-function ngradient(f, xs::AbstractArray...) #finite difference
+function ngradient(f, xs::AbstractArray...)
+    #https://github.com/FluxML/Zygote.jl/blob/master/test/gradcheck.jl
     grads = zero.(xs)
     for (x, Δ) in zip(xs, grads), i in 1:length(x)
       δ = sqrt(eps())
