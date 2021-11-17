@@ -19,34 +19,25 @@ function ngradient(f, xs::AbstractArray...) #finite difference
 end
 
 function gradcheck(f, xs...)
-    grad_zygote = gradient(f, xs...)
+    grad_zygote = Zygote.gradient(f, xs...)
     grad_finite_difference = ngradient(f, xs...)
     return all(isapprox.(grad_zygote, grad_finite_difference; rtol = 1e-5, atol = 1e-5))
 end
 
 gradtest(f, xs::AbstractArray...) = gradcheck((xs...) -> sum(sin.(f(xs...))), xs...)
-#gradtest(f, xs::AbstractArray...) = gradcheck((xs...) -> sum( abs.(sin.(f(xs...)))), xs...)
 gradtest(f, dims...) = gradtest(f, rand.(Float64, dims)...)
 
 
-Dtype = [Float64] #Fail for ComplexF32
-for dtype in Dtype
-    str = @sprintf "Input data type = %s" dtype
-    @testset "$str" begin
-        @testset "Test Gradient of ⊗" begin
-            a1 = rand(dtype,3,3); a2 = rand(3,3)
-            b1 = rand(dtype,3,3,3); b2 = rand(3,3)
-            c1 = rand(dtype,3,3,3,3); c2 = rand(3,3,3,3)
-            @test gradtest(⊗, a1, a2)
-            @test gradtest(⊗, a1, b1)
-            @test gradtest(⊗, b1, a1)
-            @test gradtest(⊗, b1, b2)
-            @test gradtest(⊗, b1, c1)
-            @test gradtest(⊗, c1, b1)
-            @test gradtest(⊗, c1, c2)
-        end
+@testset "⊗" begin
+    D1 = 3;  D2 = 4
+    T = Float64
+    a = [randn(D1,D1),randn(T,D1,D1),randn(D1,D1,D2),randn(T,D1,D1,D2),randn(D1,D1,D2,D2),randn(T,D1,D1,D2,D2)]
+    for i = 1:length(a), j = i+1 : min(2*(div(i+1,2)+1), length(a))
+        @test gradtest(⊗, a[i], a[j])
     end
 end
+
+
 
 @testset "Gradient test: TFIsing model" begin
     β = 20.0; χ = 2
