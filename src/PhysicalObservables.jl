@@ -17,7 +17,7 @@ The thermal average of local opeartors ===============================
 function thermal_average(Op::Matrix{<:Number}, ψ::CMPS, W::CMPO, β::Real)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(-β*K)
-    m = maximum(e)
+    m = maximum(e); e = e .- m
     Op = v' * Op * v
     den = exp.(e) |> sum
     num = exp.(e) .* diag(Op) |> sum
