@@ -1,3 +1,7 @@
+#using LinearAlgebra
+#using StatsFuns, SpecialFunctions, HCubature
+#import cMPO:free_energy, energy, specific_heat, entropy
+
 # exact solutions of TFIsing model
 function energy_density(k::Real, J::Real, Γ::Real)
     eng = 2*sqrt(J^2+ Γ^2 - 2*J*Γ*cos(k))
@@ -14,7 +18,17 @@ function energy(J::Real, Γ::Real, β::Real; L = 10000)
     return e/L
 end
 
-function free_energy(J::Real, Γ::Real, β::Real; L = 10000)
+function fk(k::Real,J::Real, Γ::Real, β::Real)
+    ϵ = energy_density(k, J, Γ)
+    return -logaddexp(β*ϵ/2, -β*ϵ/2)/β
+end
+
+function free_energy(J::Real, Γ::Real, β::Real; err::Float64=eps())
+    res = hquadrature(k->fk(k,J,Γ,β), 0, 2π,rtol=err)
+    return res/2π
+end
+
+function free_energy(J::Real, Γ::Real, β::Real, L = 10000)
     f = 0.
     for n = 1:L
         k = 2*π/L * n

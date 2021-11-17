@@ -5,7 +5,7 @@ using LinearAlgebra, GenericLinearAlgebra
 using Zygote, FiniteDifferences
 using Optim
 using Random; Random.seed!()
-using StatsFuns, SpecialFunctions
+using StatsFuns, SpecialFunctions, HCubature
 using OMEinsum
 
 import Base: *, isequal
