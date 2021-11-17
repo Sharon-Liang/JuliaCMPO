@@ -166,8 +166,13 @@ for j = 1:length(gamma)
 end
 
 
-"""
+
 #==free_energy compare==#
+beta = [10.0, 20.0, 30.0, 40.0]
+gamma = [1.0, 1.5, 2.0]
+len = 1601
+
+
 for j = 1:length(gamma)
     g = gamma[j]; w = TFIsing(1.,g)
     p1 = @sprintf "./data/f_and_sx_g_%.1f.txt" g
@@ -195,7 +200,7 @@ for j = 1:length(gamma)
         p3 = @sprintf "./data/floss_g_%.1f.txt" g
         open(p3, "w") do file
             for i = 1:length(d1[:,1])
-                # ω D=8 D=2*8
+                # ω D=8 D=2*8 D=16 D=2*16 D=2*2*8
                 writedlm(file,[d1[i,1] d1[i,3] d1[i,4] d2[i,3] d2[i,4] f[i]])
             end
         end
@@ -203,5 +208,5 @@ for j = 1:length(gamma)
         printf("please check ω")
     end
 end
-"""
+
 
