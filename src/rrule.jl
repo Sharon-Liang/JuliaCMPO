@@ -1,4 +1,5 @@
 import ChainRules
+import OMEinsum:einsum_grad
 
 function ChainRules.rrule(::typeof(GenericLinearAlgebra.eigvals), A; kwargs...)
     F, eigen_back = ChainRules.rrule(GenericLinearAlgebra.eigen, A; kwargs...)
@@ -26,4 +27,15 @@ function ChainRules.rrule(
     end
     eigen_pullback(ΔF::ChainRules.AbstractZero) = (ChainRules.NoTangent(), ΔF)
     return F, eigen_pullback
+end
+
+function einsum_grad(ixs, @nospecialize(xs), iy, size_dict, cdy, i)
+    nixs = _insertat(ixs, i, iy)
+    nxs  = _insertat( xs, i, cdy)
+    niy = ixs[i]
+    y = einsum(DynamicEinCode(nixs, niy), nxs, size_dict)
+    y = conj(y)  # do not use `conj!` to help computing Hessians.
+    typeof(y) == typeof(xs[i]) && return y
+    #xs[i] isa Array{<:Real} && return convert(typeof(xs[i]), real(y))
+    #convert(typeof(xs[i]), y)
 end
