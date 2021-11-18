@@ -48,7 +48,6 @@ end
     @test hessiantest(x -> test_prod(sl, dl, x, dr) , sr)
     @test hessiantest(x -> test_prod(x,dl,o; sr=sr, dr=dr), sl)
     @test hessiantest(x -> test_prod(o,x,dr; sl=sl, dl=dl), sr)
-    @test hessiantest(x -> test_prod(x,dl,o,sr,dr), sl)
 
     @test hessiantest(x -> test_prod(x, dl, x, dl) , sl)
     @test hessiantest(x -> test_prod(x,dl,o;sr=x, dr=dl), sl)

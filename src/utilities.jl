@@ -98,7 +98,6 @@ function trexp(A::AbstractMatrix)
 end
 
 function logtrexp(A::AbstractMatrix)
-    #if ishermitian(A) == false
     #if isapprox(A,A') == false
     #    error("The input matrix should be hermitian")
     #end
