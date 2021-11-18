@@ -4,11 +4,9 @@ using DelimitedFiles
 using Printf
 using cMPO
 
-d = readdlm("./data/floss_g_1.0.txt")
-
-
-
-
+g = 2.0 
+path = @sprintf "./data/floss_g_%.1f.txt" g
+d = readdlm(path)
 
 plot(d[:,1], d[:,2],lw=2, label="χ=8")
 plot!(d[:,1], d[:,3],lw =2, label="χ=8*2")

@@ -96,7 +96,7 @@ end
     D1 = 4;  D2 = 2
     T = ComplexF64
     a = [randn(D1,D1),randn(T,D1,D1),randn(D1,D1,D2),randn(T,D1,D1,D2),randn(D1,D1,D2,D2),randn(T,D1,D1,D2,D2)]
-    for i = 1:length(a), j = i : min(2*(div(i+1,2)+1), length(a))
+    for i = 1:length(a), j = i+1 : min(2*(div(i+1,2)+1), length(a))
         @test all(a[i]⊗a[j] .≈ otimes(a[i],a[j]))
     end
 end

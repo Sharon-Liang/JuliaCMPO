@@ -1,6 +1,7 @@
 #module setup
 #using LinearAlgebra
 import Base: zeros
+
 struct CMPS
     Q::Array{<:Number}
     R::Array{<:Number}
@@ -47,6 +48,7 @@ function tocmps(V::Vector , dim::Tuple)
     arr = reshape(V, dim)
     return tocmps(arr)
 end
+
 
 
 """multiplications of cmps and cmpo"""
