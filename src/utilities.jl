@@ -99,9 +99,9 @@ end
 
 function logtrexp(A::AbstractMatrix)
     #if ishermitian(A) == false
-    if isapprox(A,A') == false
-        error("The input matrix should be hermitian")
-    end
+    #if isapprox(A,A') == false
+    #    error("The input matrix should be hermitian")
+    #end
     A = symmetrize(A) |> Hermitian
     return eigvals(A) |> logsumexp
 end
