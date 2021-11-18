@@ -5,10 +5,8 @@ using Optim
 using DelimitedFiles
 using JLD, HDF5
 using Printf
+using TimerOutputs
 
-
-
-println("Start!")
-include("TFIsing-change-gamma.jl")
-#include("Sw_compare.jl")
+#include("TFIsing-change-gamma.jl")
+include("hessian-data.jl")
 
