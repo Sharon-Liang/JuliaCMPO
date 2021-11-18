@@ -1,5 +1,5 @@
 import ChainRules
-import OMEinsum:einsum_grad
+import OMEinsum:einsum_grad, _insertat, DynamicEinCode
 
 function ChainRules.rrule(::typeof(GenericLinearAlgebra.eigvals), A; kwargs...)
     F, eigen_back = ChainRules.rrule(GenericLinearAlgebra.eigen, A; kwargs...)

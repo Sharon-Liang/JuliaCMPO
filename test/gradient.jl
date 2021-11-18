@@ -93,7 +93,7 @@ end
     @test gradtest(x -> test_prod(sl,o,x), sr)
 end
 
-@test "logtrexp" begin
+@testset "logtrexp" begin
     D = 8
     A = rand(D, D) |> symmetrize
     @test gradtest(logtrexp, A)  
