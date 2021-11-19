@@ -21,3 +21,11 @@ Not converged Γ = 1.0, β = 22.4
    optim β = 17.8        1    867ms  0.01%   867ms   0.94GiB  0.01%  0.94GiB
  ───────────────────────────────────────────────────────────────────────────
 Finish!
+
+
+  Activating environment at `~/julia-code/mycMPO/Project.toml`
+2021-11-19: G(τ) and g(iωn): D=8 use hessian
+D = 8 begin!
+finish Γ/J = 1.0
+finish Γ/J = 1.5
+finish Γ/J = 2.0

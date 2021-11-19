@@ -61,10 +61,10 @@ for j = 1:length(gamma)
             hf! = hessian_function(f)
             
             bname = @sprintf "optim β = %.1f" β
-            op = optimize(f, gf!, hf!, vec, NewtonTrustRegion(), Optim.Options(iterations = 10000))
+            op = optimize(f, gf!, hf!, vec, NewtonTrustRegion(), Optim.Options(iterations=10000))
 
             vec = op.minimizer
-            res = (minimum(op), vec, Optim.converged(op))
+            res = (minimum(op), vec, dvec, Optim.converged(op))
             if res[3] == false 
                 println("Not converged Γ = ", g, ", β = ", β)
             end

@@ -7,14 +7,15 @@ using DelimitedFiles
 using JLD, HDF5
 using Printf
 """
+to = TimerOutput()
 
-println("2021-11-10: TFIsing-change-gamma.jl")
-println("χ = 16")
+println("2021-11-19: TFIsing-change-gamma.jl")
 
-χ = 16
+χ = 32
+println("χ = ", χ)
 x = make_operator(pauli(:x),χ)
 
-gamma = [0.5, 1.0, 1.5, 2.0]
+gamma = [1.0, 1.5, 2.0]
 beta = [i for i in range(1.,40.,step=0.1)]
 
 pcollect1 = Vector{String}(undef, length(gamma))
@@ -22,9 +23,9 @@ pcollect2 = Vector{String}(undef, length(gamma))
 upcollect = Vector{String}(undef, length(gamma))
 
 for i = 1:length(gamma)
-    pcollect1[i] = @sprintf "../data/chi16/g_%.1f.jld" gamma[i]
-    pcollect2[i] = @sprintf "../data/chi16/f_and_sx_g_%.1f.txt" gamma[i]
-    upcollect[i] = @sprintf "../data/chi16/ug_%.1f.jld" gamma[i]
+    pcollect1[i] = @sprintf "../data/chi32/g_%.1f.jld" gamma[i]
+    pcollect2[i] = @sprintf "../data/chi32/f_g_%.1f.txt" gamma[i]
+    upcollect[i] = @sprintf "../data/chi32/ug_%.1f.jld" gamma[i]
 end 
 
 for path in pcollect1
@@ -47,49 +48,51 @@ for j = 1:length(gamma)
     g = gamma[j]
     w = TFIsing(1.0, g)
     arr = init_cmps(χ,w) |> toarray
-    path1 = @sprintf "../data/chi16/g_%.1f.jld" g
-    path2 = @sprintf "../data/chi16/f_and_sx_g_%.1f.txt" g
+    path1 = @sprintf "../data/chi32/g_%.1f.jld" g
+    path2 = @sprintf "../data/chi32/f_g_%.1f.txt" g
     
     #output file path
-    upath = @sprintf "../data/chi16/ug_%.1f.jld" g
+    upath = @sprintf "../data/chi32/ug_%.1f.jld" g
 
-    for i = 1:length(beta)
-        β = beta[i]; key = string(β)
-        f = arr -> free_energy(arr, w, β)
-        gf! = gradient_function(f)
-        op = optimize(f,gf!, arr, LBFGS(),Optim.Options(iterations = 10000))
-        arr = op.minimizer
-        res = (minimum(op), arr, Optim.converged(op))
-        if res[3] == false 
-            println("Not converged Γ = ", key, ", β = ", β)
-        end
+    gname = @sprintf "g = %.1f" g
+    @timeit to gname begin
+        for i = 1:length(beta)
+            β = beta[i]; key = string(β)
+            f = arr -> free_energy(arr, w, β)
+            gf! = gradient_function(f)
 
-        jldopen(path1, "r+") do file
-            write(file, key, res)
-        end
+            bname = @sprintf "optim β = %.1f" β
+            @timeit to bname begin
+                op = optimize(f,gf!, arr, LBFGS(),Optim.Options(iterations = 10000))
+            end
+            arr = op.minimizer
+            res = (minimum(op), arr, Optim.converged(op))
+            if res[3] == false 
+                println("Not converged Γ = ", g, ", β = ", β)
+            end
 
-        d, r = divrem(β,10)
-        if r == 0
-            jldopen(upath, "r+") do file
+            jldopen(path1, "r+") do file
                 write(file, key, res)
             end
-        end
-        
-        ψ = tocmps(arr)
-        ψ2 = w * ψ
-        f_exa = free_energy(1.0, g, β)
-        f2 = free_energy(ψ2, w, β)
-        sx_exa = ave_sx(1.0, g, β)
-        sx = thermal_average(x,ψ,w,β)
-        open(path2, "a") do file2
-            writedlm(file2,[β f_exa minimum(op) f2 sx_exa sx])
+
+            d, r = divrem(β,10)
+            if r == 0
+                jldopen(upath, "r+") do file
+                    write(file, key, res)
+                end
+            end
+            
+            ψ = tocmps(arr)
+            ψ2 = w * ψ
+            f_exa, err= free_energy(1.0, g, β)
+            f2 = free_energy(ψ2, w, β)
+            open(path2, "a") do file2
+                writedlm(file2,[β f_exa minimum(op) f2 err])
+            end
         end
     end
-    println("finish Γ/J = ", g)
-
 end
-
-println("beta in range (", minimum(beta)," , ",maximum(beta),")")
+println(to)
 println("Finish!")
 
 

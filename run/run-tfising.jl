@@ -7,6 +7,6 @@ using JLD, HDF5
 using Printf
 using TimerOutputs
 
-#include("TFIsing-change-gamma.jl")
+include("TFIsing-change-gamma.jl")
 include("hessian-data.jl")
 
