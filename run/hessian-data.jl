@@ -68,7 +68,7 @@ for j = 1:length(gamma)
             vec = op.minimizer
             res = (minimum(op), vec, Optim.converged(op))
             if res[3] == false 
-                println("Not converged Γ = ", key, ", β = ", β)
+                println("Not converged Γ = ", g, ", β = ", β)
             end
 
             jldopen(path1, "r+") do file
@@ -91,6 +91,7 @@ for j = 1:length(gamma)
             end
         end
     end
-    println(to)
+   
 end
+println(to)
 println("Finish!")
