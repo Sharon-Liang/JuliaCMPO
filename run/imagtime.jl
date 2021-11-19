@@ -168,40 +168,23 @@ end
 
 
 #==free_energy compare==#
-beta = [10.0, 20.0, 30.0, 40.0]
 gamma = [1.0, 1.5, 2.0]
-len = 1601
-
-
 for j = 1:length(gamma)
     g = gamma[j]; w = TFIsing(1.,g)
-    p1 = @sprintf "./data/f_and_sx_g_%.1f.txt" g
-    p2 = @sprintf "./data/chi16/f_and_sx_g_%.1f.txt" g
+    p1 = @sprintf "./data/floss_g_%.1f.txt" g
+    p2 = @sprintf "./data/hessian/f_g_%.1f.txt" g
 
     d1 = readdlm(p1)
     d2 = readdlm(p2)
 
-    dpath = @sprintf "./data/g_%.1f.jld" g
-    d3 = load(dpath)
-    f = similar(d1[:,1])
-    for i = 1:length(d1[:,1])
-        β = d1[i,1]; key = string(β)
-        ψ = d3[key][2] |> tocmps; ψ = w * w * ψ
-        f[i] = free_energy(ψ, w, β) 
-    end
-    println("finish w * w * ψ")
-
     if all(d1[:,1] .== d2[:,1]) 
-        d1[:,3] = d1[:,3] .- d1[:,2]
-        d1[:,4] = d1[:,4] .- d1[:,2]
         d2[:,3] = d2[:,3] .- d2[:,2]
         d2[:,4] = d2[:,4] .- d2[:,2]
-        f = f .- d1[:,2]
-        p3 = @sprintf "./data/floss_g_%.1f.txt" g
+        p3 = @sprintf "./data/floss_g_%.1f_new.txt" g
         open(p3, "w") do file
             for i = 1:length(d1[:,1])
-                # ω D=8 D=2*8 D=16 D=2*16 D=2*2*8
-                writedlm(file,[d1[i,1] d1[i,3] d1[i,4] d2[i,3] d2[i,4] f[i]])
+                # ω D=8 D=2*8 D=16 D=2*16 D=2*2*8 hD=8 hD=2*8
+                writedlm(file,[d1[i,:]' d2[i,3:4]'])
             end
         end
     else

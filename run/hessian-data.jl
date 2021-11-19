@@ -61,9 +61,7 @@ for j = 1:length(gamma)
             hf! = hessian_function(f)
             
             bname = @sprintf "optim β = %.1f" β
-            @timeit to bname begin
-                op = optimize(f, gf!, hf!, vec, NewtonTrustRegion(), Optim.Options(iterations = 10000))
-            end
+            op = optimize(f, gf!, hf!, vec, NewtonTrustRegion(), Optim.Options(iterations = 10000))
 
             vec = op.minimizer
             res = (minimum(op), vec, Optim.converged(op))
