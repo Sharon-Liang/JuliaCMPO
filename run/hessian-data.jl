@@ -1,15 +1,16 @@
-"""
+using Pkg
+Pkg.activate("../")
 using cMPO
 using Optim
 using DelimitedFiles
 using JLD, HDF5
 using Printf
-"""
+using TimerOutputs
 
 to = TimerOutput()
 
-println("2021-11-18: TFIsing change gamma, hessian optimize")
-
+println("2021-11-25: TFIsing change gamma, hessian optimize")
+println("use D = 8 gradient optimized data to init")
 χ = 8
 println("χ = ", χ)
 
@@ -44,7 +45,7 @@ end
 for j = 1:length(gamma)
     g = gamma[j]
     w = TFIsing(1.0, g)
-    vec, dvec = init_cmps(χ,w) |> tovector
+    _, dvec = init_cmps(χ,w) |> tovector
 
     path1 = @sprintf "../data/hessian/g_%.1f.jld" g
     path2 = @sprintf "../data/hessian/f_g_%.1f.txt" g
@@ -54,17 +55,22 @@ for j = 1:length(gamma)
 
     gname = @sprintf "g = %.1f" g
     @timeit to gname begin
+        init_path = @sprintf "../data/g_%.1f.jld" gamma[j]
+        @timeit to "load D=8 data" begin
+            init_data = load(init_path)
+        end
         for i = 1:length(beta)
             β = beta[i]; key = string(β)
-            f = v -> free_energy(v,dvec, w, β)
+            v = vec(init_data[key][2]) 
+            f = vc -> free_energy(vc,dvec, w, β)
             gf! = gradient_function(f)
             hf! = hessian_function(f)
             
             bname = @sprintf "optim β = %.1f" β
-            op = optimize(f, gf!, hf!, vec, NewtonTrustRegion(), Optim.Options(iterations=10000))
+            op = optimize(f, gf!, hf!, v, NewtonTrustRegion(), Optim.Options(iterations=10000))
 
-            vec = op.minimizer
-            res = (minimum(op), vec, dvec, Optim.converged(op))
+            v = op.minimizer
+            res = (minimum(op), v, dvec, Optim.converged(op))
             if res[3] == false 
                 println("Not converged Γ = ", g, ", β = ", β)
             end
@@ -80,7 +86,7 @@ for j = 1:length(gamma)
                 end
             end
             
-            ψ = tocmps(vec, dvec)
+            ψ = tocmps(v, dvec)
             ψ2 = w * ψ
             f_exa, err = free_energy(1.0, g, β)
             f2 = free_energy(ψ2, w, β)
