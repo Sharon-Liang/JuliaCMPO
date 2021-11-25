@@ -84,7 +84,33 @@ end
     g = rand(1)[1]
     w = TFIsing(1.,g)
     ψ, dim = init_cmps(χ) |> tovector
-    Zygote.hessian(x->free_energy(x, dim, w, β), ψ)
+    @test hessiancheck(x->free_energy(x, dim, w, β), ψ)
+    @test hessiancheck_fdiff(x->free_energy(x, dim, w, β), ψ)
+end
+
+
+@testset "free energy: XY model" begin
+    β = 1.0; χ = 2
+    w = XYmodel()
+    ψ, dim = init_cmps(χ,D=2) |> tovector
+    @test hessiancheck(x->free_energy(x, dim, w, β), ψ)
+    @test hessiancheck_fdiff(x->free_energy(x, dim, w, β), ψ)
+end
+
+@testset "free energy: AFM Heisenberg model" begin
+    β = 1.0; χ = 2
+    w = HeisenbergModel()
+    ψ, dim = init_cmps(χ,D=3) |> tovector
+    @test hessiancheck(x->free_energy(x, dim, w, β), ψ)
+    @test hessiancheck_fdiff(x->free_energy(x, dim, w, β), ψ)
+end
+
+@testset "free energy: XXZ model" begin
+    β = 1.0; χ = 2
+    g = rand(1)[1]
+    w = XXZmodel(g)
+    g == 0 ?  dR = 2 : dR = 3
+    ψ, dim = init_cmps(χ,D=dR) |> tovector
     @test hessiancheck(x->free_energy(x, dim, w, β), ψ)
     @test hessiancheck_fdiff(x->free_energy(x, dim, w, β), ψ)
 end

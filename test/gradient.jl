@@ -109,15 +109,28 @@ end
     @test gradcheck_fdiff(x->free_energy(x, w, β), ψ)
 end
 
-
-
-
-"""
-@testset "Gradient test: Heisenberg model" begin
+@testset "Gradient test: XY model" begin
     β = 1.0; χ = 2
-    W = HeisenbergModel()
-    ψ = init_cmps(χ,D=3) |> toarray
-    fenergy = ψ->free_energy(ψ, W, β)
-    @test gradcheck(fenergy, ψ)
+    w = XYmodel()
+    ψ = init_cmps(χ,D=2) |> toarray
+    @test gradcheck(ψ->free_energy(ψ, w, β), ψ)
+    @test gradcheck_fdiff(x->free_energy(x, w, β), ψ)
 end
-"""
+
+@testset "Gradient test: AFM Heisenberg model" begin
+    β = 1.0; χ = 2
+    w = HeisenbergModel()
+    ψ = init_cmps(χ,D=3) |> toarray
+    @test gradcheck(ψ->free_energy(ψ, w, β), ψ)
+    @test gradcheck_fdiff(x->free_energy(x, w, β), ψ)
+end
+
+@testset "Gradient test: XXZ model" begin
+    β = 1.0; χ = 2
+    g = rand(1)[1]
+    w = XXZmodel(g)
+    g == 0 ?  dR = 2 : dR = 3
+    ψ = init_cmps(χ,D=dR) |> toarray
+    @test gradcheck(ψ->free_energy(ψ, w, β), ψ)
+    @test gradcheck_fdiff(x->free_energy(x, w, β), ψ)
+end

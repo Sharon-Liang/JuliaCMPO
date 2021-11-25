@@ -20,7 +20,7 @@ export toarray, tovector, tocmps
 export init_cmps, ovlp
 
 export make_operator
-export TFIsing, XYmodel, HeisenbergModel
+export TFIsing, XYmodel, XXZmodel, HeisenbergModel
 export thermal_average, partitian, partitian!
 export free_energy, energy, specific_heat, entropy
 export correlation_2time
