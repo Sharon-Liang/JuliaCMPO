@@ -4,11 +4,12 @@ import Base: kron
 function pauli(symbol::Symbol)
     if symbol==:x return [0. 1.; 1. 0.]
     elseif symbol==:y return [0. -1im; 1im 0.]
+    elseif symbol==:iy return [0. 1.; -1. 0.]
     elseif symbol==:z return [1. 0.; 0. -1.]
     elseif symbol==:+ return [0. 1.; 0. 0.]
     elseif symbol==:- return [0. 0.; 1. 0.]
     else
-        error("The input should be :x,:y,:z,:+,:-.")
+        error("The input should be :x,:y,:z,:+,:-, :iy.")
     end
 end
 
