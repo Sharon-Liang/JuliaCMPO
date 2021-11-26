@@ -10,7 +10,6 @@ using TimerOutputs
 to = TimerOutput()
 
 println("2021-11-25: TFIsing change gamma, hessian optimize")
-println("use D = 8 gradient optimized data to init")
 χ = 8
 println("χ = ", χ)
 
@@ -45,7 +44,7 @@ end
 for j = 1:length(gamma)
     g = gamma[j]
     w = TFIsing(1.0, g)
-    _, dvec = init_cmps(χ,w) |> tovector
+    v, dvec = init_cmps(χ,w) |> tovector
 
     path1 = @sprintf "../data/hessian/g_%.1f.jld" g
     path2 = @sprintf "../data/hessian/f_g_%.1f.txt" g
@@ -56,12 +55,8 @@ for j = 1:length(gamma)
     gname = @sprintf "g = %.1f" g
     @timeit to gname begin
         init_path = @sprintf "../data/g_%.1f.jld" gamma[j]
-        @timeit to "load D=8 data" begin
-            init_data = load(init_path)
-        end
         for i = 1:length(beta)
             β = beta[i]; key = string(β)
-            v = vec(init_data[key][2]) 
             f = vc -> free_energy(vc,dvec, w, β)
             gf! = gradient_function(f)
             hf! = hessian_function(f)
@@ -71,7 +66,7 @@ for j = 1:length(gamma)
 
             v = op.minimizer
             res = (minimum(op), v, dvec, Optim.converged(op))
-            if res[3] == false 
+            if Optim.converged(op) == false 
                 println("Not converged Γ = ", g, ", β = ", β)
             end
 
