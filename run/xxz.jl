@@ -11,6 +11,7 @@ println("2021-11-25: XY model and AFM Heisenberg model")
 
 chi = [8, 16]
 Delta = [0.0, 1.0]
+beta = [i for i in range(1.,40.,step=0.1)]
 
 to = TimerOutput()
 println("gradient optim")
@@ -54,7 +55,7 @@ for i = 1:2
 
             chi_name = @sprintf "χ=%i" χ
             @timeit to chi_name begin
-                arr = init_cmps(w, χ) |> toarray 
+                arr = init_cmps(χ, w) |> toarray 
                 for i = 1:length(beta)
                     β = beta[i]; key = string(β)
                     f = arr -> free_energy(arr, w, β)
@@ -103,7 +104,7 @@ for i = 1:2
     upath = @sprintf "../data/xxz/%s_D_%i_u.jld" nstr χ
 
     @timeit to nstr begin
-        v, dv = init_cmps(w, χ) |> tovector
+        v, dv = init_cmps(χ, w) |> tovector
         for i = 1:length(beta)
             β = beta[i]; key = string(β)
             f = v -> free_energy(v,dv, w, β)
