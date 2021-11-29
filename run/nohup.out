@@ -1,0 +1,23 @@
+
+2021-11-25: XY model and AFM Heisenberg model
+gradient optim
+Not converged xx  model, χ=16, β = 21.5
+Not converged xx  model, χ=16, β = 21.6
+Not converged heisenberg  model, χ=8, β = 9.0
+Not converged heisenberg  model, χ=16, β = 10.1
+ ─────────────────────────────────────────────────────────────────────
+                              Time                   Allocations      
+                      ──────────────────────   ───────────────────────
+   Tot / % measured:      265003s / 100%          132256GiB / 100%    
+
+ Section      ncalls     time   %tot     avg     alloc   %tot      avg
+ ─────────────────────────────────────────────────────────────────────
+ heisenberg        1   152488s  57.5%  152488s   71451GiB 54.0%  71451GiB
+   χ=16            1   145220s  54.8%  145220s   68349GiB 51.7%  68349GiB
+   χ=8             1    7269s  2.74%   7269s   3102GiB  2.35%  3102GiB
+ xx                1   112510s  42.5%  112510s   60804GiB 46.0%  60804GiB
+   χ=16            1   110197s  41.6%  110197s   59074GiB 44.7%  59074GiB
+   χ=8             1    2313s  0.87%   2313s   1731GiB  1.31%  1731GiB
+ ─────────────────────────────────────────────────────────────────────
+
+
