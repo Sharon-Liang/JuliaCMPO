@@ -42,7 +42,7 @@ function XXZmodel(Δ::Real)
     if Δ == 0
         return XYmodel()
     else
-        sp = pauli(:+); sm = pauli(:-); sz = 0.8 * pauli(:z)
+        sp = pauli(:+); sm = pauli(:-); sz = 0.5 * pauli(:z)
         L = zeros(2,2,3)
         L[:,:,1] = 1/√2 * sp ; L[:,:,2] = 1/√2 * sm; L[:,:,3] = √Δ * sz
         R = zeros(2,2,3)
