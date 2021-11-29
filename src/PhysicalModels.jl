@@ -42,11 +42,11 @@ function XXZmodel(Δ::Real)
     if Δ == 0
         return XYmodel()
     else
-        sp = pauli(:+); sm = pauli(:-);
+        sp = pauli(:+); sm = pauli(:-); sz = 0.8 * pauli(:z)
         L = zeros(2,2,3)
-        L[:,:,1] = 1/√2 * sp ; L[:,:,2] = 1/√2 * sm; L[:,:,3] = √Δ *pauli(:z)
+        L[:,:,1] = 1/√2 * sp ; L[:,:,2] = 1/√2 * sm; L[:,:,3] = √Δ * sz
         R = zeros(2,2,3)
-        R[:,:,1] = 1/√2 * sp ; R[:,:,2] = 1/√2 * sm; R[:,:,3] = √Δ *pauli(:z)
+        R[:,:,1] = 1/√2 * sp ; R[:,:,2] = 1/√2 * sm; R[:,:,3] = √Δ * sz
         Q = zeros(2,2)
         P = zeros(2,2,3,3)
         return CMPO(Q,R,L,P)
