@@ -64,15 +64,19 @@ for j = 1:length(gamma)
         
         for i = 1:length(beta)
             β = beta[i]; key = string(β)
-            arr = init_data[key][2]
+
+            psi = init_data[key][2] |> tocmps
+            arr = w * psi |> toarray
+            #check init cmps dimension
+            if size(arr)[1] != χ 
+                emsg = @sprintf "wrong dimension with χ = %i" size(arr)[1]
+                error(emsg)
+            end
+
             f = arr -> free_energy(arr, w, β)
             gf! = gradient_function(f)
 
-            bname = @sprintf "optim β = %.1f" β
-            @timeit to bname begin
-                op = optimize(f,gf!, arr, LBFGS(),Optim.Options(iterations = 10000))
-            end
-
+            op = optimize(f,gf!, arr, LBFGS(),Optim.Options(iterations = 10000))
             arr = op.minimizer
             res = (minimum(op), arr, Optim.converged(op))
             if res[3] == false 
