@@ -46,3 +46,9 @@ hessian optim
  heisenberg        1   22987s  78.9%  22987s   27057GiB 78.2%  27057GiB
  xx                1    6133s  21.1%   6133s   7528GiB  21.8%  7528GiB
  ─────────────────────────────────────────────────────────────────────
+
+
+  Activating environment at `~/julia-code/mycMPO/Project.toml`
+2021-11-30: Heisenberg G(τ) and g(iωn)
+D=8 begin!
+finish!
