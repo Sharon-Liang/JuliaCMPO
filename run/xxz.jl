@@ -7,15 +7,15 @@ using JLD, HDF5
 using Printf
 using TimerOutputs
 
-println("2021-11-25: XY model and AFM Heisenberg model")
+println("2021-11-29: XY model and AFM Heisenberg model")
 
-chi = [8, 16]
+chi = [8]
 Delta = [0.0, 1.0]
 beta = [i for i in range(1.,40.,step=0.1)]
 
 to = TimerOutput()
 println("gradient optim")
-for i = 1:2
+for i = 1:length(Delta)
     Δ = Delta[i]
     Δ == 0 ? nstr = "xx" : nstr = "heisenberg"
     w = XXZmodel(Δ)
@@ -62,9 +62,17 @@ for i = 1:2
                     gf! = gradient_function(f)
                     op = optimize(f,gf!, arr, LBFGS(),Optim.Options(iterations = 10000))
                     arr = op.minimizer
+
+                    n = 1
+                    while Optim.converged(op) == false 
+                        op = optimize(f,gf!, arr, LBFGS(),Optim.Options(iterations = 10000))
+                        n += 1
+                    end
+
+                    arr = op.minimizer
                     res = (minimum(op), arr, Optim.converged(op))
-                    if Optim.converged(op) == false 
-                        println("Not converged ",nstr,"  model, χ=" ,χ, ", β = ", β)
+                    if n > 1
+                        println(nstr,"  model, χ=" ,χ, ", β = ", β, ", n = ",n)
                     end
 
                     jldopen(path1, "r+") do file
@@ -91,17 +99,27 @@ for i = 1:2
 end
 println(to)
 
+
 to = TimerOutput()
 println("hessian optim")
-for i = 1:2
+for i = 1:length(Delta)
     χ = 8
     Δ = Delta[i]
     Δ == 0 ? nstr = "xx" : nstr = "heisenberg"
     w = XXZmodel(Δ)
 
-    path1 = @sprintf "../data/xxz/%s_D_%i.jld" nstr χ
-    path2 = @sprintf "../data/xxz/%s_f_D_%i.txt" nstr χ
-    upath = @sprintf "../data/xxz/%s_D_%i_u.jld" nstr χ
+    path1 = @sprintf "../data/xxz/%s_D_%i_hessian.jld" nstr χ
+    path2 = @sprintf "../data/xxz/%s_f_D_%i_hessian.txt" nstr χ
+    upath = @sprintf "../data/xxz/%s_D_%i_u_hessian.jld" nstr χ
+
+    jldopen(path1, "w") do file
+    end
+    
+    open(path2, "w") do file
+    end
+    
+    jldopen(upath, "w") do file
+    end
 
     @timeit to nstr begin
         v, dv = init_cmps(χ, w) |> tovector
@@ -113,10 +131,19 @@ for i = 1:2
             
             op = optimize(f, gf!, hf!, v, NewtonTrustRegion(), Optim.Options(iterations=10000))
             v = op.minimizer
-            res = (minimum(op), v, dv, Optim.converged(op))
-            if Optim.converged(op) == false 
-                println("Not converged ",nstr,"  model",", β = ", β)
+
+            n = 1
+            while Optim.converged(op) == false 
+                op = optimize(f, gf!, hf!, v, NewtonTrustRegion(), Optim.Options(iterations=10000))
+                n += 1
             end
+
+            if n > 1
+                println(nstr,"  model, χ=" ,χ, ", β = ", β, ", n = ",n)
+            end
+            
+            v = op.minimizer
+            res = (minimum(op), v, dv, Optim.converged(op),n)
 
             jldopen(path1, "r+") do file
                 write(file, key, res)
@@ -138,6 +165,6 @@ for i = 1:2
         end
     end
 end
-
 println(to)
+
 println("Finish!")
