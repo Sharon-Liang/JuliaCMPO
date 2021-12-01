@@ -1,6 +1,9 @@
 #module utilities
 import Base: kron
 
+"""
+Pauli matrices
+"""
 function pauli(symbol::Symbol)
     if symbol==:x return [0. 1.; 1. 0.]
     elseif symbol==:y return [0. -1im; 1im 0.]
@@ -13,6 +16,9 @@ function pauli(symbol::Symbol)
     end
 end
 
+"""
+Gaussian approximate delta function
+"""
 function delta(x::Real, η::Real)
     num = η
     den = (x^2 + η^2) * π
