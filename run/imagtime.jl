@@ -6,7 +6,7 @@ using DelimitedFiles
 using JLD, HDF5
 using Printf
 
-println("2021-11-30: Heisenberg G(τ) and g(iωn)")
+println("2021-12-01: Heisenberg G(τ) and g(iωn)")
 N = 40
 beta = [1.0, 2.0, 5.0, 10.0, 20.0, 30.0, 40.0]
 len = 1601
@@ -14,78 +14,82 @@ len = 1601
 D = 8
 println("D=",D," begin!")
 
-z1 = make_operator(pauli(:z), D)
-z2 = make_operator(pauli(:z), 2D)
+op = [:x, :y, :x]
 
 dpath = @sprintf "../data/xxz/heisenberg_D_%i.jld" D
 d1 = load(dpath)
 
 w = XXZmodel(1.0)
-for b = 1:length(beta)
-    β = beta[b]; key = string(β)
-    ψ1 = tocmps(d1[key][2]); ψ2 = w * ψ1
+for o = 1:3
+    s = 0.5 * pauli(op[o]); sname = string(op[o])
+    z1 = make_operator(s, D)
+    z2 = make_operator(s, 2D)
+
+    for b = 1:length(beta)
+        β = beta[b]; key = string(β)
+        ψ1 = tocmps(d1[key][2]); ψ2 = w * ψ1
+            
+        # G(τ)
+        path1 = @sprintf "../data/xxz/imagtime-xxz/gtau_%s_heisenberg_D_%i_beta_%i.txt" sname D β
+        path2 = @sprintf "../data/xxz/imagtime-xxz/gtau_%s_heisenberg_D_2m%i_beta_%i.txt" sname D β
+
+        tau = [i for i in range(0, β, length = len)]
+        Gt1 = [correlation_2time(i,z1,z1,ψ1,w,β) for i in tau]
+        Gt2 = [correlation_2time(i,z2,z2,ψ2,w,β) for i in tau]  
+
+        open(path1,"w") do file
+            for i=1:len
+                writedlm(file,[tau[i] Gt1[i]])
+            end
+        end
         
-    # G(τ)
-    path1 = @sprintf "../data/imagtime-xxz/gtau_heisenberg_D_%i_beta_%i.txt" D β
-    path2 = @sprintf "../data/imagtime-xxz/gtau_heisenberg_D_2m%i_beta_%i.txt" D β
-
-    tau = [i for i in range(0, β, length = len)]
-    Gt1 = [correlation_2time(i,z1,z1,ψ1,w,β) for i in tau]
-    Gt2 = [correlation_2time(i,z2,z2,ψ2,w,β) for i in tau]  
-
-    open(path1,"w") do file
-        for i=1:len
-            writedlm(file,[tau[i] Gt1[i]])
+        open(path2,"w") do file
+            for i=1:len
+                writedlm(file,[tau[i] Gt2[i]])
+            end
         end
-    end
-    
-    open(path2,"w") do file
-        for i=1:len
-            writedlm(file,[tau[i] Gt2[i]])
+
+        # G(ωn)
+        path1 = @sprintf "../data/xxz/imagtime-xxz/giwn_%s_heisenberg_D_%i_beta_%i.txt" sname D β
+        path2 = @sprintf "../data/xxz/imagtime-xxz/giwn_%s_heisenberg_D_2m%i_beta_%i.txt" sname D β
+
+        ωn = [Masubara_freq(i,β) for i=1:N]
+        Gt1 = [Masubara_freq_GF(i,z1,z1,ψ1,w,β) for i=1:N]
+        Gt2 = [Masubara_freq_GF(i,z2,z2,ψ2,w,β) for i=1:N]  
+
+        open(path1,"w") do file
+            for i=1:N
+                writedlm(file,[ωn[i] real(Gt1[i]) imag(Gt1[i])])
+            end
         end
-    end
-
-    # G(ωn)
-    path1 = @sprintf "../data/imagtime-xxz/giwn_heisenberg_D_%i_beta_%i.txt" D β
-    path2 = @sprintf "../data/imagtime-xxz/giwn_heisenberg_D_2m%i_beta_%i.txt" D β
-
-    ωn = [Masubara_freq(i,β) for i=1:N]
-    Gt1 = [Masubara_freq_GF(i,z1,z1,ψ1,w,β) for i=1:N]
-    Gt2 = [Masubara_freq_GF(i,z2,z2,ψ2,w,β) for i=1:N]  
-
-    open(path1,"w") do file
-        for i=1:N
-            writedlm(file,[ωn[i] real(Gt1[i]) imag(Gt1[i])])
+        
+        open(path2,"w") do file
+            for i=1:N
+                writedlm(file,[ωn[i] real(Gt2[i]) imag(Gt2[i])])
+            end
         end
-    end
-    
-    open(path2,"w") do file
-        for i=1:N
-            writedlm(file,[ωn[i] real(Gt2[i]) imag(Gt2[i])])
+
+        # χ(ωn)/ωn
+        path1 = @sprintf "../data/xxz/imagtime-xxz/gdivwn_%s_heisenberg_D_%i_beta_%i.txt" sname D β
+        path2 = @sprintf "../data/xxz/imagtime-xxz/gdivwn_%s_heisenberg_D_2m%i_beta_%i.txt" sname D β
+
+        ωn = [Masubara_freq(i,β) for i=1:N]
+        Gt1 = [Masubara_freq_GFdivOmega(i,z1,z1,ψ1,w,β) for i=1:N]
+        Gt2 = [Masubara_freq_GFdivOmega(i,z2,z2,ψ2,w,β) for i=1:N]  
+
+        open(path1,"w") do file
+            for i=1:N
+                writedlm(file,[ωn[i] real(Gt1[i]) imag(Gt1[i])])
+            end
         end
-    end
-
-    # χ(ωn)/ωn
-    path1 = @sprintf "../data/imagtime-xxz/gdivwn_heisenberg_D_%i_beta_%i.txt" D β
-    path2 = @sprintf "../data/imagtime-xxz/gdivwn_heisenberg_D_2m%i_beta_%i.txt" D β
-
-    ωn = [Masubara_freq(i,β) for i=1:N]
-    Gt1 = [Masubara_freq_GFdivOmega(i,z1,z1,ψ1,w,β) for i=1:N]
-    Gt2 = [Masubara_freq_GFdivOmega(i,z2,z2,ψ2,w,β) for i=1:N]  
-
-    open(path1,"w") do file
-        for i=1:N
-            writedlm(file,[ωn[i] real(Gt1[i]) imag(Gt1[i])])
-        end
-    end
-    
-    open(path2,"w") do file
-        for i=1:N
-            writedlm(file,[ωn[i] real(Gt2[i]) imag(Gt2[i])])
+        
+        open(path2,"w") do file
+            for i=1:N
+                writedlm(file,[ωn[i] real(Gt2[i]) imag(Gt2[i])])
+            end
         end
     end
 end
-
 println("finish!")
 
 """

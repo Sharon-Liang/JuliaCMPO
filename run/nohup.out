@@ -52,3 +52,9 @@ hessian optim
 2021-11-30: Heisenberg G(τ) and g(iωn)
 D=8 begin!
 finish!
+
+
+  Activating environment at `~/julia-code/mycMPO/Project.toml`
+2021-12-01: Heisenberg G(τ) and g(iωn)
+D=8 begin!
+finish!
