@@ -216,6 +216,29 @@ function Masubara_freq_GF(n::Integer, A::Matrix{<:Number},
     return num/den
 end
 
+function Masubara_freq_GF(z::ComplexF64, A::Matrix{<:Number},B::Matrix{<:Number},
+    ψ::CMPS, W::CMPO, β::Real)
+    λ = 1.0
+    K = ψ * W * ψ |> symmetrize |> Hermitian
+    e, v = eigen(K)
+    min = minimum(e); e = e .- min
+    #m = maximum(-β * e)
+    A = v' * A * v
+    B = v' * B * v
+    den = exp.(-β * e) |> sum
+    #den = exp.(-β * e .- m) |> sum
+    num = 0.0
+    for i = 1: length(e), j = 1: length(e)
+        up = exp(-β*e[i]) - λ*exp(-β*e[j])
+        #up = exp(-β*e[i]-m) - λ*exp(-β*e[j]-m)
+        up = up * A[i,j] * B[j,i]
+        down = z - e[j] + e[i]
+        num += up/down
+    end
+    return num/den
+end
+
+
 """
 Masubara frequency G(iωn)/iωn = ∑_mn Cmn(iωn)/(Em - En): defalt type = :b
 """
