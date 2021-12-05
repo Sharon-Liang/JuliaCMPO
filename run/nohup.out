@@ -78,3 +78,14 @@ finish!
  ───────────────────────────────────────────────────────────────────────────
 Finish!
 
+
+  Activating environment at `~/julia-code/mycMPO/Project.toml`
+2021-12-03: heisenberg G(τ), G(iwn), A(ω) and S(ω)
+Heisenberg D=8 begin!
+finish!
+
+
+  Activating environment at `~/julia-code/mycMPO/Project.toml`
+2021-12-04: xx G(τ), G(iwn), A(ω) and S(ω)
+xx D=8 begin!
+finish!
