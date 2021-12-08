@@ -91,3 +91,8 @@ xx D=8 begin!
 finish!
 
 
+  Activating environment at `~/julia-code/mycMPO/Project.toml`
+2021-12-07: xxz model imagtime
+finish xxz model for Jz_0.0
+finish xxz model for Jz_1.0
+finish!
