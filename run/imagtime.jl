@@ -6,134 +6,111 @@ using DelimitedFiles
 using JLD, HDF5
 using Printf
 
-println("2021-12-04: heisenberg G(τ), G(iwn), A(ω) and S(ω)")
-
+println("2021-12-07: xxz model imagtime")
+D = 8
 N = 40
-beta = [1.0, 2.0, 5.0, 10.0, 20.0, 30.0, 40.0]
+beta = [1.0, 2.0, 4.0, 6.0, 8.0, 10.0, 20.0]
 len = 1601
 
-D = 16
-println("heisenberg D=",D," begin!")
+model = "xxz"
+folder = "imagtime"
+dir = @sprintf "../data/%s/%s" model folder
+isdir(dir) || mkdir(dir)
 
-op = [:x, :z]
 
-dpath = @sprintf "../data/xxz/heisenberg_D_%i.jld" D
-d1 = load(dpath)
+op = [:+, :-, :x, :iy, :z]
+nop= ["pm", "mp", "px", "py", "pz"]
 
 omega = [i for i in range(-4π,4π,length=len)]
 eta = [0.05, 0.001]
+Delta=[0.0, 1.0]
 
-w = XXZmodel(1.0)
-for o = 1:length(op)
-    s = 0.5 * pauli(op[o]); sname = string(op[o])
-    z1 = make_operator(s, D)
-    z2 = make_operator(s, 2D)
+for δ = 1:length(Delta)
+    Δ = Delta[δ]
+    w = XXZmodel(Δ)
+    name = @sprintf "Jz_%.1f" Δ
+    data_path = @sprintf "../data/xxz/%s_D_%i.jld" name D
+    data = load(data_path)
+    for o = 1:length(op)
+        op_name = nop[o]
+        op1 = make_operator(pauli(op[o]), D)
+        op2 = make_operator(pauli(op[o]), 2D)
 
-    for b = 1:length(beta)
-        β = beta[b]; key = string(β)
-        ψ1 = tocmps(d1[key][2]); ψ2 = w * ψ1
+        for b = 1:length(beta)
+            β = beta[b]; key = string(β)
+            ψ1 = tocmps(data[key][2]); ψ2 = w * ψ1
+                
+            # G(τ)
+            func = "gtau"
+            dir1 = @sprintf "%s/%s" dir func
+            isdir(dir1) || mkdir(dir1)
+            path1 = @sprintf "%s/%s_%s_D_%i_beta_%i.txt" dir1 name op_name D β
+            path2 = @sprintf "%s/%s_%s_D_%im2_beta_%i.txt" dir1 name op_name D β
+
+            tau = [i for i in range(0, β, length = len)]
+            Gt1 = [correlation_2time(i,op1,op1',ψ1,w,β) for i in tau]
+            Gt2 = [correlation_2time(i,op2,op2',ψ2,w,β) for i in tau]  
+
+            open(path1,"w") do file
+                for i=1:len
+                    writedlm(file,[tau[i] Gt1[i]])
+                end
+            end
             
-        # G(τ)
-        path1 = @sprintf "../data/xxz/imagtime-xxz/gtau_%s_heisenberg_D_%i_beta_%i.txt" sname D β
-        path2 = @sprintf "../data/xxz/imagtime-xxz/gtau_%s_heisenberg_D_2m%i_beta_%i.txt" sname D β
-
-        tau = [i for i in range(0, β, length = len)]
-        Gt1 = [correlation_2time(i,z1,z1,ψ1,w,β) for i in tau]
-        Gt2 = [correlation_2time(i,z2,z2,ψ2,w,β) for i in tau]  
-
-        open(path1,"w") do file
-            for i=1:len
-                writedlm(file,[tau[i] Gt1[i]])
-            end
-        end
-        
-        open(path2,"w") do file
-            for i=1:len
-                writedlm(file,[tau[i] Gt2[i]])
-            end
-        end
-
-        # G(ωn)
-        path1 = @sprintf "../data/xxz/imagtime-xxz/giwn_%s_heisenberg_D_%i_beta_%i.txt" sname D β
-        path2 = @sprintf "../data/xxz/imagtime-xxz/giwn_%s_heisenberg_D_2m%i_beta_%i.txt" sname D β
-
-        ωn = [Masubara_freq(i,β) for i=1:N]
-        Gt1 = [Masubara_freq_GF(i,z1,z1,ψ1,w,β) for i=1:N]
-        Gt2 = [Masubara_freq_GF(i,z2,z2,ψ2,w,β) for i=1:N]  
-
-        open(path1,"w") do file
-            for i=1:N
-                writedlm(file,[ωn[i] real(Gt1[i]) imag(Gt1[i])])
-            end
-        end
-        
-        open(path2,"w") do file
-            for i=1:N
-                writedlm(file,[ωn[i] real(Gt2[i]) imag(Gt2[i])])
-            end
-        end
-
-        # χ(ωn)/ωn
-        path1 = @sprintf "../data/xxz/imagtime-xxz/gdivwn_%s_heisenberg_D_%i_beta_%i.txt" sname D β
-        path2 = @sprintf "../data/xxz/imagtime-xxz/gdivwn_%s_heisenberg_D_2m%i_beta_%i.txt" sname D β
-
-        ωn = [Masubara_freq(i,β) for i=1:N]
-        Gt1 = [Masubara_freq_GFdivOmega(i,z1,z1,ψ1,w,β) for i=1:N]
-        Gt2 = [Masubara_freq_GFdivOmega(i,z2,z2,ψ2,w,β) for i=1:N]  
-
-        open(path1,"w") do file
-            for i=1:N
-                writedlm(file,[ωn[i] real(Gt1[i]) imag(Gt1[i])])
-            end
-        end
-        
-        open(path2,"w") do file
-            for i=1:N
-                writedlm(file,[ωn[i] real(Gt2[i]) imag(Gt2[i])])
-            end
-        end
-
-        for e = 1:length(eta)
-            η = eta[e]
-            "A(ω)"
-            path1 = @sprintf "../data/xxz/spectral/heisenberg_%s_Aw_D_%i_beta_%i_eta_%.3f.txt" sname D β η
-            path2 = @sprintf "../data/xxz/spectral/heisenberg_%s_Aw_D_2m%i_beta_%i_eta_%.3f.txt" sname D β η
-
-            Gt1 = [spectral_density(i,z1,z1,ψ1,w,β,η=η) for i in omega]
-            Gt2 = [spectral_density(i,z2,z2,ψ2,w,β, η=η) for i in omega]  
-
-            open(path1,"w") do file
-                for i=1:len
-                    writedlm(file,[omega[i] Gt1[i]])
-                end
-            end
-    
             open(path2,"w") do file
                 for i=1:len
-                    writedlm(file,[omega[i] Gt2[i]])
+                    writedlm(file,[tau[i] Gt2[i]])
                 end
             end
 
-            "S(ω)"
-            path1 = @sprintf "../data/xxz/spectral/heisenberg_%s_Sw_D_%i_beta_%i_eta_%.3f.txt" sname D β η
-            path2 = @sprintf "../data/xxz/spectral/heisenberg_%s_Sw_D_2m%i_beta_%i_eta_%.3f.txt" sname D β η
+            # G(ωn)
+            func = "giwn"
+            dir1 = @sprintf "%s/%s" dir func
+            isdir(dir1) || mkdir(dir1)
+            path1 = @sprintf "%s/%s_%s_D_%i_beta_%i.txt" dir1 name op_name D β
+            path2 = @sprintf "%s/%s_%s_D_%im2_beta_%i.txt" dir1 name op_name D β
 
-            Gt1 = [structure_factor(i,z1,z1,ψ1,w,β,η=η) for i in omega]
-            Gt2 = [structure_factor(i,z2,z2,ψ2,w,β, η=η) for i in omega]  
+            ωn = [Masubara_freq(i,β) for i=1:N]
+            Gt1 = [Masubara_freq_GF(i,op1,op1',ψ1,w,β) for i=1:N]
+            Gt2 = [Masubara_freq_GF(i,op2,op2',ψ2,w,β) for i=1:N]  
 
             open(path1,"w") do file
-                for i=1:len
-                    writedlm(file,[omega[i] Gt1[i]])
+                for i=1:N
+                    writedlm(file,[ωn[i] real(Gt1[i]) imag(Gt1[i])])
                 end
             end
-    
+            
             open(path2,"w") do file
-                for i=1:len
-                    writedlm(file,[omega[i] Gt2[i]])
+                for i=1:N
+                    writedlm(file,[ωn[i] real(Gt2[i]) imag(Gt2[i])])
+                end
+            end
+
+            # χ(ωn)/ωn
+            func = "gdivwn"
+            dir1 = @sprintf "%s/%s" dir func
+            isdir(dir1) || mkdir(dir1)
+            path1 = @sprintf "%s/%s_%s_D_%i_beta_%i.txt" dir1 name op_name D β
+            path2 = @sprintf "%s/%s_%s_D_%im2_beta_%i.txt" dir1 name op_name D β
+
+            ωn = [Masubara_freq(i,β) for i=1:N]
+            Gt1 = [Masubara_freq_GFdivOmega(i,op1,op1',ψ1,w,β) for i=1:N]
+            Gt2 = [Masubara_freq_GFdivOmega(i,op2,op2',ψ2,w,β) for i=1:N]  
+
+            open(path1,"w") do file
+                for i=1:N
+                    writedlm(file,[ωn[i] real(Gt1[i]) imag(Gt1[i])])
+                end
+            end
+            
+            open(path2,"w") do file
+                for i=1:N
+                    writedlm(file,[ωn[i] real(Gt2[i]) imag(Gt2[i])])
                 end
             end
         end
     end
+    println("finish xxz model for ", name)
 end
 println("finish!")
 
