@@ -6,11 +6,12 @@ using DelimitedFiles
 using JLD, HDF5
 using Printf
 
-"""
+
 println("2021-12-09: xxz model ∂ReG_∂ωn")
     D = 8
     N = 40
-    beta = [1.0, 2.0, 4.0, 6.0, 8.0, 10.0, 20.0]
+    #beta = [1.0, 2.0, 4.0, 6.0, 8.0, 10.0, 20.0]
+    beta = [30.0, 40.0]
 
     model = "xxz"
     folder = "imagtime"
@@ -61,7 +62,7 @@ println("2021-12-09: xxz model ∂ReG_∂ωn")
         end
         println("finish ", name)
     end
-"""
+
 
 """
 println("2021-12-09: ising model ∂ReG_∂ωn")
@@ -231,6 +232,7 @@ println("2021-12-09: xxz model imagtime")
     println("finish!")
 """
 
+"""
 println("2021-12-09: xxz model spectrum")
     D = 8
     N = 40
@@ -313,6 +315,7 @@ println("2021-12-09: xxz model spectrum")
         println("finish xxz model for ", name)
     end
     println("finish!")
+"""
 
 """
 #==free_energy compare==#
