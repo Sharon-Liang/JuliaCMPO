@@ -32,4 +32,3 @@ run/*.out
 #data_new/
 run/nohup.out
 
-Manifest.toml
