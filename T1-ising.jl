@@ -1,0 +1,178 @@
+### A Pluto.jl notebook ###
+# v0.17.1
+
+using Markdown
+using InteractiveUtils
+
+# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
+macro bind(def, element)
+    quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local el = $(esc(element))
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
+        el
+    end
+end
+
+# ╔═╡ 9555258c-5890-11ec-1c67-1dba0d6df118
+begin
+	using Pkg; Pkg.activate("./")
+	using cMPO
+	using JLD, HDF5
+	using Plots; gr(xtickfontsize=13, ytickfontsize=13, xguidefontsize=16, yguidefontsize=16, legendfontsize=12)
+	default(palette = palette(:okabe_ito))
+	using DelimitedFiles
+	using Printf
+	using PlutoUI
+	"packages"
+end
+
+# ╔═╡ be3eaa93-b4fc-4300-9455-00d4bf8be7e0
+md"""
+## Transverse filed Ising model
+"""
+
+# ╔═╡ 3f602ef1-f8e8-4833-bd49-00c0e7caedc8
+md"""
+### Setups
+"""
+
+# ╔═╡ c9f8e371-5a63-4f84-a69f-6a2d0087d77c
+invT = [10.0, 20.0, 30.0, 40.0]
+
+# ╔═╡ 7191ed9d-7be8-4f15-a262-51af41ff7180
+lt = length(invT);
+
+# ╔═╡ b719a415-ae92-4aa1-8597-6d373a76c608
+gamma = [1.0, 1.5, 2.0]
+
+# ╔═╡ 6ffb4dd0-0069-4924-8ec0-0782fcc96376
+lg = length(gamma);
+
+# ╔═╡ 79364cf8-a5b0-470f-9f93-7d700e2cb65f
+N = 40
+
+# ╔═╡ abf0db31-a739-4992-bd4f-10e81238aeef
+D = 8
+
+# ╔═╡ 286b0bf7-278d-4799-bcd3-74a9bad0d5b4
+begin
+	data_path = [@sprintf "./data/ising/D_%i/g_%.1f.jld" D gamma[i] for i=1:lg]
+	data = [load(data_path[i]) for i=1:lg]
+	"load ising cmpo data"
+end
+
+# ╔═╡ dea97d84-956d-47d6-b563-bb2287b38585
+@bind g Slider(gamma)
+
+# ╔═╡ 297dbb2d-18b1-4fbb-be75-85a4ed256a21
+gind = findall(x->x == g, gamma)[1];
+
+# ╔═╡ 918911a0-a78c-4713-84f2-16d901b72adf
+begin
+	s0 = zeros(length(invT))
+	if g == 1.0
+		path_Li = [@sprintf "./data/ising/spectrum-Li/Sw/g_%.1f_beta_%i.txt" g invT[i] for i=1:length(invT)]
+		dl = [readdlm(path_Li[i]) for i=1:lt]
+		s0 =[dl[i][800,2] for i=1:lt]
+	end
+	"load Zi-long Li data: S(0)"
+end
+
+# ╔═╡ f5826335-5d41-4637-8dd8-5b35deda26ba
+begin
+	p_ReG = [@sprintf "./data/ising/imagtime/giwn/g_%.1f_D_%i_beta_%i.txt" g D invT[i] 
+			for i=1:lt]
+	p_ImG = [@sprintf "./data/ising/imagtime/gdivwn/g_%.1f_D_%i_beta_%i.txt" g D invT[i] 
+			for i=1:lt]
+	p_dReG = [@sprintf "./data/ising/imagtime/dReG/g_%.1f_pz_D_%i_beta_%i.txt" g D invT[i] 
+			for i=1:lt]
+	
+	d_ReG = [readdlm(p_ReG[i]) for i=1:lt]
+	d_ImG = [readdlm(p_ImG[i]) for i=1:lt]
+	d_dReG = [readdlm(p_dReG[i]) for i=1:lt]
+	
+	ReG = Vector{Matrix}(undef,lt)
+	ImG_dE = Vector{Matrix}(undef,lt)
+	dReG = Vector{Matrix}(undef,lt)
+	
+	for i = 1:lt
+		b = invT[i]
+	    ReG[i], ImG_dE[i], dReG[i] = zeros(N,2), zeros(N,2), zeros(N,2)
+		ReG[i][:,1] = d_ReG[i][:,1]; ReG[i][:,2] = d_ReG[i][:,2]
+		ImG_dE[i][:,1] = d_ImG[i][:,1]; ImG_dE[i][:,2] = -2/b*d_ImG[i][:,3]
+		dReG[i][:,1] = d_dReG[i][:,1]; dReG[i][:,2] = 2/b*d_dReG[i][:,2]
+	end
+	"load ls data: ReG, ImG_dE, dReG"
+end
+
+# ╔═╡ be07f683-dc13-4df5-9dde-c1d1e7d7acdb
+@bind β Slider(invT)
+
+# ╔═╡ aa1a850e-f3e3-4363-a8e6-fbe972289e15
+t = findall(x->x == β, invT)[1];
+
+# ╔═╡ 28550373-4cd4-4f8a-b1eb-1e3257d3ef0d
+begin
+	w = TFIsing(1.0, g)
+	key = string(β); ψ = tocmps(data[gind][key][2])	
+	pz = make_operator(pauli(:z),D)
+	Gt = [π*invT[i]/4*correlation_2time(invT[i]/2,pz,pz',ψ,w,invT[i]) for i=1:lt]
+	"πβ/4*G(β/2)"
+end
+
+# ╔═╡ 25f6c7ed-6dc1-4a2c-8858-e1b9fbc940f3
+@bind xmax1 Slider(ImG_dE[t][:,1])
+
+# ╔═╡ 4c223588-5dff-45c2-bd2b-8910545946eb
+begin
+	scatter([0.0], [s0[t]],label="Pfaffian")
+	scatter!([0.0], [Gt[t]],label="πβ/4*G(β/2)")
+	plot!(ImG_dE[t][:,1], ImG_dE[t][:,2], 
+		line=(:dash),
+		marker=(:circle),
+		label="ImG(iωn)/ΔE")
+	plot!(dReG[t][:,1],dReG[t][:,2], 
+		line=(:dash),
+		marker=(:circle),
+		label="dReG_dωn")
+	plot!(xlim=(-0.3, xmax1))
+	fig_s0 = @sprintf "ising g=%.1f, β=%i" g β
+	plot!(xlabel="ωn", ylabel="S(0)",title=fig_s0)
+end
+
+# ╔═╡ 37cb3aff-f194-4b36-8bbc-bf5565d714cf
+begin
+	plot(ReG[t][:,1], ReG[t][:,2], 
+		line=(:dash),
+		marker=(:circle),
+		label="ReG(iωn)")
+	fig_ReG = @sprintf "ising g=%.1f, β=%i" g β
+	plot!(xlabel="ωn", ylabel="ReG(iωn)",title=fig_ReG, legend=:bottomright)
+end
+
+# ╔═╡ 8a2b197c-dca1-41b5-acf0-cd6f74f669a3
+@bind xmax2 Slider(dReG[t][:,1])
+
+# ╔═╡ Cell order:
+# ╟─7191ed9d-7be8-4f15-a262-51af41ff7180
+# ╟─6ffb4dd0-0069-4924-8ec0-0782fcc96376
+# ╟─aa1a850e-f3e3-4363-a8e6-fbe972289e15
+# ╟─297dbb2d-18b1-4fbb-be75-85a4ed256a21
+# ╟─be3eaa93-b4fc-4300-9455-00d4bf8be7e0
+# ╟─3f602ef1-f8e8-4833-bd49-00c0e7caedc8
+# ╟─c9f8e371-5a63-4f84-a69f-6a2d0087d77c
+# ╟─b719a415-ae92-4aa1-8597-6d373a76c608
+# ╟─79364cf8-a5b0-470f-9f93-7d700e2cb65f
+# ╟─abf0db31-a739-4992-bd4f-10e81238aeef
+# ╟─918911a0-a78c-4713-84f2-16d901b72adf
+# ╟─f5826335-5d41-4637-8dd8-5b35deda26ba
+# ╟─286b0bf7-278d-4799-bcd3-74a9bad0d5b4
+# ╟─28550373-4cd4-4f8a-b1eb-1e3257d3ef0d
+# ╠═dea97d84-956d-47d6-b563-bb2287b38585
+# ╠═be07f683-dc13-4df5-9dde-c1d1e7d7acdb
+# ╟─4c223588-5dff-45c2-bd2b-8910545946eb
+# ╠═25f6c7ed-6dc1-4a2c-8858-e1b9fbc940f3
+# ╟─37cb3aff-f194-4b36-8bbc-bf5565d714cf
+# ╠═8a2b197c-dca1-41b5-acf0-cd6f74f669a3
+# ╟─9555258c-5890-11ec-1c67-1dba0d6df118
