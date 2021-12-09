@@ -2,7 +2,7 @@
 import Base: kron
 
 """
-Pauli matrices
+    Pauli matrices
 """
 function pauli(symbol::Symbol)
     if symbol==:x return [0. 1.; 1. 0.]
@@ -16,6 +16,7 @@ function pauli(symbol::Symbol)
     end
 end
 
+
 """
 Gaussian approximate delta function
 """
@@ -25,6 +26,10 @@ function delta(x::Real, η::Real)
     return num/den
 end
 
+
+"""
+    Masubara frequency
+"""
 function Masubara_freq(n::Int64, β::Real; type::Symbol=:b)
     if type == :b  N = 2n
     elseif type == :f  N = 2n + 1
@@ -33,19 +38,23 @@ function Masubara_freq(n::Int64, β::Real; type::Symbol=:b)
     return N*π/β
 end
 
-function ⊗(A::Matrix, B::Matrix)
+
+"""
+    Products
+"""
+function ⊗(A::AbstractMatrix, B::AbstractMatrix)
     (r1, c1) = size(A)
     (r2,c2) = size(B)
     return reshape(ein"ij,kl->kilj"(A, B), r1*r2, c1*c2)
 end
 
-function ⊗(A::Matrix, B::Array{T,3} where T)
+function ⊗(A::AbstractMatrix, B::Array{T,3} where T)
     (r1,c1) = size(A)
     (r2,c2,d) = size(B)
     return reshape(ein"ij,klm->kiljm"(A, B), r1*r2, c1*c2, d)
 end
 
-function ⊗(A::Array{T,3} where T, B::Matrix)
+function ⊗(A::Array{T,3} where T, B::AbstractMatrix)
     (r1,c1,d) = size(A)
     (r2,c2) = size(B)
     return reshape(ein"ijm,kl->kiljm"(A, B), r1*r2, c1*c2, d)
@@ -79,10 +88,16 @@ function ⊗(A::Array{T,4} where T, B::Array{T,4} where T)
     return reshape(ein"ijpm,klmq->kiljpq"(A, B), r1*r2, c1*c2, d1, f2)    
 end
 
+"""
+    Symmetrize of matrices
+"""
 function symmetrize(A::AbstractMatrix)
     (A + A')/2
 end
 
+"""
+    Tr[exp(A)] function
+"""
 struct trexp{T<:Number}
     max::T
     res::T
@@ -104,6 +119,10 @@ function trexp(A::AbstractMatrix)
     return trexp(max, res)
 end
 
+
+"""
+    ln(Tr[exp(A)]) function
+"""
 function logtrexp(A::AbstractMatrix)
     #if isapprox(A,A') == false
     #    error("The input matrix should be hermitian")
@@ -111,6 +130,8 @@ function logtrexp(A::AbstractMatrix)
     A = symmetrize(A) |> Hermitian
     return eigvals(A) |> logsumexp
 end
+
+
 
 """function manipulation"""
 function gradient_function(f::Function)
