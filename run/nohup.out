@@ -96,3 +96,10 @@ finish!
 finish xxz model for Jz_0.0
 finish xxz model for Jz_1.0
 finish!
+
+
+  Activating environment at `~/julia-code/mycMPO/Project.toml`
+2021-12-09: ising model ∂ReG_∂ωn
+finish Γ/J = 1.0
+finish Γ/J = 1.5
+finish Γ/J = 2.0

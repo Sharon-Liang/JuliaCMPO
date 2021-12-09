@@ -6,7 +6,65 @@ using DelimitedFiles
 using JLD, HDF5
 using Printf
 
-println("2021-12-07: xxz model imagtime")
+println("2021-12-09: ising model ∂ReG_∂ωn")
+D = 8
+N = 40
+beta = [1.0, 2.0, 4.0, 6.0, 8.0, 10.0, 20.0, 30.0, 40.0]
+
+model = "xxz"
+folder = "imagtime"
+dir = @sprintf "../data/%s/%s" model folder
+isdir(dir) || mkdir(dir)
+
+op = [:+, :-, :x, :iy, :z]
+nop= ["pm", "mp", "px", "py", "pz"]
+
+gamma=[1.0, 1.5, 2.0]
+
+for ga = 1:length(gamma)
+    g = gamma[ga]
+    w = TFIsing(1.0, g)
+    data_path = @sprintf "../data/ising/D_%i/g_%.1f.jld" D g
+    data = load(data_path)
+    for o = 1:length(op)
+        op_name = nop[o]
+        op1 = make_operator(pauli(op[o]), D)
+        op2 = make_operator(pauli(op[o]), 2D)
+
+        for b = 1:length(beta)
+            β = beta[b]; key = string(β)
+            ψ1 = tocmps(data[key][2]); ψ2 = w * ψ1
+                
+            func = "dReG"
+            dir1 = @sprintf "%s/%s" dir func
+            isdir(dir1) || mkdir(dir1)
+            path1 = @sprintf "%s/g_%.1f_%s_D_%i_beta_%i.txt" dir1 g op_name D β
+            path2 = @sprintf "%s/g_%.1f_%s_D_%im2_beta_%i.txt" dir1 g op_name D β
+
+            ωn = [Masubara_freq(i,β) for i=1:N]
+            Gt1 = [∂ReG_∂ωn(i,op1,op1',ψ1,w,β) for i=1:N]
+            Gt2 = [∂ReG_∂ωn(i,op2,op2',ψ2,w,β) for i=1:N]  
+
+            open(path1,"w") do file
+                for i=1: N
+                    writedlm(file,[ωn[i] Gt1[i]])
+                end
+            end
+            
+            open(path2,"w") do file
+                for i=1: N
+                    writedlm(file,[ωn[i] Gt2[i]])
+                end
+            end
+        end
+    end
+    println("finish Γ/J = ", g)
+end
+
+
+
+"""
+println("2021-12-09: xxz model imagtime")
 D = 8
 N = 40
 beta = [1.0, 2.0, 4.0, 6.0, 8.0, 10.0, 20.0]
@@ -113,7 +171,7 @@ for δ = 1:length(Delta)
     println("finish xxz model for ", name)
 end
 println("finish!")
-
+"""
 
 """
 D = 8
