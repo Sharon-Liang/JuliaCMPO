@@ -6,7 +6,7 @@ using DelimitedFiles
 using JLD, HDF5
 using Printf
 
-
+"""
 println("2021-12-09: xxz model ∂ReG_∂ωn")
     D = 8
     N = 40
@@ -62,7 +62,7 @@ println("2021-12-09: xxz model ∂ReG_∂ωn")
         end
         println("finish ", name)
     end
-
+"""
 
 """
 println("2021-12-09: ising model ∂ReG_∂ωn")
