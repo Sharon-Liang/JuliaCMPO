@@ -25,6 +25,7 @@ begin
 	using Printf
 	using PlutoUI
 	using LinearAlgebra
+	using LsqFit
 	"packages"
 end
 
@@ -39,13 +40,13 @@ md"""
 """
 
 # ╔═╡ c9f8e371-5a63-4f84-a69f-6a2d0087d77c
-invT = [1.0, 2.0, 4.0, 6.0, 8.0, 10.0, 20.0, 30.0, 40.0]
+invT = [10.0, 20.0, 30.0, 40.0]
 
 # ╔═╡ 7191ed9d-7be8-4f15-a262-51af41ff7180
 lt = length(invT);
 
 # ╔═╡ b719a415-ae92-4aa1-8597-6d373a76c608
-gamma = [1.0, 1.5, 2.0]
+gamma = [1.0]
 
 # ╔═╡ 6ffb4dd0-0069-4924-8ec0-0782fcc96376
 lg = length(gamma);
@@ -56,8 +57,11 @@ N = 40
 # ╔═╡ abf0db31-a739-4992-bd4f-10e81238aeef
 D = 8
 
-# ╔═╡ 9bf1b230-951d-40d6-a759-db7740490511
+# ╔═╡ be07f683-dc13-4df5-9dde-c1d1e7d7acdb
+@bind β Slider(invT)
 
+# ╔═╡ aa1a850e-f3e3-4363-a8e6-fbe972289e15
+t = findall(x->x == β, invT)[1];
 
 # ╔═╡ 42d2cb9d-96ba-46e6-88f0-74af89eb4511
 
@@ -132,13 +136,68 @@ gind = findall(x->x == g, gamma)[1];
 
 # ╔═╡ 918911a0-a78c-4713-84f2-16d901b72adf
 begin
-	s0 = zeros(length(invT))
+	s0, s1 = zeros(length(invT)), zeros(length(invT))
 	if g == 1.0
-		path_Li = [@sprintf "./data/ising/spectrum-Li/Sw/g_%.1f_beta_%i.txt" g invT[i] for i=1:length(invT)]
-		dl = [readdlm(path_Li[i]) for i=1:lt]
-		s0 =[dl[i][800,2] for i=1:lt]
+		pl0 = [@sprintf "./data/ising/spectrum-Li/Sw/g_%.1f_beta_%i.txt" g invT[i] for i=1:length(invT)]
+		pl1 = [@sprintf "./data/ising/spectrum-Li/Sw/g_%.1f_beta_%i_eta_2pidbeta.txt" g invT[i] for i=1:length(invT)]
+		dl0 = [readdlm(pl0[i]) for i=1:lt]
+		dl1 = [readdlm(pl1[i]) for i=1:lt]
+		s0 =[dl0[i][800,2] for i=1:lt]
+		s1 =[dl1[i][800,2] for i=1:lt]
 	end
-	"load Zi-long Li data: S(0)"
+	"load Zi-long Li data: S(0,η=0.001), S(0,η=2π/β) "
+end
+
+# ╔═╡ c8f38627-b5dc-4f18-ae54-beb2406734f0
+s0
+
+# ╔═╡ 945e2062-13aa-4ba2-9e33-f030f9cdeeb2
+begin
+	plot(dl0[t][:,1], dl0[t][:,2], label=@sprintf "η=0.001, β=%i" β)
+	plot!(ylabel="S", xlabel="ω")
+end
+
+# ╔═╡ 4812d37b-8283-48a2-8f61-b81b63c99c62
+begin
+	plot(dl1[t][:,1], dl1[t][:,2], label=@sprintf "η=2π/β, β=%i" β)
+	plot!(ylabel="S", xlabel="ω")
+end
+
+# ╔═╡ 9bf1b230-951d-40d6-a759-db7740490511
+begin
+	if g == 1.0
+		pw1 = [@sprintf "./data/ising/imagtime/S0iwn/g_%.1f_D_%i_beta_%i.txt" g D invT[i] for i=1:length(invT)]
+		pw2 = [@sprintf "./data/ising/imagtime/S0iwn/g_%.1f_D_%im2_beta_%i.txt" g D invT[i] for i=1:length(invT)]
+		dw1 = [readdlm(pw1[i]) for i=1:lt]
+		dw2 = [readdlm(pw2[i]) for i=1:lt]
+	end
+	"load cmpo data: S(0,η=ωn) "
+end
+
+# ╔═╡ a31b1f2f-3102-4e7e-a5a0-6003a785a3d5
+begin
+	plot(xlabel="2π/β", ylabel="S(0,η)", title=(@sprintf "g=%.1f, β=%i" g β))
+	scatter!(dw1[t][:,1], dw1[t][:,2], label="cmpo χ=8")
+	#scatter!(dw2[t][:,1], dw2[t][:,2], label="cmpo χ=8×2")
+	scatter!([2π/β],[s1[t]],marker=(:star, stroke(0.2)), label="η=2π/β")
+	scatter!([0.0],[s0[t]],marker=(:star, stroke(0.2)), label="η=0.001")
+end
+
+# ╔═╡ ef94f39d-0ab5-4259-8531-5279433e7996
+begin
+	plot(xlabel="2π/β", ylabel="S(0,η)", title=(@sprintf "g=%.1f" g))
+	for i = lt:-1:1
+		plot!(dw1[i][:,1], dw1[i][:,2], 
+			line=(:dash,0.5),
+			marker=(:circle, 3, stroke(0.2)), 
+			label=@sprintf "β=%i" invT[i])
+		scatter!([2π/invT[i]],[s1[i]],marker=(:star, stroke(0.2)), label=false)
+		scatter!([0.0],[s0[i]],marker=(:star, stroke(0.2)), label="2π/β")
+	end
+	plot!()
+	#scatter!(dw2[t][:,1], dw2[t][:,2], label="cmpo χ=8×2")
+	#scatter!([2π/β],[s1[t]],marker=(:star, stroke(0.2)), label="η=0.001")
+	#scatter!([0.0],[s0[t]],marker=(:star, stroke(0.2)), label="2π/β")
 end
 
 # ╔═╡ f5826335-5d41-4637-8dd8-5b35deda26ba
@@ -181,18 +240,6 @@ begin
 	plot!(xlim=(-0.1,5))
 end
 
-# ╔═╡ eefa390d-a5c8-4123-ad89-02fb0970f54c
-g
-
-# ╔═╡ be07f683-dc13-4df5-9dde-c1d1e7d7acdb
-@bind β Slider(invT)
-
-# ╔═╡ aa1a850e-f3e3-4363-a8e6-fbe972289e15
-t = findall(x->x == β, invT)[1];
-
-# ╔═╡ 171b44eb-a010-44fb-b59d-4803037accef
-t1 = findall(x->x == β, invT)[1];
-
 # ╔═╡ 28550373-4cd4-4f8a-b1eb-1e3257d3ef0d
 begin
 	w = TFIsing(1.0, g)
@@ -214,9 +261,6 @@ begin
 	plot(omega, -imag.(gw), label="ReG/dE")
 	plot!(omega, gw1, label="dReG")
 end
-
-# ╔═╡ 3d00d77b-8036-4f07-b08e-ca4847d59f5f
-β 
 
 # ╔═╡ 25f6c7ed-6dc1-4a2c-8858-e1b9fbc940f3
 @bind xmax1 Slider(ImG_dE[t][:,1])
@@ -258,19 +302,24 @@ end
 @bind xmax2 Slider(dReG[t][:,1])
 
 # ╔═╡ Cell order:
-# ╟─7191ed9d-7be8-4f15-a262-51af41ff7180
-# ╟─6ffb4dd0-0069-4924-8ec0-0782fcc96376
-# ╟─aa1a850e-f3e3-4363-a8e6-fbe972289e15
-# ╟─297dbb2d-18b1-4fbb-be75-85a4ed256a21
+# ╠═7191ed9d-7be8-4f15-a262-51af41ff7180
+# ╠═6ffb4dd0-0069-4924-8ec0-0782fcc96376
+# ╠═aa1a850e-f3e3-4363-a8e6-fbe972289e15
+# ╠═297dbb2d-18b1-4fbb-be75-85a4ed256a21
 # ╟─be3eaa93-b4fc-4300-9455-00d4bf8be7e0
 # ╟─3f602ef1-f8e8-4833-bd49-00c0e7caedc8
-# ╠═c9f8e371-5a63-4f84-a69f-6a2d0087d77c
-# ╠═171b44eb-a010-44fb-b59d-4803037accef
+# ╟─c9f8e371-5a63-4f84-a69f-6a2d0087d77c
 # ╟─b719a415-ae92-4aa1-8597-6d373a76c608
 # ╟─79364cf8-a5b0-470f-9f93-7d700e2cb65f
-# ╠═abf0db31-a739-4992-bd4f-10e81238aeef
+# ╟─abf0db31-a739-4992-bd4f-10e81238aeef
 # ╟─918911a0-a78c-4713-84f2-16d901b72adf
-# ╠═9bf1b230-951d-40d6-a759-db7740490511
+# ╟─9bf1b230-951d-40d6-a759-db7740490511
+# ╠═c8f38627-b5dc-4f18-ae54-beb2406734f0
+# ╠═be07f683-dc13-4df5-9dde-c1d1e7d7acdb
+# ╠═a31b1f2f-3102-4e7e-a5a0-6003a785a3d5
+# ╠═ef94f39d-0ab5-4259-8531-5279433e7996
+# ╟─945e2062-13aa-4ba2-9e33-f030f9cdeeb2
+# ╟─4812d37b-8283-48a2-8f61-b81b63c99c62
 # ╟─f5826335-5d41-4637-8dd8-5b35deda26ba
 # ╠═dbb09e85-141f-42dc-8fe9-7fd3a1ddde95
 # ╠═e0718b1f-be57-47b4-adbb-fb6f0f626c91
@@ -283,16 +332,13 @@ end
 # ╟─7041282e-d0ed-41e0-a4cd-5bdd70339a81
 # ╟─acd6afad-f3cc-4a55-8818-a7444a6a2b71
 # ╠═8fb177fe-2598-4a8f-969c-175d1a9623d9
-# ╠═3d00d77b-8036-4f07-b08e-ca4847d59f5f
-# ╠═eefa390d-a5c8-4123-ad89-02fb0970f54c
 # ╟─6746901a-03f3-4af2-bde7-752060a350a8
 # ╠═2e95d260-31fd-45ea-8da3-d7f734f4b590
 # ╠═dea97d84-956d-47d6-b563-bb2287b38585
-# ╠═be07f683-dc13-4df5-9dde-c1d1e7d7acdb
 # ╟─4c223588-5dff-45c2-bd2b-8910545946eb
 # ╠═25f6c7ed-6dc1-4a2c-8858-e1b9fbc940f3
 # ╠═e2d89ddf-0958-46ae-b179-be6cd0a5c963
 # ╟─37cb3aff-f194-4b36-8bbc-bf5565d714cf
 # ╠═ba566041-7dd2-4bcf-adc7-d1479ed8f629
 # ╠═8a2b197c-dca1-41b5-acf0-cd6f74f669a3
-# ╠═9555258c-5890-11ec-1c67-1dba0d6df118
+# ╟─9555258c-5890-11ec-1c67-1dba0d6df118
