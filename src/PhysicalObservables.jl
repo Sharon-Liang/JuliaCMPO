@@ -1,20 +1,24 @@
 #module PhysicalObservables
-#include("Setup.jl")
-
-function make_operator(Op::Matrix{<:Number}, dim::Int64)
-    eye = Matrix(1.0I, dim, dim)
+"""
+    make operator ⊢o⊣
+"""
+function make_operator(Op::AbstractMatrix, dim::Int64)
+    T = eltype(Op)
+    eye = Matrix{T}(I, dim, dim)
     return eye ⊗ Op ⊗ eye
 end
 
-function make_operator(Op::Matrix{<:Number}, ψ::CMPS)
-    eye = Matrix(1.0I, size(ψ.Q))
+function make_operator(Op::AbstractMatrix, ψ::CMPS)
+    T = eltype(Op)
+    eye = Matrix{T}(I, size(ψ.Q))
     return eye ⊗ Op ⊗ eye
 end
 
+
 """
-The thermal average of local opeartors ===============================
+    The thermal average of local opeartors ⊢o⊣ with respect to K = ψ * W * ψ
 """
-function thermal_average(Op::Matrix{<:Number}, ψ::CMPS, W::CMPO, β::Real)
+function thermal_average(Op::AbstractMatrix, ψ::CMPS, W::CMPO, β::Real)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(-β*K)
     m = maximum(e); e = e .- m
@@ -24,7 +28,10 @@ function thermal_average(Op::Matrix{<:Number}, ψ::CMPS, W::CMPO, β::Real)
     return num/den
 end
 
-function thermal_average(Op::Matrix{<:Number}, ψ::CMPS, β::Real)
+"""
+    The thermal average of local opeartors ⊢o⊣ with respect to K = ψ * ψ
+"""
+function thermal_average(Op::AbstractMatrix, ψ::CMPS, β::Real)
     K = ψ * ψ |> symmetrize |> Hermitian
     e, v = eigen(-β*K)
     m = maximum(e) ; e = e .- m
@@ -34,8 +41,9 @@ function thermal_average(Op::Matrix{<:Number}, ψ::CMPS, β::Real)
     return num/den
 end
 
+
 """
-Thermal dynamic quanties =============================================
+    Partitian function
 """
 function partitian(ψ::CMPS, W::CMPO, β::Real)
     K = ψ * W * ψ |> symmetrize |> Hermitian
@@ -45,15 +53,10 @@ function partitian(ψ::CMPS, W::CMPO, β::Real)
     return exp(num.max - den.max) * num.res/den.res
 end
 
-function partitian!(ψ::CMPS, W::CMPO, β::Real)
-    """
-    no correspondence to a physical partitian function
-    (ψ is not a normalized eigen state)
-    """
-    K = ψ * W * ψ |> symmetrize |> Hermitian
-    return trexp(-β*K)
-end
 
+"""
+    Free energy
+"""
 function free_energy(ψ::CMPS, W::CMPO, β::Real)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     H = ψ * ψ |> symmetrize |> Hermitian
@@ -72,8 +75,8 @@ end
 function energy(ψ::CMPS, W::CMPO, β::Real)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     H = ψ * ψ |> symmetrize |> Hermitian
-    eng = thermal_average(K, ψ, W, β) - thermal_average(H, ψ, β)
-    return eng
+    res = thermal_average(K, ψ, W, β) - thermal_average(H, ψ, β)
+    return res
 end
 
 function specific_heat(ψ::CMPS, W::CMPO, β::Real; method::Symbol = :ndiff)
@@ -102,7 +105,7 @@ end
 """
 The local two-time correlation functions
 """
-function correlation_2time(τ::Number, A::Matrix{<:Number},B::Matrix{<:Number},
+function correlation_2time(τ::Number, A::AbstractMatrix,B::AbstractMatrix,
                            ψ::CMPS, W::CMPO, β::Real)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
@@ -120,11 +123,12 @@ function correlation_2time(τ::Number, A::Matrix{<:Number},B::Matrix{<:Number},
     return num/den
 end
 
+
 """
 check anomalous term of bosonic Masubara correlations
 n = 0  and Em = En terms
 """
-function check_anomalous_term(A::Matrix{<:Number},B::Matrix{<:Number},
+function check_anomalous_term(A::AbstractMatrix,B::AbstractMatrix,
     ψ::CMPS, W::CMPO, β::Real)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
@@ -143,6 +147,7 @@ function check_anomalous_term(A::Matrix{<:Number},B::Matrix{<:Number},
     return β*c/den       
 end
 
+
 """
 A useful function: f = e^(-b*e1) - e^(-b*e2) / (e2 - e1)
 """
@@ -159,7 +164,7 @@ end
 """
 Masubara frequency Green's functions: defalt type = :b
 """
-function Masubara_freq_GF(n::Integer, A::Matrix{<:Number},B::Matrix{<:Number},
+function Masubara_freq_GF(n::Integer, A::AbstractMatrix,B::AbstractMatrix,
                         ψ::CMPS, W::CMPO, β::Real)
     λ = 1.0
     ωn = Masubara_freq(n,β,type=:b)
@@ -188,35 +193,7 @@ function Masubara_freq_GF(n::Integer, A::Matrix{<:Number},B::Matrix{<:Number},
     return num/den
 end
 
-function Masubara_freq_GF(n::Integer, A::Matrix{<:Number},
-                        ψ::CMPS, W::CMPO, β::Real)
-    λ = 1.0
-    ωn = Masubara_freq(n,β,type=:b)
-    K = ψ * W * ψ |> symmetrize |> Hermitian
-    e, v = eigen(K)
-    min = minimum(e); e = e .- min
-    #m = maximum(-β * e)
-    A = v' * A * v
-    den = exp.(-β * e) |> sum
-    #den = exp.(-β * e .- m) |> sum
-    num = 0.0
-    if ωn != 0
-        for i = 1: length(e), j = 1: length(e)
-        up = exp(-β*e[i]) - λ*exp(-β*e[j])
-        #up = exp(-β*e[i]-m) - λ*exp(-β*e[j]-m)
-        up = up * A[i,j]' * A[j,i]
-        down = 1.0im * ωn - e[j] + e[i]
-        num += up/down
-    end
-    else
-        for i = 1: length(e), j = 1: length(e)
-            num -= A[i,j]'*A[j,i]*diffaddexp(β,e[i],e[j])
-        end
-    end
-    return num/den
-end
-
-function Masubara_freq_GF(z::ComplexF64, A::Matrix{<:Number},B::Matrix{<:Number},
+function Masubara_freq_GF(z::ComplexF64, A::AbstractMatrix,B::AbstractMatrix,
     ψ::CMPS, W::CMPO, β::Real)
     λ = 1.0
     K = ψ * W * ψ |> symmetrize |> Hermitian
@@ -242,7 +219,7 @@ end
 """
 Masubara frequency G(iωn)/iωn = ∑_mn Cmn(iωn)/(Em - En): defalt type = :b
 """
-function Masubara_freq_GFdivOmega(n::Integer, A::Matrix{<:Number},B::Matrix{<:Number},
+function Masubara_freq_GFdivOmega(n::Integer, A::AbstractMatrix,B::AbstractMatrix,
                                 ψ::CMPS, W::CMPO, β::Real)
     if n == 0 @error "Error: n should not be 0." end
     ωn = Masubara_freq(n,β,type=:b)
@@ -263,30 +240,37 @@ function Masubara_freq_GFdivOmega(n::Integer, A::Matrix{<:Number},B::Matrix{<:Nu
     return num/den
 end
 
-function Masubara_freq_GFdivOmega(n::Integer, A::Matrix{<:Number},
-                                ψ::CMPS, W::CMPO, β::Real)
-    if n == 0 @error "Error: n should not be 0." end
+
+"""
+    ∂ReG(iωn)/∂ωn
+"""
+function ∂ReG_∂ωn(n::Integer, A::AbstractMatrix,B::AbstractMatrix,
+    ψ::CMPS, W::CMPO, β::Real)
+    if n == 0 @error "ωn should not be 0." end
+    λ = 1.0
     ωn = Masubara_freq(n,β,type=:b)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
     min = minimum(e); e = e .- min
-    #m = maximum(-β * e)
     A = v' * A * v
+    B = v' * B * v
     den = exp.(-β * e) |> sum
-    #den = exp.(-β * e .- m) |> sum
     num = 0.0
     for i = 1: length(e), j = 1: length(e)
-        up = A[i,j]' * A[j,i] * diffaddexp(β,e[i],e[j])
-        down = 1.0im * ωn - e[j] + e[i]
+        up = exp(-β*e[i]) - λ*exp(-β*e[j]) 
+        up = up * A[i,j] * B[j,i] * (e[i] - e[j]) * (-2ωn)
+        down = ωn^2 + (e[i] - e[j])^2
+        down = down^2
         num += up/down
     end
     return num/den
 end
 
+
 """
 spectral density: ρ(ω) = 2Imχ(ω) = -2ImG(ω)
 """
-function spectral_density(ω::Real,A::Matrix{<:Number},B::Matrix{<:Number},
+function spectral_density(ω::Real,A::AbstractMatrix,B::AbstractMatrix,
                              ψ::CMPS, W::CMPO, β::Real; η::Float64 = 0.001)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
@@ -306,37 +290,19 @@ function spectral_density(ω::Real,A::Matrix{<:Number},B::Matrix{<:Number},
     return 2π*num/den
 end
 
-function spectral_density(ω::Real,A::Matrix{<:Number},
-                        ψ::CMPS, W::CMPO, β::Real; η::Float64 = 0.001)
-    K = ψ * W * ψ |> symmetrize |> Hermitian
-    e, v = eigen(K)
-    min = minimum(e); e = e .- min
-    #m = maximum(-β * e)
-    A = v' * A * v
-    den = exp.(-β * e) |> sum
-    #den = exp.(-β * e .- m) |> sum
-    num = 0.0
-    for i = 1: length(e), j = 1: length(e)
-        res = exp(-β*e[i]) - exp(-β*e[j])
-        #res = exp(-β*e[i]-m) - exp(-β*e[j]-m)
-        res = res * A[i,j]' * A[j,i] * delta(ω+e[i]-e[j],η)
-        num += res
-    end
-    return 2π*num/den
-end
 
 """
 spectral density when A = B'
 """
-function susceptibility(ω::Real,A::Matrix{<:Number},
+function susceptibility(ω::Real,A::AbstractMatrix,
     ψ::CMPS, W::CMPO, β::Real; η::Float64 = 0.001)
-    return spectral_density(ω, A, ψ, W, β; η=η)
+    return spectral_density(ω, A, A',ψ, W, β; η=η)
 end
 
-function susceptibility(ω::Real, A::Matrix{<:Number}, B::Matrix{<:Number},
+function susceptibility(ω::Real, A::AbstractMatrix, B::AbstractMatrix,
     ψ::CMPS, W::CMPO, β::Real; η::Float64 = 0.001)
     if A' == B
-        return spectral_density(ω, B, ψ, W, β; η=η)
+        return spectral_density(ω, A, B, ψ, W, β; η=η)
     else
         @error "A' == B or use spectral_density function"
     end
@@ -346,7 +312,7 @@ end
 """
 structure factor(spectral representation)
 """
-function structure_factor(ω::Real, A::Matrix{<:Number},B::Matrix{<:Number},
+function structure_factor(ω::Real, A::AbstractMatrix,B::AbstractMatrix,
                         ψ::CMPS, W::CMPO, β::Real; η::Float64 = 0.001)
     K = ψ * W * ψ |> symmetrize |> Hermitian
     e, v = eigen(K)
@@ -364,20 +330,4 @@ function structure_factor(ω::Real, A::Matrix{<:Number},B::Matrix{<:Number},
     return num/den * 2π
 end
 
-function structure_factor(ω::Real, A::Matrix{<:Number},
-                        ψ::CMPS, W::CMPO, β::Real; η::Float64 = 0.001)
-    K = ψ * W * ψ |> symmetrize |> Hermitian
-    e, v = eigen(K)
-    min = minimum(e); e = e .- min
-    #m = maximum(-β * e)
-    A = v' * A * v
-    den = exp.(-β * e) |> sum
-    #den = exp.(-β * e .- m) |> sum
-    num = 0.0
-    for i = 1: length(e), j = 1: length(e)
-        num += exp(-β*e[i])*A[i,j]'*A[j,i]*delta(ω+e[i]-e[j], η)
-        #num += exp(-β*e[i]-m)*A[i,j]*B[j,i]*delta(ω+e[i]-e[j], η)
-    end
-    return num/den * 2π
-end
 #end  # module PhysicalObservables

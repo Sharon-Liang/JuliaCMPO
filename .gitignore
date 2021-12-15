@@ -27,9 +27,8 @@ Manifest.toml
 *.out
 run/*.out
 
-# ignore data file
+#ignore data file
 #data/
 #data_new/
 run/nohup.out
 
-Manifest.toml
