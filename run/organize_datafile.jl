@@ -28,6 +28,22 @@ for g = 1:length(gamma)
     end
 end
 
+N = 40
+for g = 1:length(gamma)
+    for b = 1:length(beta)
+        β = beta[b]
+        p = @sprintf "%s/g_%.1f_beta_%i.txt" dir gamma[g] β 
+        d = readdlm(p)
+        d[:,1] = d[:,1] .* N./β
+        open(p,"w") do file
+            for n=1:N 
+                writedlm(file, [d[n,1] d[n,2]])
+            end
+        end
+    end
+end
+
+
 
 for g = 1:length(gamma)
     (d0, r0) = divrem(g, 1)
