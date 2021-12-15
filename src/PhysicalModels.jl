@@ -68,9 +68,89 @@ function HeisenbergModel(; J::Real=1.0)
 end
 
 
+"""
+2D NN Transvers field Ising model,helical boundary condition
+    H = ∑ J [Zi Z_(i+1) +Zi Z_(i+W)]  + ∑ Γ Xi
+"""
+function TFIsing(J::Real, Γ::Real, W::Int64; field::Symbol=:N, η::Float64 = 1.e-2)
+    if W == 1
+        return TFIsing(J,Γ)
+    else
+        if field == :N
+            h = zeros(2,2)
+        else
+            h = η .* pauli(field)
+        end
+        Q = Γ*pauli(:x)+h
+        L = zeros(2,2,W)
+        L[:,:,1] = √J*pauli(:z) ; L[:,:,W] = √J*pauli(:z)
+        R = zeros(2,2,W)
+        R[:,:,1] = √J*pauli(:z)
+        P = zeros(2,2,W,W)
+        for i=2:W
+            P[:,:,i,i-1] = Matrix{Float64}(I,2,2)
+        end
+        return CMPO(Q,R,L,P)
+    end
+end
 
 
+"""
+2D XY model, ,helical boundary condition
+    H = ∑ [Xi X_(i+1) +Xi X_(i+W) + Yi Y_(i+1) +Yi Y_(i+W)]
+after unitary transformation : U=exp(iπSy) on odd sites:
+    H = -0.5 ∑ [S+_i S+_(i+1) + S-_iS-_(i+1) + S+_i S+_(i+W) + S-_iS-_(i+W)]
+"""
+function XYmodel(W::Int64)
+    if W == 1
+        return XYmodel()
+    else
+        sp = pauli(:+); sm = pauli(:-);
+        L = zeros(2,2,2W)
+        L[:,:,1] = 1/√2 * sp ; L[:,:,W] = 1/√2 * sp
+        L[:,:,W+1] = 1/√2 * sm; L[:,:,2W] = 1/√2 * sm
+        R = zeros(2,2,2W)
+        R[:,:,1] = 1/√2 * sp ; R[:,:,W+1] = 1/√2 * sm
+        Q = zeros(2,2)
+        P = zeros(2,2,2W,2W)
+        for j=1:2, i=2:W
+            P[:,:,j*W+i,j*W+i-1] = Matrix{Float64}(I,2,2)
+        end
+        return CMPO(Q,R,L,P)
+    end
+end
 
+"""
+2D Heisenberg XXZ model helical boundary condition
+    H = ∑ [Xi X_(i+1) +Xi X_(i+W) + Yi Y_(i+1) +Yi Y_(i+W)] + Δ [Zi Z_(i+1) +Zi Z_(i+W)]
+after unitary transformation : U=exp(iπSy) on odd sites:
+    H = -0.5 ∑ [S+_i S+_(i+1) + S-_iS-_(i+1) + S+_i S+_(i+W) + S-_iS-_(i+W)] - Δ [Zi Z_(i+1) +Zi Z_(i+W)]
+"""
+function XXZmodel(Δ::Real, W::Int)
+    if W == 1
+        return XXZmodel(Δ)
+    else
+        if Δ == 0
+            return XYmodel(W)
+        else
+            sp = pauli(:+); sm = pauli(:-); sz = 0.5 * pauli(:z)
+            L = zeros(2,2,3W)
+            L[:,:,1] = 1/√2 * sp ; L[:,:,W] = 1/√2 * sp
+            L[:,:,W+1] = 1/√2 * sm; L[:,:,2W] = 1/√2 * sm
+            L[:,:,2W+1] = √Δ * sz; L[:,:,3W] = √Δ * sz
+            R = zeros(2,2,3W)
+            R[:,:,1] = 1/√2 * sp 
+            R[:,:,W+1] = 1/√2 * sm
+            R[:,:,2W+1] = √Δ * sz
+            Q = zeros(2,2)
+            P = zeros(2,2,3W,3W)
+            for j=1:3, i=2:W
+                P[:,:,j*W+i,j*W+i-1] = Matrix{Float64}(I,2,2)
+            end
+            return CMPO(Q,R,L,P)
+        end
+    end
+end
 
 
 #end module PhysicalModels
