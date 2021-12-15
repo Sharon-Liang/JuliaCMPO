@@ -118,7 +118,7 @@ println("2021-12-12: ising model ∂ReG_∂ωn")
 println("2021-12-15: ising model S0iwn")
     D = 8
     N = 40
-    beta = [1.0, 2.0, 4.0, 6.0, 10.0, 20.0, 30.0, 40.0]
+    beta = [1.0, 2.0, 4.0, 6.0, 8.0, 10.0, 20.0, 30.0, 40.0]
 
     model = "ising"
     folder = "imagtime"
