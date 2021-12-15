@@ -5,7 +5,7 @@ using Printf
 
 # rename file
 model = "ising"
-beta =[10, 20, 30, 40]
+beta =[1.0, 2.0, 4.0, 6.0, 8.0, 10., 20., 30., 40.]
 gamma=[1.0]
 
 
