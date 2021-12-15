@@ -25,7 +25,7 @@ export thermal_average, partitian, partitian!
 export free_energy, energy, specific_heat, entropy
 export correlation_2time
 export check_anomalous_term, Masubara_freq_GF, Masubara_freq_GFdivOmega
-export ∂ReG_∂ωn, ∂ReG_∂ωn_new
+export ∂ReG_∂ωn
 export spectral_density, susceptibility, structure_factor
 export energy_density, ave_sx
 

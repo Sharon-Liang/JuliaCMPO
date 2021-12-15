@@ -266,33 +266,6 @@ function ∂ReG_∂ωn(n::Integer, A::AbstractMatrix,B::AbstractMatrix,
     return num/den
 end
 
-function ∂ReG_∂ωn_new(n::Integer, A::AbstractMatrix,B::AbstractMatrix,
-    ψ::CMPS, W::CMPO, β::Real)
-    if n == 0 @error "ωn should not be 0." end
-    λ = 1.0
-    ωn = Masubara_freq(n,β,type=:b)
-    K = ψ * W * ψ |> symmetrize |> Hermitian
-    e, v = eigen(K)
-    min = minimum(e); e = e .- min
-    A = v' * A * v
-    B = v' * B * v
-    den = exp.(-β * e) |> sum
-    num = 0.0
-    for i = 1: length(e), j = 1: length(e)
-        up = exp(-β*e[i]) - λ*exp(-β*e[j]) 
-        up = up * A[i,j] * B[j,i] * (e[i] - e[j]) * (-2ωn)
-        down = ωn^2 + (e[i] - e[j])^2
-        down = down^2
-        num += up/down
-
-        up2 = ωn*exp(-β*e[j])
-        down2 = ωn^2 + (e[i] - e[j])^2
-        num += up2/down
-    end
-    return num/den
-end
-
-
 
 """
 spectral density: ρ(ω) = 2Imχ(ω) = -2ImG(ω)
