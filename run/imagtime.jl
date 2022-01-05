@@ -115,49 +115,43 @@ println("2021-12-12: ising model ∂ReG_∂ωn")
     end
 """
 
-println("2021-12-15: ising model S0iwn")
+println("2022-01-05: ising model dGtau")
     D = 8
-    N = 40
+    N = 1601
     beta = [1.0, 2.0, 4.0, 6.0, 8.0, 10.0, 20.0, 30.0, 40.0]
 
     model = "ising"
     folder = "imagtime"
-    dir = @sprintf "../data/%s/%s" model folder
+    dir = @sprintf "./data/%s/%s" model folder
     isdir(dir) || mkdir(dir)
 
-    op1 = make_operator(pauli(:z), D)
-    op2 = make_operator(pauli(:z), 2D)
+    pz = make_operator(pauli(:z), D)
+    ipy = make_operator(pauli(:iy), D)
 
-    gamma=[1.0]
+    gamma=[1.0, 1.5, 2.0]
 
     for ga = 1:length(gamma)
         g = gamma[ga]
         w = TFIsing(1.0, g)
-        data_path = @sprintf "../data/ising/D_%i/g_%.1f.jld" D g
+        data_path = @sprintf "./data/ising/D_%i/g_%.1f.jld" D g
         data = load(data_path)
         for b = 1:length(beta)
             β = beta[b]; key = string(β)
-            ψ1 = tocmps(data[key][2]); ψ2 = w * ψ1
+            ψ1 = tocmps(data[key][2])
                     
-            func = "S0iwn"
+            func = "dGtau"
             dir1 = @sprintf "%s/%s" dir func
             isdir(dir1) || mkdir(dir1)
             path1 = @sprintf "%s/g_%.1f_D_%i_beta_%i.txt" dir1 g D β
-            path2 = @sprintf "%s/g_%.1f_D_%im2_beta_%i.txt" dir1 g D β
-
-            ωn = [Masubara_freq(i,β) for i=1:N]
-            Gt1 = [structure_factor(0,op1,op1',ψ1,w,β, η=ωn[i]) for i=1:N]
-            Gt2 = [structure_factor(0,op2,op2',ψ2,w,β, η=ωn[i]) for i=1:N]  
+            
+            op1 = 2 * g .* ipy
+            op2 = pz
+            tau = [i for i in range(0,β,length=N)]
+            Gt1 = [correlation_2time(τ,op1,op2,ψ1,w,β) for τ in tau]
 
             open(path1,"w") do file
                 for i=1: N
-                    writedlm(file,[ωn[i] Gt1[i]])
-                end
-            end
-                
-            open(path2,"w") do file
-                for i=1: N
-                    writedlm(file,[ωn[i] Gt2[i]])
+                    writedlm(file,[tau[i] Gt1[i]])
                 end
             end
         end
