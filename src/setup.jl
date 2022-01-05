@@ -1,7 +1,4 @@
 #module setup
-#using LinearAlgebra
-import Base: zeros
-
 struct CMPS{T<:Number}
     Q::Matrix{T}
     R::Array{T}
@@ -84,6 +81,7 @@ function *(ol::CMPO{T}, or::CMPO{T}) where T
     P = ol.P ⊗ or.P
     return CMPO(Q,R,L,P)
 end
+
 
 """ init cmps """
 function init_cmps(χ::Int64; D::Int64 = 1, hermition = true, dtype = Float64)
