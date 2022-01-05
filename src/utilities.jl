@@ -106,12 +106,12 @@ end
 """
     Tr[exp(A)] function
 """
-struct trexp{T<:Number}
+struct TrExp{T<:Number}
     max::T
     res::T
 end
 
-function value(x::trexp)
+function value(x::TrExp)
     exp(x.max) * x.res
 end
 
@@ -124,7 +124,7 @@ function trexp(A::AbstractMatrix)
     val = eigvals(A)
     max = maximum(val)
     res = exp.(val .- max) |> sum
-    return trexp(max, res)
+    return TrExp(max, res)
 end
 
 

@@ -16,7 +16,7 @@ export pauli,
        Masubara_freq, 
        ⊗
 export symmetrize, 
-       trexp, value, logtrexp
+       TrExp, trexp, value, logtrexp
 export gradient_function, hessian_function
 export CMPS, CMPO
 export toarray, tovector, tocmps
