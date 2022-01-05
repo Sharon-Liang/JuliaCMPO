@@ -32,3 +32,4 @@ run/*.out
 #data_new/
 run/nohup.out
 
+*.DS_Store

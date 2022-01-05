@@ -57,12 +57,6 @@ N = 40
 # ╔═╡ abf0db31-a739-4992-bd4f-10e81238aeef
 D = 8
 
-# ╔═╡ be07f683-dc13-4df5-9dde-c1d1e7d7acdb
-@bind β Slider(invT)
-
-# ╔═╡ aa1a850e-f3e3-4363-a8e6-fbe972289e15
-t = findall(x->x == β, invT)[1];
-
 # ╔═╡ 42d2cb9d-96ba-46e6-88f0-74af89eb4511
 
 
@@ -148,6 +142,7 @@ begin
 	"load Zi-long Li data: S(0,η=0.001), S(0,η=2π/β) "
 end
 
+<<<<<<< HEAD
 # ╔═╡ c8f38627-b5dc-4f18-ae54-beb2406734f0
 s0
 
@@ -163,6 +158,8 @@ begin
 	plot!(ylabel="S", xlabel="ω")
 end
 
+=======
+>>>>>>> 903bd3d (update .gitignore)
 # ╔═╡ 9bf1b230-951d-40d6-a759-db7740490511
 begin
 	if g == 1.0
@@ -174,6 +171,7 @@ begin
 	"load cmpo data: S(0,η=ωn) "
 end
 
+<<<<<<< HEAD
 # ╔═╡ a31b1f2f-3102-4e7e-a5a0-6003a785a3d5
 begin
 	plot(xlabel="2π/β", ylabel="S(0,η)", title=(@sprintf "g=%.1f, β=%i" g β))
@@ -183,6 +181,8 @@ begin
 	scatter!([0.0],[s0[t]],marker=(:star, stroke(0.2)), label="η=0.001")
 end
 
+=======
+>>>>>>> 903bd3d (update .gitignore)
 # ╔═╡ ef94f39d-0ab5-4259-8531-5279433e7996
 begin
 	plot(xlabel="2π/β", ylabel="S(0,η)", title=(@sprintf "g=%.1f" g))
@@ -202,33 +202,33 @@ end
 
 # ╔═╡ f5826335-5d41-4637-8dd8-5b35deda26ba
 begin
-	#p_ReG = [@sprintf "./data/ising/imagtime/giwn/g_%.1f_D_%i_beta_%i.txt" g D invT[i] for i=1:lt]
-	#p_ImG = [@sprintf "./data/ising/imagtime/gdivwn/g_%.1f_D_%i_beta_%i.txt" g D invT[i] for i=1:lt]
-	p_dReG = [@sprintf "./data/ising/imagtime/dReG/g_%.1f_pz_D_%i_beta_%i.txt" g D invT[i] for i=1:lt]
+	p_ReG = [@sprintf "./data/ising/imagtime/giwn/g_%.1f_D_%i_beta_%i.txt" g D invT[i] for i=1:lt]
+	p_ImG = [@sprintf "./data/ising/imagtime/gdivwn/g_%.1f_D_%i_beta_%i.txt" g D invT[i] for i=1:lt]
+	p_dReG = [@sprintf "./data/ising/imagtime/dReG/g_%.1f_D_%i_beta_%i.txt" g D invT[i] for i=1:lt]
 	
-	#d_ReG = [readdlm(p_ReG[i]) for i=1:lt]
-	#d_ImG = [readdlm(p_ImG[i]) for i=1:lt]
+	d_ReG = [readdlm(p_ReG[i]) for i=1:lt]
+	d_ImG = [readdlm(p_ImG[i]) for i=1:lt]
 	d_dReG = [readdlm(p_dReG[i]) for i=1:lt]
 	
-	#ReG = Vector{Matrix}(undef,lt)
-	#ImG_dE = Vector{Matrix}(undef,lt)
+	ReG = Vector{Matrix}(undef,lt)
+	ImG_dE = Vector{Matrix}(undef,lt)
 	dReG = Vector{Matrix}(undef,lt)
 	
 	for i = 1:lt
 		b = invT[i]
-	    #ReG[i], ImG_dE[i], dReG[i] = zeros(N,2), zeros(N,2), zeros(N,2)
-		#ReG[i][:,1] = d_ReG[i][:,1]; ReG[i][:,2] = d_ReG[i][:,2]
-		#ImG_dE[i][:,1] = d_ImG[i][:,1]; ImG_dE[i][:,2] = -2/b*d_ImG[i][:,3]
+	    ReG[i], ImG_dE[i], dReG[i] = zeros(N,2), zeros(N,2), zeros(N,2)
+		ReG[i][:,1] = d_ReG[i][:,1]; ReG[i][:,2] = d_ReG[i][:,2]
+		ImG_dE[i][:,1] = d_ImG[i][:,1]; ImG_dE[i][:,2] = -2/b*d_ImG[i][:,3]
 		dReG[i][:,1] = d_dReG[i][:,1]; dReG[i][:,2] = 2/b*d_dReG[i][:,2]
 	end
 	"load ls data: ReG, ImG_dE, dReG"
 end
 
 # ╔═╡ dbb09e85-141f-42dc-8fe9-7fd3a1ddde95
-path = [@sprintf "./data/ising/imagtime/dReG/g_%.1f_pz_D_%i_beta_%i.txt" g D invT[i] for i=1:length(invT)]
+path = [@sprintf "./data/ising/imagtime/dReG/g_%.1f_D_%i_beta_%i.txt" g D invT[i] for i=1:length(invT)]
 
 # ╔═╡ e0718b1f-be57-47b4-adbb-fb6f0f626c91
-d1 = [readdlm(path[i]) for i=1:length(invT)]
+d1 = [readdlm(path[i]) for i=1:length(invT)];
 
 # ╔═╡ 4e8df580-1561-4506-ad1a-582e431e5caf
 begin
@@ -238,6 +238,30 @@ begin
 	end
 	#plot!(d1[length(invT)][:,1], d1[length(invT)][:,2], marker=(:circle,2), label= @sprintf "β=%i" invT[length(invT)])
 	plot!(xlim=(-0.1,5))
+end
+
+# ╔═╡ be07f683-dc13-4df5-9dde-c1d1e7d7acdb
+@bind β Slider(invT)
+
+# ╔═╡ aa1a850e-f3e3-4363-a8e6-fbe972289e15
+t = findall(x->x == β, invT)[1];
+
+# ╔═╡ a31b1f2f-3102-4e7e-a5a0-6003a785a3d5
+begin
+	plot(xlabel="2π/β", ylabel="S(0,η)", title=(@sprintf "g=%.1f, β=%i" g β))
+	scatter!(dw1[t][:,1], dw1[t][:,2], label="cmpo χ=8")
+	#scatter!(dw2[t][:,1], dw2[t][:,2], label="cmpo χ=8×2")
+	scatter!(dl1[t][:,1],dl1[t][:,2],marker=(:star, stroke(0.2)), label="η=2πn/β")
+	scatter!([0.0],[s0[t]],marker=(:star, stroke(0.2)), label="η=0.001")
+end
+
+# ╔═╡ 78307144-6fa2-40f8-b18c-63fe3c63fa28
+begin
+	plot(xlabel="2π/β", ylabel="S(0,η) loss", title=(@sprintf "g=%.1f, β=%i" g β))
+	plot!(dw1[t][:,1], abs.(dw1[t][:,2] .- dl1[t][:,2]),
+		line=(:dash,1),
+		marker=(:circle,4, stroke(0.2)),
+		label=false)
 end
 
 # ╔═╡ 28550373-4cd4-4f8a-b1eb-1e3257d3ef0d
@@ -262,25 +286,29 @@ begin
 	plot!(omega, gw1, label="dReG")
 end
 
-# ╔═╡ 25f6c7ed-6dc1-4a2c-8858-e1b9fbc940f3
-@bind xmax1 Slider(ImG_dE[t][:,1])
-
 # ╔═╡ 4c223588-5dff-45c2-bd2b-8910545946eb
 begin
-	#scatter([0.0], [s0[t]],label="Pfaffian")
-	scatter([0.0], [Gt[t]],label="πβ/4*G(β/2)")
+	scatter([2π/β], [dl1[t][1,2]],label="Li, η=2π/β")
+	scatter!([0.0], [Gt[t]],label="πβ/4*G(β/2)")
 	plot!(ImG_dE[t][:,1], ImG_dE[t][:,2], 
 		line=(:dash),
-		marker=(:circle),
+		marker=(:circle,stroke(0.1)),
 		label="ImG(iωn)/ΔE")
 	plot!(dReG[t][:,1],dReG[t][:,2], 
 		line=(:dash),
-		marker=(:circle),
+		marker=(:circle,stroke(0.1)),
 		label="dReG_dωn")
-	plot!(xlim=(-0.3, xmax1))
+	plot!(ReG[t][:,1],-ReG[t][:,2] ./ ReG[t][:,1]*2/β, 
+		line=(:dash),
+		marker=(:star, stroke(0.1)),
+		label="ReG/ωn")
+	#plot!(xlim=(-0.3, xmax1))
 	fig_s0 = @sprintf "ising g=%.1f, β=%i" g β
 	plot!(xlabel="ωn", ylabel="S(0)",title=fig_s0)
 end
+
+# ╔═╡ 25f6c7ed-6dc1-4a2c-8858-e1b9fbc940f3
+@bind xmax1 Slider(ImG_dE[t][:,1])
 
 # ╔═╡ e2d89ddf-0958-46ae-b179-be6cd0a5c963
 
@@ -314,18 +342,24 @@ end
 # ╟─abf0db31-a739-4992-bd4f-10e81238aeef
 # ╟─918911a0-a78c-4713-84f2-16d901b72adf
 # ╟─9bf1b230-951d-40d6-a759-db7740490511
+<<<<<<< HEAD
 # ╠═c8f38627-b5dc-4f18-ae54-beb2406734f0
 # ╠═be07f683-dc13-4df5-9dde-c1d1e7d7acdb
 # ╠═a31b1f2f-3102-4e7e-a5a0-6003a785a3d5
 # ╠═ef94f39d-0ab5-4259-8531-5279433e7996
 # ╟─945e2062-13aa-4ba2-9e33-f030f9cdeeb2
 # ╟─4812d37b-8283-48a2-8f61-b81b63c99c62
+=======
+# ╠═a31b1f2f-3102-4e7e-a5a0-6003a785a3d5
+# ╟─78307144-6fa2-40f8-b18c-63fe3c63fa28
+# ╟─ef94f39d-0ab5-4259-8531-5279433e7996
+>>>>>>> 903bd3d (update .gitignore)
 # ╟─f5826335-5d41-4637-8dd8-5b35deda26ba
 # ╠═dbb09e85-141f-42dc-8fe9-7fd3a1ddde95
 # ╠═e0718b1f-be57-47b4-adbb-fb6f0f626c91
 # ╠═4e8df580-1561-4506-ad1a-582e431e5caf
 # ╠═42d2cb9d-96ba-46e6-88f0-74af89eb4511
-# ╟─286b0bf7-278d-4799-bcd3-74a9bad0d5b4
+# ╠═286b0bf7-278d-4799-bcd3-74a9bad0d5b4
 # ╟─28550373-4cd4-4f8a-b1eb-1e3257d3ef0d
 # ╟─3d85febe-90aa-4713-af4d-1f3866941141
 # ╟─28d47fd0-11c7-47a8-9722-8e71d8c3e581
@@ -335,10 +369,11 @@ end
 # ╟─6746901a-03f3-4af2-bde7-752060a350a8
 # ╠═2e95d260-31fd-45ea-8da3-d7f734f4b590
 # ╠═dea97d84-956d-47d6-b563-bb2287b38585
-# ╟─4c223588-5dff-45c2-bd2b-8910545946eb
-# ╠═25f6c7ed-6dc1-4a2c-8858-e1b9fbc940f3
+# ╟─be07f683-dc13-4df5-9dde-c1d1e7d7acdb
+# ╠═4c223588-5dff-45c2-bd2b-8910545946eb
+# ╟─25f6c7ed-6dc1-4a2c-8858-e1b9fbc940f3
 # ╠═e2d89ddf-0958-46ae-b179-be6cd0a5c963
-# ╟─37cb3aff-f194-4b36-8bbc-bf5565d714cf
+# ╠═37cb3aff-f194-4b36-8bbc-bf5565d714cf
 # ╠═ba566041-7dd2-4bcf-adc7-d1479ed8f629
 # ╠═8a2b197c-dca1-41b5-acf0-cd6f74f669a3
 # ╟─9555258c-5890-11ec-1c67-1dba0d6df118
