@@ -2,16 +2,16 @@
 #using LinearAlgebra
 import Base: zeros
 
-struct CMPS
-    Q::Array{<:Number}
-    R::Array{<:Number}
+struct CMPS{T<:Number}
+    Q::Matrix{T}
+    R::Array{T}
 end
 
-struct CMPO
-    Q::Array{<:Number}  #onsite
-    R::Array{<:Number}  #interaction, column vector
-    L::Array{<:Number}  #interaction, row vector
-    P::Array{<:Number}  #long-range
+struct CMPO{T<:Number}
+    Q::Matrix{T}  #onsite
+    R::Array{T}  #interaction, column vector
+    L::Array{T}  #interaction, row vector
+    P::Array{T}  #long-range
 end
 
 function toarray(ψ::CMPS)
@@ -35,7 +35,7 @@ function tovector(ψ::CMPS)
     return vec(arr), dim
 end
 
-function tocmps(A::Array{T,3} where T)
+function tocmps(A::AbstractArray{T,3} where T)
     d = size(A)[3]
     if d == 2
         return CMPS(A[:,:,1],A[:,:,2])
@@ -44,7 +44,7 @@ function tocmps(A::Array{T,3} where T)
     end
 end
 
-function tocmps(V::Vector , dim::Tuple)
+function tocmps(V::Vector{T} where T, dim::Tuple)
     arr = reshape(V, dim)
     return tocmps(arr)
 end
@@ -52,14 +52,14 @@ end
 
 
 """multiplications of cmps and cmpo"""
-function *(sl::CMPS, sr::CMPS)
-    li = Matrix(1.0I,size(sl.Q))
-    ri = Matrix(1.0I,size(sr.Q))
+function *(sl::CMPS{T}, sr::CMPS{T}) where T
+    li = Matrix{T}(I,size(sl.Q))
+    ri = Matrix{T}(I,size(sr.Q))
     K = li ⊗ sr.Q + sl.Q ⊗ ri + sl.R ⊗ sr.R
     return -K
 end
 
-function *(o::CMPO, s::CMPS)
+function *(o::CMPO{T}, s::CMPS{T}) where T
     oi = Matrix(1.0I,size(o.Q))
     si = Matrix(1.0I,size(s.Q))
     Q = oi ⊗ s.Q + o.Q ⊗ si + o.L ⊗ s.R
@@ -67,17 +67,17 @@ function *(o::CMPO, s::CMPS)
     return CMPS(Q, R)
 end
 
-function *(s::CMPS, o::CMPO)
-    oi = Matrix(1.0I,size(o.Q))
-    si = Matrix(1.0I,size(s.Q))
+function *(s::CMPS{T}, o::CMPO{T}) where T
+    oi = Matrix{T}(I,size(o.Q))
+    si = Matrix{T}(I,size(s.Q))
     Q = s.Q ⊗ oi + si ⊗ o.Q + s.R ⊗ o.R
     R = si ⊗ o.L + s.R ⊗ o.P
     return CMPS(Q, R)
 end
 
-function *(ol::CMPO, or::CMPO)
-    li = Matrix(1.0I,size(ol.Q))
-    ri = Matrix(1.0I,size(or.Q))
+function *(ol::CMPO{T}, or::CMPO{T}) where T
+    li = Matrix{T}(I,size(ol.Q))
+    ri = Matrix{T}(I,size(or.Q))
     Q = ol.Q ⊗ ri + li ⊗ or.Q + ol.L ⊗ or.R
     L = li ⊗ or.L + ol.L ⊗ or.P
     R = ol.R ⊗ ri + ol.P ⊗ or.R

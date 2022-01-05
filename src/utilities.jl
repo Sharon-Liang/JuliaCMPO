@@ -4,17 +4,24 @@ import Base: kron
 """
     Pauli matrices
 """
-function pauli(symbol::Symbol)
-    if symbol==:x return [0. 1.; 1. 0.]
-    elseif symbol==:y return [0. -1im; 1im 0.]
-    elseif symbol==:iy return [0. 1.; -1. 0.]
-    elseif symbol==:z return [1. 0.; 0. -1.]
-    elseif symbol==:+ return [0. 1.; 0. 0.]
-    elseif symbol==:- return [0. 0.; 1. 0.]
+function pauli(T::DataType, symbol::Symbol)
+    One = one(T)
+    Zero = zero(T)
+    if symbol==:x return [Zero One; One Zero]
+    elseif symbol==:y return [Zero -One*im; One*im Zero]
+    elseif symbol==:iy return [Zero One; -One Zero]
+    elseif symbol==:z return [One Zero; Zero -One]
+    elseif symbol==:+ return [Zero One; Zero Zero]
+    elseif symbol==:- return [Zero Zero; One Zero]
     else
         error("The input should be :x,:y,:z,:+,:-, :iy.")
     end
 end
+
+function pauli(symbol::Symbol)
+    return pauli(Float64, symbol)
+end
+
 
 """
 Gaussian approximate delta function
@@ -41,51 +48,52 @@ end
 """
     Products
 """
-function ⊗(A::AbstractMatrix, B::AbstractMatrix)
+function ⊗(A::AbstractMatrix{T}, B::AbstractMatrix{T}) where T
     (r1, c1) = size(A)
-    (r2,c2) = size(B)
+    (r2, c2) = size(B)
     return reshape(ein"ij,kl->kilj"(A, B), r1*r2, c1*c2)
 end
 
-function ⊗(A::AbstractMatrix, B::Array{T,3} where T)
-    (r1,c1) = size(A)
-    (r2,c2,d) = size(B)
+function ⊗(A::AbstractMatrix{T}, B::AbstractArray{T,3}) where T
+    (r1, c1) = size(A)
+    (r2, c2, d) = size(B)
     return reshape(ein"ij,klm->kiljm"(A, B), r1*r2, c1*c2, d)
 end
 
-function ⊗(A::Array{T,3} where T, B::AbstractMatrix)
-    (r1,c1,d) = size(A)
-    (r2,c2) = size(B)
+function ⊗(A::AbstractArray{T,3}, B::AbstractMatrix{T}) where T
+    (r1, c1, d) = size(A)
+    (r2, c2) = size(B)
     return reshape(ein"ijm,kl->kiljm"(A, B), r1*r2, c1*c2, d)
 end
 
-function ⊗(A::Array{T,3} where T, B::Array{T,3} where T)
-    (r1,c1,d1) = size(A)
-    (r2,c2,d2) = size(B)
+function ⊗(A::AbstractArray{T,3}, B::AbstractArray{T,3}) where T
+    (r1, c1, d1) = size(A)
+    (r2, c2, d2) = size(B)
     if d1 != d2 @error "Dimension mismatch!" end
     return reshape(ein"ijm,klm->kilj"(A, B), r1*r2, c1*c2)
 end
 
-function ⊗(A::Array{T,4} where T, B::Array{T,3} where T)
-    (r1,c1,d1,f) = size(A)
-    (r2,c2,d2) = size(B)
+function ⊗(A::AbstractArray{T,4}, B::AbstractArray{T,3}) where T
+    (r1, c1, d1, f) = size(A)
+    (r2, c2, d2) = size(B)
     if f != d2 @error "Dimension mismatch!" end
     return reshape(ein"ijnm,klm->kiljn"(A, B), r1*r2, c1*c2, d1)    
 end
 
-function ⊗(A::Array{T,3} where T, B::Array{T,4} where T) 
-    (r1,c1,d1) = size(A)
-    (r2,c2,d2,f) = size(B)
+function ⊗(A::AbstractArray{T,3}, B::AbstractArray{T,4})  where T
+    (r1, c1, d1) = size(A)
+    (r2, c2, d2, f) = size(B)
     if d1 != d2 @error "Dimension mismatch!" end
     return reshape(ein"ijm,klmn->kiljn"(A, B), r1*r2, c1*c2, f)    
 end
 
-function ⊗(A::Array{T,4} where T, B::Array{T,4} where T)
+function ⊗(A::AbstractArray{T,4}, B::AbstractArray{T,4}) where T
     (r1,c1,d1,f1) = size(A)
     (r2,c2,d2,f2) = size(B)
     if f1 != d2 @error "Dimension mismatch!" end
     return reshape(ein"ijpm,klmq->kiljpq"(A, B), r1*r2, c1*c2, d1, f2)    
 end
+
 
 """
     Symmetrize of matrices
@@ -93,6 +101,7 @@ end
 function symmetrize(A::AbstractMatrix)
     (A + A')/2
 end
+
 
 """
     Tr[exp(A)] function

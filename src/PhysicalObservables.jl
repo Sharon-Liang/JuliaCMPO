@@ -2,14 +2,12 @@
 """
     make operator ⊢o⊣
 """
-function make_operator(Op::AbstractMatrix, dim::Int64)
-    T = eltype(Op)
+function make_operator(Op::AbstractMatrix{T}, dim::Int64) where T
     eye = Matrix{T}(I, dim, dim)
     return eye ⊗ Op ⊗ eye
 end
 
-function make_operator(Op::AbstractMatrix, ψ::CMPS)
-    T = eltype(Op)
+function make_operator(Op::AbstractMatrix{T}, ψ::CMPS) where T
     eye = Matrix{T}(I, size(ψ.Q))
     return eye ⊗ Op ⊗ eye
 end
