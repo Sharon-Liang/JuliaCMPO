@@ -32,4 +32,5 @@ run/*.out
 #data_new/
 run/nohup.out
 
+#ignore Mac config files
 *.DS_Store
