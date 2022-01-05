@@ -1,6 +1,6 @@
-#using LinearAlgebra
-#using StatsFuns, SpecialFunctions, HCubature
-#import cMPO:free_energy, energy, specific_heat, entropy
+using LinearAlgebra
+using StatsFuns, SpecialFunctions, HCubature
+import cMPO:free_energy, energy, specific_heat, entropy
 
 # exact solutions of TFIsing model
 function energy_density(k::Real, J::Real, Γ::Real)

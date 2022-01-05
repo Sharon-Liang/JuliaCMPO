@@ -47,42 +47,6 @@ function tocmps(V::Vector{T} where T, dim::Tuple)
 end
 
 
-
-"""multiplications of cmps and cmpo"""
-function *(sl::CMPS{T}, sr::CMPS{T}) where T
-    li = Matrix{T}(I,size(sl.Q))
-    ri = Matrix{T}(I,size(sr.Q))
-    K = li ⊗ sr.Q + sl.Q ⊗ ri + sl.R ⊗ sr.R
-    return -K
-end
-
-function *(o::CMPO{T}, s::CMPS{T}) where T
-    oi = Matrix(1.0I,size(o.Q))
-    si = Matrix(1.0I,size(s.Q))
-    Q = oi ⊗ s.Q + o.Q ⊗ si + o.L ⊗ s.R
-    R = o.R ⊗ si + o.P ⊗ s.R
-    return CMPS(Q, R)
-end
-
-function *(s::CMPS{T}, o::CMPO{T}) where T
-    oi = Matrix{T}(I,size(o.Q))
-    si = Matrix{T}(I,size(s.Q))
-    Q = s.Q ⊗ oi + si ⊗ o.Q + s.R ⊗ o.R
-    R = si ⊗ o.L + s.R ⊗ o.P
-    return CMPS(Q, R)
-end
-
-function *(ol::CMPO{T}, or::CMPO{T}) where T
-    li = Matrix{T}(I,size(ol.Q))
-    ri = Matrix{T}(I,size(or.Q))
-    Q = ol.Q ⊗ ri + li ⊗ or.Q + ol.L ⊗ or.R
-    L = li ⊗ or.L + ol.L ⊗ or.P
-    R = ol.R ⊗ ri + ol.P ⊗ or.R
-    P = ol.P ⊗ or.P
-    return CMPO(Q,R,L,P)
-end
-
-
 """ init cmps """
 function init_cmps(χ::Int64; D::Int64 = 1, hermition = true, dtype = Float64)
     Q = rand(dtype, χ, χ)

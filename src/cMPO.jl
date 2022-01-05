@@ -14,25 +14,35 @@ import LinearAlgebra: normalize
 export pauli, 
        delta, 
        Masubara_freq, 
-       ⊗
-export symmetrize, 
-       TrExp, trexp, value, logtrexp
-export gradient_function, hessian_function
-export CMPS, CMPO
-export toarray, tovector, tocmps
-export init_cmps, ovlp
+       symmetrize, 
+       TrExp, trexp, value, logtrexp,
+       gradient_function, hessian_function
 
-export make_operator
-export TFIsing, XYmodel, XXZmodel, HeisenbergModel
-export thermal_average, partitian, partitian!
-export free_energy, energy, specific_heat, entropy
-export correlation_2time,
+export CMPS, CMPO,
+       toarray, tovector, tocmps,
+       init_cmps, 
+       normalize, ovlp
+
+export ⊗
+
+export TFIsing, 
+       XYmodel, XXZmodel, HeisenbergModel
+
+export make_operator,
+       thermal_average, 
+       partitian,
+       free_energy, 
+       energy, 
+       specific_heat, 
+       entropy,
+       correlation_2time,
        Masubara_freq_GF
 
 
 include("rrule.jl")
 include("utilities.jl")
 include("setup.jl")
+include("multiplication.jl")
 include("PhysicalModels.jl")
 include("PhysicalObservables.jl")
 
