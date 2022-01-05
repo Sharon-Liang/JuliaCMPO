@@ -142,24 +142,6 @@ begin
 	"load Zi-long Li data: S(0,η=0.001), S(0,η=2π/β) "
 end
 
-<<<<<<< HEAD
-# ╔═╡ c8f38627-b5dc-4f18-ae54-beb2406734f0
-s0
-
-# ╔═╡ 945e2062-13aa-4ba2-9e33-f030f9cdeeb2
-begin
-	plot(dl0[t][:,1], dl0[t][:,2], label=@sprintf "η=0.001, β=%i" β)
-	plot!(ylabel="S", xlabel="ω")
-end
-
-# ╔═╡ 4812d37b-8283-48a2-8f61-b81b63c99c62
-begin
-	plot(dl1[t][:,1], dl1[t][:,2], label=@sprintf "η=2π/β, β=%i" β)
-	plot!(ylabel="S", xlabel="ω")
-end
-
-=======
->>>>>>> 903bd3d (update .gitignore)
 # ╔═╡ 9bf1b230-951d-40d6-a759-db7740490511
 begin
 	if g == 1.0
@@ -171,18 +153,6 @@ begin
 	"load cmpo data: S(0,η=ωn) "
 end
 
-<<<<<<< HEAD
-# ╔═╡ a31b1f2f-3102-4e7e-a5a0-6003a785a3d5
-begin
-	plot(xlabel="2π/β", ylabel="S(0,η)", title=(@sprintf "g=%.1f, β=%i" g β))
-	scatter!(dw1[t][:,1], dw1[t][:,2], label="cmpo χ=8")
-	#scatter!(dw2[t][:,1], dw2[t][:,2], label="cmpo χ=8×2")
-	scatter!([2π/β],[s1[t]],marker=(:star, stroke(0.2)), label="η=2π/β")
-	scatter!([0.0],[s0[t]],marker=(:star, stroke(0.2)), label="η=0.001")
-end
-
-=======
->>>>>>> 903bd3d (update .gitignore)
 # ╔═╡ ef94f39d-0ab5-4259-8531-5279433e7996
 begin
 	plot(xlabel="2π/β", ylabel="S(0,η)", title=(@sprintf "g=%.1f" g))
@@ -342,18 +312,9 @@ end
 # ╟─abf0db31-a739-4992-bd4f-10e81238aeef
 # ╟─918911a0-a78c-4713-84f2-16d901b72adf
 # ╟─9bf1b230-951d-40d6-a759-db7740490511
-<<<<<<< HEAD
-# ╠═c8f38627-b5dc-4f18-ae54-beb2406734f0
-# ╠═be07f683-dc13-4df5-9dde-c1d1e7d7acdb
-# ╠═a31b1f2f-3102-4e7e-a5a0-6003a785a3d5
-# ╠═ef94f39d-0ab5-4259-8531-5279433e7996
-# ╟─945e2062-13aa-4ba2-9e33-f030f9cdeeb2
-# ╟─4812d37b-8283-48a2-8f61-b81b63c99c62
-=======
 # ╠═a31b1f2f-3102-4e7e-a5a0-6003a785a3d5
 # ╟─78307144-6fa2-40f8-b18c-63fe3c63fa28
 # ╟─ef94f39d-0ab5-4259-8531-5279433e7996
->>>>>>> 903bd3d (update .gitignore)
 # ╟─f5826335-5d41-4637-8dd8-5b35deda26ba
 # ╠═dbb09e85-141f-42dc-8fe9-7fd3a1ddde95
 # ╠═e0718b1f-be57-47b4-adbb-fb6f0f626c91
