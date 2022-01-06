@@ -130,14 +130,13 @@ gind = findall(x->x == g, gamma)[1];
 
 # ╔═╡ 918911a0-a78c-4713-84f2-16d901b72adf
 begin
-	s0, s1 = zeros(length(invT)), zeros(length(invT))
+	s0 = zeros(length(invT))
 	if g == 1.0
 		pl0 = [@sprintf "./data/ising/spectrum-Li/Sw/g_%.1f_beta_%i.txt" g invT[i] for i=1:length(invT)]
-		pl1 = [@sprintf "./data/ising/spectrum-Li/Sw/g_%.1f_beta_%i_eta_2pidbeta.txt" g invT[i] for i=1:length(invT)]
+		pl1 = [@sprintf "./data/ising/spectrum-Li/S0iwn/g_%.1f_beta_%i.txt" g invT[i] for i=1:length(invT)]
 		dl0 = [readdlm(pl0[i]) for i=1:lt]
 		dl1 = [readdlm(pl1[i]) for i=1:lt]
 		s0 =[dl0[i][800,2] for i=1:lt]
-		s1 =[dl1[i][800,2] for i=1:lt]
 	end
 	"load Zi-long Li data: S(0,η=0.001), S(0,η=2π/β) "
 end
@@ -306,7 +305,7 @@ end
 # ╠═297dbb2d-18b1-4fbb-be75-85a4ed256a21
 # ╟─be3eaa93-b4fc-4300-9455-00d4bf8be7e0
 # ╟─3f602ef1-f8e8-4833-bd49-00c0e7caedc8
-# ╟─c9f8e371-5a63-4f84-a69f-6a2d0087d77c
+# ╠═c9f8e371-5a63-4f84-a69f-6a2d0087d77c
 # ╟─b719a415-ae92-4aa1-8597-6d373a76c608
 # ╟─79364cf8-a5b0-470f-9f93-7d700e2cb65f
 # ╟─abf0db31-a739-4992-bd4f-10e81238aeef

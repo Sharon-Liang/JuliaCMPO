@@ -64,15 +64,15 @@ println("2021-12-09: xxz model ∂ReG_∂ωn")
     end
 """
 
-"""
-println("2021-12-12: ising model ∂ReG_∂ωn")
+
+println("2021-12-23: ising model gpdE")
     D = 8
     N = 40
-    beta = [1.0, 2.0, 4.0, 6.0, 10.0, 20.0, 30.0, 40.0]
+    beta = [1.0, 2.0, 4.0, 6.0, 8.0]
 
     model = "ising"
     folder = "imagtime"
-    dir = @sprintf "../data/%s/%s" model folder
+    dir = @sprintf "./data/%s/%s" model folder
     isdir(dir) || mkdir(dir)
 
     op1 = make_operator(pauli(:z), D)
@@ -83,37 +83,36 @@ println("2021-12-12: ising model ∂ReG_∂ωn")
     for ga = 1:length(gamma)
         g = gamma[ga]
         w = TFIsing(1.0, g)
-        data_path = @sprintf "../data/ising/D_%i/g_%.1f.jld" D g
+        data_path = @sprintf "./data/ising/D_%i/g_%.1f.jld" D g
         data = load(data_path)
         for b = 1:length(beta)
             β = beta[b]; key = string(β)
             ψ1 = tocmps(data[key][2]); ψ2 = w * ψ1
                     
-            func = "dReG"
+            func = "wgiwn"
             dir1 = @sprintf "%s/%s" dir func
             isdir(dir1) || mkdir(dir1)
             path1 = @sprintf "%s/g_%.1f_D_%i_beta_%i.txt" dir1 g D β
             path2 = @sprintf "%s/g_%.1f_D_%im2_beta_%i.txt" dir1 g D β
 
             ωn = [Masubara_freq(i,β) for i=1:N]
-            Gt1 = [∂ReG_∂ωn(i,op1,op1',ψ1,w,β) for i=1:N]
-            Gt2 = [∂ReG_∂ωn(i,op2,op2',ψ2,w,β) for i=1:N]  
+            Gt1 = [Masubara_freq_GF(i,op1,op1',ψ1,w,β) for i=1:N]
+            Gt2 = [Masubara_freq_GF(i,op2,op2',ψ2,w,β) for i=1:N]  
 
             open(path1,"w") do file
                 for i=1: N
-                    writedlm(file,[ωn[i] Gt1[i]])
+                    writedlm(file,[ωn[i] real(Gt1[i]) imag(Gt1[i])])
                 end
             end
                 
             open(path2,"w") do file
                 for i=1: N
-                    writedlm(file,[ωn[i] Gt2[i]])
+                    writedlm(file,[ωn[i] real(Gt2[i]) imag(Gt2[i])])
                 end
             end
         end
         println("finish Γ/J = ", g)
     end
-"""
 
 println("2022-01-05: ising model dGtau")
     D = 8
@@ -157,6 +156,7 @@ println("2022-01-05: ising model dGtau")
         end
         println("finish Γ/J = ", g)
     end
+"""
 
 
 """

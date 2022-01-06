@@ -5,38 +5,44 @@ using Printf
 
 # rename file
 model = "ising"
-beta =[1.0, 2.0, 4.0, 6.0, 8.0, 10.0, 20.0, 30.0, 40.0]
-gamma=[1.0, 1.5, 2.0]
+beta =[1.0, 2.0, 4.0, 6.0, 8.0, 10., 20., 30., 40.]
+gamma=[1.0]
 
 
-folder = "imagtime"
-func = "dReG"
-pdir = @sprintf "./data/%s/%s/%s" model folder func
+folder = "spectrum-Li"
+func = "S0iwn"
+pdir = @sprintf "./data/%s/%s/data/change_eta" model folder
 dir = @sprintf "./data/%s/%s/%s" model folder func
 isdir(dir) || mkdir(dir)
 
-D = 8
-#eta = [0.001, 0.050]
-
-op = [:+, :-, :x, :iy, :z]
-nop= ["pm", "mp", "px", "py", "pz"]
-
 for g = 1:length(gamma)
-    for b = 1:length(beta), o = 1:length(op)
+    (d0, r0) = divrem(g, 1)
+    for b = 1:length(beta)
         β = beta[b]
-        path1 = @sprintf "%s/g_%.1f_%s_D_%i_beta_%i.txt" pdir gamma[g] nop[o] D β
-        path2 = @sprintf "%s/g_%.1f_%s_D_%im2_beta_%i.txt" pdir gamma[g] nop[o] D β 
-        if op[o] == :z 
-            npath1 = @sprintf "%s/g_%.1f_D_%i_beta_%i.txt" pdir gamma[g] D β 
-            mv(path1, npath1)
-            npath2 = @sprintf "%s/g_%.1f_D_%im2_beta_%i.txt" pdir gamma[g] D β 
-            mv(path2, npath2)
-        else
-            rm(path1)
-            rm(path2)
+        path1 = @sprintf "%s/g_%ip%i_beta_%i.txt" pdir d0 r0 β
+        npath1 = @sprintf "%s/g_%.1f_beta_%i.txt" dir gamma[g] β 
+        mv(path1, npath1)
+        #path2 = @sprintf "%s/g_%ip%i_beta_%i_%s_eta_2pidbeta.txt" pdir d0 r0 β func
+        #npath2 = @sprintf "%s/g_%.1f_beta_%i_eta_2pidbeta.txt" dir gamma[g] β 
+        #mv(path2, npath2)
+    end
+end
+
+N = 40
+for g = 1:length(gamma)
+    for b = 1:length(beta)
+        β = beta[b]
+        p = @sprintf "%s/g_%.1f_beta_%i.txt" dir gamma[g] β 
+        d = readdlm(p)
+        d[:,1] = d[:,1] .* N./β
+        open(p,"w") do file
+            for n=1:N 
+                writedlm(file, [d[n,1] d[n,2]])
+            end
         end
     end
 end
+
 
 
 for g = 1:length(gamma)
