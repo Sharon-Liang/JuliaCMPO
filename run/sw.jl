@@ -44,4 +44,11 @@ for l = 1:loop, i = 1:step
     end
 end
 
+ω = build_range(0.01, 10)
+sp = @sprintf "%s/g_%.1f_D_%i_beta_%i.txt" dir g D β
+jldopen(sp, "w") do file
+    for i = 1:length(ω)
+        writedlm(file, s(ω[i]))
+    end
+end
 
