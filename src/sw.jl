@@ -1,64 +1,58 @@
 using Flux
-import Flux.softplus
 using Flux: train!
 using DelimitedFiles, Printf
+using ChainRules
 
-softplus(x::AbstractArray) = softplus.(x)
 
 """
     Kernal functions
-    function kernel(τ::Real, ω::Real, β::Real)
-        # LoadError: DomainError with -1.0:
-        #log will only return a complex result if called with a complex argument. Try log(Complex(x)).
-        res =  (-1)^n * exp(-τ*ω) + exp(-(β-τ)*ω)
-        return ω^n *res / 2π
-    end
 """
-function K0(τ::Real, ω::Real, β::Real)
-    res =  exp(-τ*ω) + exp(-(β-τ)*ω)
-    return res / 2π
+function kernel(n::Integer, τ::Real, ω::Real, β::Real)
+    res =  (-1)^n * exp(-τ*ω) + exp(-(β-τ)*ω)
+    return ω^n * res / 2π
 end
 
-function K1(τ::Real, ω::Real, β::Real)
-    res =  - exp(-τ*ω) + exp(-(β-τ)*ω)
-    return ω*res/2π
+function build_kernal(n::Integer, τ::AbstractVector, ω::AbstractVector, β::Real)
+    dω = ω[2] - ω[1]
+    K = zeros(length(τ), length(ω))
+    for i = 1:length(τ), j = 1:length(ω)
+        K[i,j] = kernel(n, τ[i], ω[j], β)*dω
+    end
+    return K
 end
+@non_differentiable build_kernal(n::Integer, τ::AbstractVector, ω::AbstractVector, β::Real)
 
 """
     Neural Network model
 """
-NN_model = softplus ∘ Dense(5, 1) ∘ Dense(1, 5)
-parameters = params(NN_model)
-SF(ω::Real) = NN_model([ω])[1]
+function build_NN_model(N::Integer = 5)
+    model = Dense(N, 1, softplus) ∘ Dense(1, N, softplus)
+    parameters = params(model)
+    return model, parameters
+end
+
+model, parameters = build_NN_model()
+spectrum_func(ω::Real) = model([ω])[1]
 
 
 """
     d^nχ(τ)/dτ^n = ∫dω K(n,τ,ω) S(ω)
 """
-function χ(τ::Real, β::Real; N::Integer=10000, ω_max::Real=100)
-    dω = ω_max / N
-    ω = [i for i=1:dω:ω_max]
-    res = K0.(τ, ω, β) .* SF.(ω) .* dω |> sum
-    return res 
+
+@non_differentiable range(a,b)
+
+function χ(τ::AbstractVector, β::Real; N::Integer=10000, ω_max::Real=100) 
+    ω = [i for i in range(0,ω_max,length=N)]
+    S = map(spectrum_func, ω)
+    K = build_kernal(0, τ, ω, β)
+    return K*S
 end
 
-function dχ(τ::Real, β::Real; N::Integer=10000, ω_max::Real=100)
-    dω = ω_max / N
-    ω = [i for i=1:dω:ω_max]
-    res = K1.(τ, ω, β) .* SF.(ω) .* dω |> sum
-    return res 
-end
-
-function loss(τ, y)
-    ypred = χ.(τ, β)
+function loss(τ::AbstractVector, y::AbstractVector, β::Real)
+    ypred = χ(τ, β)
     Flux.mse(ypred, y)
 end
 
-function loss1(τ, y, τ1, dy)
-    ypred = χ.(τ, β)
-    dypred = dχ.(τ1, β)
-    return Flux.mse(ypred, y) + Flux.mse(dypred, dy)
-end
 
 g = 1.0
 β = 10.0
@@ -69,11 +63,13 @@ path1 = @sprintf "./data/ising/imagtime/dgtau/g_%.1f_D_%i_beta_%i.txt" g D β
 d = readdlm(path)
 d1 = readdlm(path1)
 
-x = hcat(d[:,1]...)
-y = hcat(d[:,2]...)
+x = d[:,1]
+y = d[:,2]
 
 
-#gradient(()->loss(x, y), parameters)
+@time loss(x,y,β)
+gradient(()->loss(x, y, β), parameters)
+
 
 
 step = 200
