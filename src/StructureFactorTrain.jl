@@ -1,6 +1,5 @@
 using Flux
 using Flux: train!
-using DelimitedFiles, Printf
 using ChainRulesCore
 
 """
@@ -47,7 +46,9 @@ end
     Neural Network model
 """
 function build_NN_model(N::Integer = 5)
-    model = Dense(N, 1, softplus) ∘ Dense(1, N, softplus)
+    model = Chain(
+        Dense(1, N, softplus),
+        Dense(N, 1, softplus))
     parameters = params(model)
     return model, parameters
 end

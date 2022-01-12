@@ -1,9 +1,8 @@
 using DelimitedFiles, Printf
-using BSON: @save
 include("../src/StructureFactorTrain.jl")
 
 
-println("2022.01.12: TFIsing: structure factor train")
+println("2022.01.11: TFIsing: structure factor train")
 g = 1.0
 β = 10.0
 D = 8
@@ -19,39 +18,40 @@ d2 = readdlm(p2)
 x1 = d1[:,1]; y1 = d1[:,2]; data1 = [(x1, y1)]
 x2 = d2[:,1]; y2 = d2[:,2]; data2 = [(x1, y1, x2, y2)]
 
-dir = "../data/ising/spectrum_nn/chi"
+dir = "../data/ising/spectrum_nn"
 isdir(dir) || mkdir(dir)
 
-opt = ADAM()
-err = []
-model, parameterr = build_NN_model(5)
-s(ω::Real) = model([ω])[1]
+dir1 = @sprintf "%s/chi1" dir
+isdir(dir1) || mkdir(dir1)
 
-#save the init model
-mpi = @sprintf "%s/g_%.1f_D_%i_beta_%i_init.bson" dir g D β 
-@save mpi model
+c = 0
+err = 100
+while err > 1.0
+    c += 1
+    model, parameterr = build_NN_model()
+    s(ω::Real) = model([ω])[1]
+    err = loss(data2[1],β,s)
+end
+println("try ", cont, " time to initiate the model")
 
-#save init spectrum
-spi = @sprintf "%s/sw_g_%.1f_D_%i_beta_%i_init.txt" dir g D β
-open(spi, "w") do file
+sp = @sprintf "%s/g_%.1f_D_%i_beta_%i_rand.txt" dir1 g D β
+open(sp, "w") do file
     for i = 1:length(ω)
-        writedlm(file, [ω[i]  s(ω[i])])
+        writedlm(file, s(ω[i]))
     end
 end
-    
-#creat error file
-err = loss(data1,β,s)[1]
-ep = @sprintf "%s/err_g_%.1f_D_%i_beta_%i.txt" dir g D β
+
+
+ep = @sprintf "%s/g_%.1f_D_%i_beta_%i_error.txt" dir1 g D β
 open(ep, "w") do file
     writedlm(file, err)
 end
 
 tolerance = 1.e-5
-epoch_max = 2000
-loop = 5
-for l = 1:loop, epoch = 1: epoch_max
-    train!((x,y) -> loss((x,y),β,s), parameterr, data1, opt)
-    err = loss(data1[1],β,s)
+epoch_max = 10000
+for epoch = 1: epoch_max
+    train!((x1,y1, x2, y2) -> loss((x1,y1, x2, y2),β,s), parameterr, data1, Descent())
+    err = loss(data2[1],β,s)
     println(epoch, ": ", err )
     open(ep, "a") do file
         writedlm(file, err)
@@ -70,5 +70,6 @@ open(sp, "w") do file
 end
 
 
+using BSON: @save
 mp = @sprintf "%s/g_%.1f_D_%i_beta_%i.bson" dir1 g D β
 @save mp model
