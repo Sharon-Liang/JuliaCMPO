@@ -47,8 +47,8 @@ end
 """
 function build_NN_model(N::Integer = 5)
     model = Chain(
-        Dense(1, N, softplus),
-        Dense(N, 1, softplus))
+        Dense(1, N, softplus, initW =Flux.glorot_normal),
+        Dense(N, 1, softplus, initW =Flux.glorot_normal))
     parameters = params(model)
     return model, parameters
 end
