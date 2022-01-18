@@ -45,10 +45,12 @@ end
 """
     Neural Network model
 """
+myrand(in,out) = 0.2 .* randn(in, out)
 function build_NN_model(N::Integer = 5)
     model = Chain(
-        Dense(1, N, softplus, initW =Flux.glorot_normal),
-        Dense(N, 1, softplus, initW =Flux.glorot_normal))
+        Dense(1, N, softplus, initW =myrand),
+        Dense(N, 1, softplus, initW =myrand)
+        )
     parameters = params(model)
     return model, parameters
 end
