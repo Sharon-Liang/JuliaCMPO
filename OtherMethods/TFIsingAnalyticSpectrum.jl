@@ -1,8 +1,6 @@
-using Arpack, LinearAlgebra
+using Arpack, LinearAlgebra, SparseArrays
+using DelimitedFiles, JLD, HDF5
 using Printf
-using SparseArrays
-using DelimitedFiles
-using JLD, HDF5
 
 function energy_density(J::Real, Γ::Real, N::Int, m::Int)
     k = m * π /N
@@ -95,6 +93,8 @@ function energy_level(J::Real, Γ::Real, N::Integer;
     return energy[1:num]    
 end
 
+
+# run
 """check gamma/J """
 J = [i for i in range(0.,1.,step = 0.05)]
 sitenum = [100]

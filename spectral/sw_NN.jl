@@ -1,16 +1,16 @@
 using DelimitedFiles, Printf
 using BSON: @save
-include("./StructureFactorTrain.jl")
+include("./StructureFactor.jl")
 
 println("2022.01.13: TFIsing: structure factor train")
 g = 1.0
 β = 10.0
 D = 8
-ω = build_range(0.01, 10)
+ω, _ = build_range(0.01, 10)
 
 #load χ(τ) and dχ(τ) data
-p1 = @sprintf "../data/ising/imagtime/gtau/g_%.1f_D_%i_beta_%i.txt" g D β
-p2 = @sprintf "../data/ising/imagtime/dgtau/g_%.1f_D_%i_beta_%i.txt" g D β
+p1 = @sprintf "./data/ising/imagtime/gtau/g_%.1f_D_%i_beta_%i.txt" g D β
+p2 = @sprintf "./data/ising/imagtime/dgtau/g_%.1f_D_%i_beta_%i.txt" g D β
 
 d1 = readdlm(p1)
 d2 = readdlm(p2)
@@ -48,7 +48,7 @@ end
 tolerance = 1.e-5
 epoch_max = 2000
 loop = 10
-for l = 1:loop, epoch = 1: epoch_max
+#for l = 1:loop, epoch = 1: epoch_max
     train!((x,y,x1,y1) -> loss((x,y,x1,y1),β,s), pars, data2, opt)
     err = loss(data2[1],β,s)
     #println(epoch, ": ", err )
@@ -58,7 +58,7 @@ for l = 1:loop, epoch = 1: epoch_max
     if err < tolerance
         break
     end
-end
+#end
 
 sp = @sprintf "%s/g_%.1f_D_%i_beta_%i.txt" dir g D β
 open(sp, "w") do file

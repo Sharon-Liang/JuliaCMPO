@@ -1,9 +1,7 @@
-using Yao
-using Arpack, LinearAlgebra
+using Arpack, LinearAlgebra, SparseArrays
+using DelimitedFiles, JLD, HDF5
 using Printf
-using SparseArrays
-using DelimitedFiles
-using JLD, HDF5
+using Yao
 
 function TFIsing(J::Real, Γ::Real, N::Integer; PBC::Bool=true)
     J = sqrt(J)

@@ -5,7 +5,7 @@ using cMPO, Test
 end
 
 @testset "multiplication" begin
-    include("multiplication.jl")
+    include("multiplications.jl")
 end
 
 @testset "gradient" begin

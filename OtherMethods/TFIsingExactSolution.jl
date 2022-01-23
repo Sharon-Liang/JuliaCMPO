@@ -2,7 +2,7 @@ using LinearAlgebra
 using StatsFuns, SpecialFunctions, HCubature
 import cMPO:free_energy, energy, specific_heat, entropy
 
-# exact solutions of TFIsing model
+#Exact solutions of TFIsing model
 function energy_density(k::Real, J::Real, Γ::Real)
     eng = 2*sqrt(J^2+ Γ^2 - 2*J*Γ*cos(k))
     return eng
@@ -27,18 +27,6 @@ function free_energy(J::Real, Γ::Real, β::Real; err::Float64=eps())
     res = hquadrature(k->fk(k,J,Γ,β)/2π, 0, 2π,rtol=err)
     return res
 end
-
-"""
-function free_energy(J::Real, Γ::Real, β::Real; L::Integer = 10000)
-    f = 0.
-    for n = 1:L
-        k = 2*π/L * n
-        ϵ = energy_density(k, J, Γ)
-        f += logaddexp(β*ϵ/2, -β*ϵ/2)
-    end
-    return -f/(β*L)
-end
-"""
 
 function entropy(J::Real, Γ::Real, β::Real; L = 10000)
     s = energy(J, Γ, β; L) - free_energy(J, Γ, β; L)
@@ -101,10 +89,6 @@ function spectral_density(J::Real, ω::Real, β::Real; η::Float64=0.05,Γ::Real
     end
 end
 
-function susceptibility(J::Real, ω::Real, β::Real; η::Float64=0.05,Γ::Real=1.)
-    return spectral_density(J, ω, β; η=η,Γ=Γ)
-end
-
 function structure_factor(J::Real, ω::Real, β::Real; η::Float64=0.05,Γ::Real=1.)
     if J/Γ == 0.
         return 1/(1-exp(-β*ω))*spectral_density(J,ω,β,Γ=Γ,η=η)
@@ -122,4 +106,3 @@ function structure_factor(J::Real, ω::Real, β::Real; η::Float64=0.05,Γ::Real
     end
 end
 
-#end
