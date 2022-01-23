@@ -73,11 +73,13 @@ K0 = build_kernal(0, x1, ω, β)
 #NNT METHOD 
 eye = Matrix(1.0I, len, len)
 ȳ1 = vcat(y1, zeros(len))
-
 K̄ = vcat(K0, λ*eye)
-S = nonneg_lsq(K̄,ȳ1;alg=:nnls) 
-ȳ = K0 * S
 
+@timeit to "nnls" begin
+    S = nonneg_lsq(K̄,ȳ1;alg=:nnls) 
+end
+
+ȳ = K0 * S
 n1 = norm(ȳ)
 n2 = norm(S)
 
@@ -87,3 +89,8 @@ open(ResultFile, "a") do file
 end
 
     
+const End_Time = Dates.format(now(), "yyyy-mm-dd HH:MM:SS")
+const Running_TimeTable = string(to)
+@show Start_Time
+@show End_Time
+print(Running_TimeTable,"\n")
