@@ -53,41 +53,53 @@ const ωmax = parsed_args[:wmax]
 const DataFolder = parsed_args[:DataFolder]
 const ResultFolder = parsed_args[:ResultFolder]
 
-DataFile = @sprintf "%s/gtau/g_%.1f_D_%i_beta_%i.txt" DataFolder g D β
-ResultFile = @sprintf "%s/g_%.1f_D_%i_beta_%i.txt" ResultFolder g D β
+DataFile1 = @sprintf "%s/gtau/g_%.1f_D_%i_beta_%i.txt" DataFolder g D β
+DataFile2 = @sprintf "%s/gtau/g_%.1f_D_%im2_beta_%i.txt" DataFolder g D β
+ResultFile1 = @sprintf "%s/g_%.1f_D_%i_beta_%i.txt" ResultFolder g D β
+ResultFile2 = @sprintf "%s/g_%.1f_D_%im2_beta_%i.txt" ResultFolder g D β
 
 #Existence of DataFile
-@assert isfile(DataFile) 
+@assert isfile(DataFile1) && isfile(DataFile2)
 
 #Remove old ResultFile in the first step
-if λ == 0. isfile(ResultFile) && rm(ResultFile) end
+if λ == 0. 
+    isfile(ResultFile1) && rm(ResultFile1) 
+    isfile(ResultFile2) && rm(ResultFile2)
+end
 
 #LOAD DATA
-d1 = readdlm(DataFile)
-x1 = d1[:,1]; y1 = d1[:,2]
+d1 = readdlm(DataFile1); x1 = d1[:,1]; y1 = d1[:,2]
+d2 = readdlm(DataFile2); x2 = d2[:,1]; y1 = d2[:,2]
 
 #BUILD KERNEL
 ω, len = build_range(dω, ωmax)
-K0 = build_kernal(0, x1, ω, β)
+K1 = build_kernal(0, x1, ω, β)
+K2 = build_kernal(0, x2, ω, β)
 
 #NNT METHOD 
 eye = Matrix(1.0I, len, len)
-ȳ1 = vcat(y1, zeros(len))
-K̄ = vcat(K0, λ*eye)
+ȳ1 = vcat(y1, zeros(len)); K̄1 = vcat(K1, λ*eye)
+ȳ2 = vcat(y2, zeros(len)); K̄2 = vcat(K2, λ*eye)
 
-@timeit to "nnls" begin
-    S = nonneg_lsq(K̄,ȳ1;alg=:nnls) 
+@timeit to "D=8" begin
+    S1 = nonneg_lsq(K̄1,ȳ1;alg=:nnls)  
 end
 
-ȳ = K0 * S
-n1 = norm(ȳ)
-n2 = norm(S)
+@timeit to "D=8×2" begin
+    S2 = nonneg_lsq(K̄2,ȳ2;alg=:nnls) 
+end
+
 
 #WRITE RESULT 
-open(ResultFile, "a") do file
+n1 = norm(K1 * S1); n2 = norm(S1)
+open(ResultFile1, "a") do file
     writedlm(file, [λ n1 n2])
 end
 
+n1 = norm(K2 * S2); n2 = norm(S2)
+open(ResultFile2, "a") do file
+    writedlm(file, [λ n1 n2])
+end
     
 const End_Time = Dates.format(now(), "yyyy-mm-dd HH:MM:SS")
 const Running_TimeTable = string(to)
