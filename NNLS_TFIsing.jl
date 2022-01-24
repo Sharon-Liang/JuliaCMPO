@@ -20,10 +20,6 @@ settings = ArgParseSettings(prog="NNLS code for TFIsing model"
         arg_type = Integer
         default = 8
         help = "cMPO bond dimension"
-    "--lambda"
-        arg_type = Float64
-        default = 0.0
-        help = "weight parameter"
     "--dw"
         arg_type = Float64
         default = 0.01
@@ -42,12 +38,11 @@ settings = ArgParseSettings(prog="NNLS code for TFIsing model"
         help = "result folder"
 end
 parsed_args = parse_args(settings; as_symbols=true)
-print(parsed_args)
+print(parsed_args,"\n")
 
 const g = parsed_args[:g]
 const β = parsed_args[:beta]
 const D = parsed_args[:D]
-const λ = parsed_args[:lambda]
 const dω = parsed_args[:dw]
 const ωmax = parsed_args[:wmax]
 const DataFolder = parsed_args[:DataFolder]
@@ -62,14 +57,12 @@ ResultFile2 = @sprintf "%s/g_%.1f_D_%im2_beta_%i.txt" ResultFolder g D β
 @assert isfile(DataFile1) && isfile(DataFile2)
 
 #Remove old ResultFile in the first step
-if λ == 0. 
-    isfile(ResultFile1) && rm(ResultFile1) 
-    isfile(ResultFile2) && rm(ResultFile2)
-end
+isfile(ResultFile1) && rm(ResultFile1) 
+isfile(ResultFile2) && rm(ResultFile2)
 
 #LOAD DATA
 d1 = readdlm(DataFile1); x1 = d1[:,1]; y1 = d1[:,2]
-d2 = readdlm(DataFile2); x2 = d2[:,1]; y1 = d2[:,2]
+d2 = readdlm(DataFile2); x2 = d2[:,1]; y2 = d2[:,2]
 
 #BUILD KERNEL
 ω, len = build_range(dω, ωmax)
@@ -78,29 +71,39 @@ K2 = build_kernal(0, x2, ω, β)
 
 #NNT METHOD 
 eye = Matrix(1.0I, len, len)
-ȳ1 = vcat(y1, zeros(len)); K̄1 = vcat(K1, λ*eye)
-ȳ2 = vcat(y2, zeros(len)); K̄2 = vcat(K2, λ*eye)
+L = 300
+lambda = [10^i for i in range(-5,1,length=L)]
+n1, n2 = zeros(L,2), zeros(L,2)
+for i=1:L
+    λ = lambda[i]
+    ȳ1 = vcat(y1, zeros(len)); K̄1 = vcat(K1, λ*eye)
+    ȳ2 = vcat(y2, zeros(len)); K̄2 = vcat(K2, λ*eye)
 
-@timeit to "D=8" begin
-    S1 = nonneg_lsq(K̄1,ȳ1;alg=:nnls)  
+    @timeit to "D=8" begin
+        S1 = nonneg_lsq(K̄1,ȳ1;alg=:nnls)  
+    end
+
+    @timeit to "D=8×2" begin
+        S2 = nonneg_lsq(K̄2,ȳ2;alg=:nnls) 
+    end
+
+    n1[i,1] = norm(K1 * S1 - y1); n2[i,1] = norm(S1)
+    n1[i,2] = norm(K2 * S2 - y2); n2[i,2] = norm(S2)
 end
-
-@timeit to "D=8×2" begin
-    S2 = nonneg_lsq(K̄2,ȳ2;alg=:nnls) 
-end
-
 
 #WRITE RESULT 
-n1 = norm(K1 * S1); n2 = norm(S1)
-open(ResultFile1, "a") do file
-    writedlm(file, [λ n1 n2])
+open(ResultFile1, "w+") do file
+    for i = 1:L
+        writedlm(file, [lambda[i] n1[i,1] n2[i,1]])
+    end
 end
 
-n1 = norm(K2 * S2); n2 = norm(S2)
-open(ResultFile2, "a") do file
-    writedlm(file, [λ n1 n2])
+open(ResultFile2, "w+") do file
+    for i = 1:L
+        writedlm(file, [lambda[i] n1[i,2] n2[i,2]])
+    end
 end
-    
+
 const End_Time = Dates.format(now(), "yyyy-mm-dd HH:MM:SS")
 const Running_TimeTable = string(to)
 @show Start_Time
