@@ -5,13 +5,13 @@ function writeln(io::IO, xs...)
     write(io,"\n")
 end
 
-lambdaRange = collect(0.0:0.1:1.0)
-betaRange = collect(10.0:10.0:40.0)
+lambdaRange = [10^i for i in range(-20,0,length=200)]
+betaRange = [10.0, 20.0, 30.0, 40.0]
 gRange =[1.0]
 
 
 #CREAT LOG FOLDER
-logdir = "/home/sliang/JuliaCode/mycMPO/log"
+logdir = "/home/sliang/JuliaCode/mycMPO/log/ising"
 isdir(logdir) || mkdir(logdir)
 
 #CLEAR LOG FOLDER
@@ -22,8 +22,9 @@ end
 
 for j = 1:length(gRange)
     g = @sprintf "%.1f" gRange[j]
-    for b in 1:length(betaRange)
+    for b in 1:length(betaRange), i in 1:length(lambdaRange)
         beta = @sprintf "%.1f" betaRange[b]
+        lambda = @sprintf "%.5e" lambdaRange[i]
         R = rand(Int)
         io = open("tmp$(R).sh","w+")
         writeln(io,"#!/bin/bash -l")
@@ -33,7 +34,7 @@ for j = 1:length(gRange)
         writeln(io,"#SBATCH --job-name=NNLS_TFIsing")
         writeln(io,"#SBATCH --output=$(logdir)/g_$(g)_beta_$(beta).log")
         writeln(io,"#SBATCH --error=$(logdir)/g_$(g)_beta_$(beta).log")
-        writeln(io,"julia --project=/home/sliang/JuliaCode/mycMPO /home/sliang/JuliaCode/mycMPO/NNLS_TFIsing.jl --g $(g) --beta $(beta)")
+        writeln(io,"julia --project=/home/sliang/JuliaCode/mycMPO /home/sliang/JuliaCode/mycMPO/NNLS_TFIsing.jl --g $(g) --beta $(beta) --lambda $(lambda)")
         close(io)
         println("Run: tmp$(R).sh")
         run(```sbatch tmp$(R).sh```)
