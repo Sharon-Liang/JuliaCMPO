@@ -39,13 +39,13 @@ export make_operator
        ,Masubara_freq_GF
 
 
-include("rrule.jl")
 include("utilities.jl")
 include("setup.jl")
+include("rrule.jl")
 include("multiplications.jl")
 include("PhysicalModels.jl")
 include("PhysicalObservables.jl")
-include("StructureFactor.jl")
+
 
 
 end # module
