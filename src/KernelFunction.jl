@@ -30,4 +30,13 @@ end
 @non_differentiable build_range(dx::Number, xmax::Number)
 
 
+"""
+    Fluction-Dissipation Theorem: A(ω) = (1 - e^(-βω)) S(ω)
+"""
+function ASrelation(ω::Real, S::Real, β::Real)
+    return (1.0 - exp(-β*ω)) * S
+end
+
+
+
 
