@@ -16,8 +16,10 @@ DataFile1 = @sprintf "%s/gtau/g_%.1f_D_%i_beta_%i.txt" DataFolder g D β
 d1 = readdlm(DataFile1); x1 = d1[:,1]; y1 = d1[:,2]
 
 #BUILD KERNEL
-ω, len = build_range(dω, ωmax)
-K1 = build_kernal(0, x1, ω, β)
+#ω, len = build_range(dω, ωmax)
+#K1 = build_kernal(0, x1, ω, β)
+ω, len = build_range(dω, ωmax, sqrt(eps()))
+K1 = build_Akernal(x1, ω, β)
 
 #Piscard Plot
 F1 = svd(K1)  #Store the Factorization Object
@@ -44,5 +46,5 @@ plot!(xlabel="i", xlim=(1,30)
     ,minorgrids=true
     ,legend=:bottomleft)
 
-FigureName = @sprintf "ising_piscard_g_%.1f_D_%i_beta_%i.pdf" g D β
+FigureName = @sprintf "ising_piscard_g_%.1f_D_%i_beta_%i_Akernel.pdf" g D β
 savefig(FigureFolder*"/"*FigureName)
