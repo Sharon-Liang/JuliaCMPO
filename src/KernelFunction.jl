@@ -1,7 +1,7 @@
 using ChainRulesCore
 
 """
-    Kernal functions
+    Kernal functions corresponding to S(ω)
 """
 function kernel(n::Integer, τ::Real, ω::Real, β::Real)
     res =  (-1)^n * exp(-τ*ω) + exp(-(β-τ)*ω)
@@ -18,6 +18,26 @@ function build_kernal(n::Integer, τ::AbstractVector, ω::AbstractVector, β::Re
 end
 @non_differentiable build_kernal(n::Integer, τ::AbstractVector, ω::AbstractVector, β::Real)
 
+
+"""
+    Kernal functions corresponding to A(ω)
+"""
+function Akernel(τ::Real, ω::Real, β::Real)
+    #kernel function for bosons
+    res =  exp(-τ*ω) + exp(-(β-τ)*ω)
+    res = res/(1 - exp(-β*ω))
+    return res / 2π
+end
+
+function build_Akernal(τ::AbstractVector, ω::AbstractVector, β::Real)
+    dω = ω[2] - ω[1]
+    K = zeros(length(τ), length(ω))
+    for i = 1:length(τ), j = 1:length(ω)
+        K[i,j] = Akernel(τ[i], ω[j], β)*dω
+    end
+    return K
+end
+@non_differentiable build_Akernal(τ::AbstractVector, ω::AbstractVector, β::Real)
 
 """
     Generate ω range 0:dω:ωmax
@@ -37,6 +57,8 @@ function ASrelation(ω::Real, S::Real, β::Real)
     return (1.0 - exp(-β*ω)) * S
 end
 
-
+function SArelation(ω::Real, A::Real, β::Real)
+    return A / (1.0 - exp(-β*ω))
+end
 
 
