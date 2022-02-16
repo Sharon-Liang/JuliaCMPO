@@ -11,7 +11,7 @@ gRange =[1.0]
 
 
 #CREAT LOG FOLDER
-logdir = "/home/sliang/JuliaCode/mycMPO/log/ising/nnls"
+logdir = "/home/sliang/JuliaCode/mycMPO/log/ising/nnls_dG"
 isdir(logdir) || mkdir(logdir)
 
 #CLEAR LOG FOLDER
@@ -31,10 +31,10 @@ for j = 1:length(gRange)
         writeln(io,"#SBATCH --partition=a100")
         writeln(io,"#SBATCH --nodes=1")
         writeln(io,"#SBATCH --time=999")
-        writeln(io,"#SBATCH --job-name=NNLS_TFIsing")
+        writeln(io,"#SBATCH --job-name=NNLS_TFIsing_dG")
         writeln(io,"#SBATCH --output=$(logdir)/g_$(g)_beta_$(beta).log")
         writeln(io,"#SBATCH --error=$(logdir)/g_$(g)_beta_$(beta).log")
-        writeln(io,"julia --project=/home/sliang/JuliaCode/mycMPO /home/sliang/JuliaCode/mycMPO/NNLS_TFIsing.jl --g $(g) --beta $(beta) --lambda $(lambda)")
+        writeln(io,"julia --project=/home/sliang/JuliaCode/mycMPO /home/sliang/JuliaCode/mycMPO/NNLS_TFIsing_dG.jl --g $(g) --beta $(beta) --lambda $(lambda)")
         close(io)
         println("Run: tmp$(R).sh")
         run(```sbatch tmp$(R).sh```)

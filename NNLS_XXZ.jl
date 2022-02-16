@@ -24,6 +24,10 @@ settings = ArgParseSettings(prog="NNLS code for XXZ model"
         arg_type = Integer
         default = 8
         help = "cMPO bond dimension"
+    "--operator"
+        arg_type = Symbol
+        default = :mp
+        help = "spin operators in the correlation function: :mp, :pm, :px, :py, :pz"
     "--lambda"
         arg_type = Float64
         default = 0.0
@@ -42,15 +46,17 @@ settings = ArgParseSettings(prog="NNLS code for XXZ model"
         help = "data folder"
     "--ResultFolder"
         arg_type = String
-        default = "/data/sliang/CMPO/ising/spectrum_nnls"
+        default = "/data/sliang/CMPO/xxz/spectrum_nnls"
         help = "result folder"
 end
 parsed_args = parse_args(settings; as_symbols=true)
 print(parsed_args,"\n")
 
-const g = parsed_args[:g]
+const Jxy = parsed_args[:Jxy]
+const Jz = parsed_args[:Jz]
 const β = parsed_args[:beta]
 const D = parsed_args[:D]
+const op = parsed_args[:operator]
 const λ = parsed_args[:lambda]
 const dω = parsed_args[:dw]
 const ωmax = parsed_args[:wmax]
@@ -58,20 +64,27 @@ const DataFolder = parsed_args[:DataFolder]
 const ResultFolder = parsed_args[:ResultFolder]
 
 #DataFile Path 
-DataFile1 = @sprintf "%s/gtau/g_%.1f_D_%i_beta_%i.txt" DataFolder g D β
-DataFile2 = @sprintf "%s/gtau/g_%.1f_D_%im2_beta_%i.txt" DataFolder g D β
+DataFile1 = @sprintf "%s/gtau/Jz_%.1f_%s_D_%i_beta_%i.txt" DataFolder Jz op D β
+DataFile2 = @sprintf "%s/gtau/Jz_%.1f_%s_D_%im2_beta_%i.txt" DataFolder Jz op D β
 #Existence of DataFile
+println(DataFile1)
 @assert isfile(DataFile1) && isfile(DataFile2)
 
+#Creat ResultFolders if there is none
+isdir(ResultFolder) || mkdir(ResultFolder)
+isdir(ResultFolder*"/weightparam") || mkdir(ResultFolder*"/weightparam")
+isdir(ResultFolder*"/Sw") || mkdir(ResultFolder*"/Sw")
+isdir(ResultFolder*"/Aw") || mkdir(ResultFolder*"/Aw")
+
 #ResultFile Path
-WP_ResultFile1 = @sprintf "%s/weightparam/g_%.1f_D_%i_beta_%i_lambda_%.5e.txt" ResultFolder g D β λ
-WP_ResultFile2 = @sprintf "%s/weightparam/g_%.1f_D_%im2_beta_%i_lambda_%.5e.txt" ResultFolder g D β λ
+WP_ResultFile1 = @sprintf "%s/weightparam/Jz_%.1f_%s_D_%i_beta_%i_lambda_%e.txt" ResultFolder Jz op D β λ
+WP_ResultFile2 = @sprintf "%s/weightparam/Jz_%.1f_%s_D_%im2_beta_%i_lambda_%e.txt" ResultFolder Jz op D β λ
 
-SW_ResultFile1 = @sprintf "%s/Sw/g_%.1f_D_%i_beta_%i_lambda_%.5e.txt" ResultFolder g D β λ
-SW_ResultFile2 = @sprintf "%s/Sw/g_%.1f_D_%im2_beta_%i_lambda_%.5e.txt" ResultFolder g D β λ
+SW_ResultFile1 = @sprintf "%s/Sw/Jz_%.1f_%s_D_%i_beta_%i_lambda_%e.txt" ResultFolder Jz op D β λ
+SW_ResultFile2 = @sprintf "%s/Sw/Jz_%.1f_%s_D_%im2_beta_%i_lambda_%e.txt" ResultFolder Jz op D β λ
 
-AW_ResultFile1 = @sprintf "%s/Aw/g_%.1f_D_%i_beta_%i_lambda_%.5e.txt" ResultFolder g D β λ
-AW_ResultFile2 = @sprintf "%s/Aw/g_%.1f_D_%im2_beta_%i_lambda_%.5e.txt" ResultFolder g D β λ
+AW_ResultFile1 = @sprintf "%s/Aw/Jz_%.1f_%s_D_%i_beta_%i_lambda_%e.txt" ResultFolder Jz op D β λ
+AW_ResultFile2 = @sprintf "%s/Aw/Jz_%.1f_%s_D_%im2_beta_%i_lambda_%e.txt" ResultFolder Jz op D β λ
 
 #Remove old ResultFile in the first step
 isfile(WP_ResultFile1) && rm(WP_ResultFile1) 
@@ -110,7 +123,7 @@ end
 end
 
 Rnorm1 = norm(K1 * S1 - y1); Snorm1 = norm(S1)
-Rnorm2 = norm(K1 * S1 - y1); Snorm2 = norm(S1)
+Rnorm2 = norm(K2 * S2 - y2); Snorm2 = norm(S2)
 
 
 #WRITE RESULT 

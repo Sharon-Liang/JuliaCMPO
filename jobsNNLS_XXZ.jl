@@ -6,12 +6,14 @@ function writeln(io::IO, xs...)
 end
 
 lambdaRange = [10^i for i in range(-6,0,length=13)]
-betaRange = [1.0, 2.0, 4.0, 6.0, 8.0, 10.0, 20.0, 30.0, 40.0]
-gRange =[1.0]
-
+betaRange = [1.0, 2.0, 4.0, 6.0, 8.0, 10.0, 20.0]
+JzRange =[0.0, 1.0]
+operators = [:mp, :pm, :pz]
 
 #CREAT LOG FOLDER
-logdir = "/home/sliang/JuliaCode/mycMPO/log/ising/nnls"
+logdir = "/home/sliang/JuliaCode/mycMPO/log/xxz"
+isdir(logdir) || mkdir(logdir)
+logdir = logdir*"/nnls"
 isdir(logdir) || mkdir(logdir)
 
 #CLEAR LOG FOLDER
@@ -20,8 +22,9 @@ if length(readdir(logdir))!=0
     run(```rm $(logdir)/$(file)```) end
 end
 
-for j = 1:length(gRange)
-    g = @sprintf "%.1f" gRange[j]
+for j = 1:length(JzRange), o = 1:length(operators)
+    Jz = @sprintf "%.1f" JzRange[j]
+    op = @sprintf "%s" operators[o]
     for b in 1:length(betaRange), i in 1:length(lambdaRange)
         beta = @sprintf "%.1f" betaRange[b]
         lambda = @sprintf "%e" lambdaRange[i]
@@ -31,10 +34,10 @@ for j = 1:length(gRange)
         writeln(io,"#SBATCH --partition=a100")
         writeln(io,"#SBATCH --nodes=1")
         writeln(io,"#SBATCH --time=999")
-        writeln(io,"#SBATCH --job-name=NNLS_TFIsing")
-        writeln(io,"#SBATCH --output=$(logdir)/g_$(g)_beta_$(beta).log")
-        writeln(io,"#SBATCH --error=$(logdir)/g_$(g)_beta_$(beta).log")
-        writeln(io,"julia --project=/home/sliang/JuliaCode/mycMPO /home/sliang/JuliaCode/mycMPO/NNLS_TFIsing.jl --g $(g) --beta $(beta) --lambda $(lambda)")
+        writeln(io,"#SBATCH --job-name=NNLS_XXZ")
+        writeln(io,"#SBATCH --output=$(logdir)/Jz_$(Jz)_$(op)_beta_$(beta).log")
+        writeln(io,"#SBATCH --error=$(logdir)/Jz_$(Jz)_$(op)_beta_$(beta).log")
+        writeln(io,"julia --project=/home/sliang/JuliaCode/mycMPO /home/sliang/JuliaCode/mycMPO/NNLS_XXZ.jl --Jz $(Jz) --beta $(beta) --operator $(op) --lambda $(lambda)")
         close(io)
         println("Run: tmp$(R).sh")
         run(```sbatch tmp$(R).sh```)

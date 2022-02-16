@@ -60,14 +60,14 @@ DataFile2 = @sprintf "%s/gtau/g_%.1f_D_%im2_beta_%i.txt" DataFolder g D β
 @assert isfile(DataFile1) && isfile(DataFile2)
 
 #ResultFile Path
-WP_ResultFile1 = @sprintf "%s/weightparam/g_%.1f_D_%i_beta_%i_lambda_%.5e.txt" ResultFolder g D β λ
-WP_ResultFile2 = @sprintf "%s/weightparam/g_%.1f_D_%im2_beta_%i_lambda_%.5e.txt" ResultFolder g D β λ
+WP_ResultFile1 = @sprintf "%s/weightparam/g_%.1f_D_%i_beta_%i_lambda_%e.txt" ResultFolder g D β λ
+WP_ResultFile2 = @sprintf "%s/weightparam/g_%.1f_D_%im2_beta_%i_lambda_%e.txt" ResultFolder g D β λ
 
-SW_ResultFile1 = @sprintf "%s/Sw/g_%.1f_D_%i_beta_%i_lambda_%.5e.txt" ResultFolder g D β λ
-SW_ResultFile2 = @sprintf "%s/Sw/g_%.1f_D_%im2_beta_%i_lambda_%.5e.txt" ResultFolder g D β λ
+SW_ResultFile1 = @sprintf "%s/Sw/g_%.1f_D_%i_beta_%i_lambda_%e.txt" ResultFolder g D β λ
+SW_ResultFile2 = @sprintf "%s/Sw/g_%.1f_D_%im2_beta_%i_lambda_%e.txt" ResultFolder g D β λ
 
-AW_ResultFile1 = @sprintf "%s/Aw/g_%.1f_D_%i_beta_%i_lambda_%.5e.txt" ResultFolder g D β λ
-AW_ResultFile2 = @sprintf "%s/Aw/g_%.1f_D_%im2_beta_%i_lambda_%.5e.txt" ResultFolder g D β λ
+AW_ResultFile1 = @sprintf "%s/Aw/g_%.1f_D_%i_beta_%i_lambda_%e.txt" ResultFolder g D β λ
+AW_ResultFile2 = @sprintf "%s/Aw/g_%.1f_D_%im2_beta_%i_lambda_%e.txt" ResultFolder g D β λ
 
 #Remove old ResultFile in the first step
 isfile(WP_ResultFile1) && rm(WP_ResultFile1) 
@@ -106,7 +106,7 @@ end
 end
 
 Rnorm1 = norm(K1 * S1 - y1); Snorm1 = norm(S1)
-Rnorm2 = norm(K1 * S1 - y1); Snorm2 = norm(S1)
+Rnorm2 = norm(K2 * S2 - y2); Snorm2 = norm(S2)
 
 
 #WRITE RESULT 

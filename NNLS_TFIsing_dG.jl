@@ -55,29 +55,25 @@ const ResultFolder = parsed_args[:ResultFolder]
 
 #DataFile Path 
 DataFile1 = @sprintf "%s/gtau/g_%.1f_D_%i_beta_%i.txt" DataFolder g D β
-DataFile2 = @sprintf "%s/gtau/g_%.1f_D_%im2_beta_%i.txt" DataFolder g D β
+DataFile2 = @sprintf "%s/dgtau/g_%.1f_D_%i_beta_%i.txt" DataFolder g D β
+#DataFile4 = @sprintf "%s/dgtau/g_%.1f_D_%im2_beta_%i.txt" DataFolder g D β
+
 #Existence of DataFile
 @assert isfile(DataFile1) && isfile(DataFile2)
 
 #ResultFile Path
-WP_ResultFile1 = @sprintf "%s/weightparam/g_%.1f_D_%i_beta_%i_lambda_%.5e_Akernel.txt" ResultFolder g D β λ
-WP_ResultFile2 = @sprintf "%s/weightparam/g_%.1f_D_%im2_beta_%i_lambda_%.5e_Akernel.txt" ResultFolder g D β λ
+WP_ResultFile1 = @sprintf "%s/weightparam/g_%.1f_D_%i_beta_%i_lambda_%e_dG.txt" ResultFolder g D β λ
 
-SW_ResultFile1 = @sprintf "%s/Sw/g_%.1f_D_%i_beta_%i_lambda_%.5e_Akernel.txt" ResultFolder g D β λ
-SW_ResultFile2 = @sprintf "%s/Sw/g_%.1f_D_%im2_beta_%i_lambda_%.5e_Akernel.txt" ResultFolder g D β λ
+SW_ResultFile1 = @sprintf "%s/Sw/g_%.1f_D_%i_beta_%i_lambda_%e_dG.txt" ResultFolder g D β λ
 
-AW_ResultFile1 = @sprintf "%s/Aw/g_%.1f_D_%i_beta_%i_lambda_%.5e_Akernel.txt" ResultFolder g D β λ
-AW_ResultFile2 = @sprintf "%s/Aw/g_%.1f_D_%im2_beta_%i_lambda_%.5e_Akernel.txt" ResultFolder g D β λ
+AW_ResultFile1 = @sprintf "%s/Aw/g_%.1f_D_%i_beta_%i_lambda_%e_dG.txt" ResultFolder g D β λ
 
 #Remove old ResultFile in the first step
 isfile(WP_ResultFile1) && rm(WP_ResultFile1) 
-isfile(WP_ResultFile2) && rm(WP_ResultFile2)
 
 isfile(SW_ResultFile1) && rm(SW_ResultFile1) 
-isfile(SW_ResultFile2) && rm(SW_ResultFile2)
 
 isfile(AW_ResultFile1) && rm(AW_ResultFile1) 
-isfile(AW_ResultFile2) && rm(AW_ResultFile2)
 
 
 #LOAD DATA
@@ -85,37 +81,26 @@ d1 = readdlm(DataFile1); x1 = d1[:,1]; y1 = d1[:,2]
 d2 = readdlm(DataFile2); x2 = d2[:,1]; y2 = d2[:,2]
 
 #BUILD KERNEL
-ω, len = build_range(dω, ωmax, sqrt(eps()))
-K1 = build_Akernal(x1, ω, β)
-K2 = build_Akernal(x2, ω, β)
+ω, len = build_range(dω, ωmax)
+K1 = build_kernal(0, x1, ω, β)
+K2 = build_kernal(1, x2, ω, β)
+
 
 #NNT METHOD 
 eye = Matrix(1.0I, len, len)
 
-ȳ1 = vcat(y1, zeros(len)); K̄1 = vcat(K1, λ*eye)
-ȳ2 = vcat(y2, zeros(len)); K̄2 = vcat(K2, λ*eye)
+ȳ1 = vcat(y1, y2, zeros(len)); K̄1 = vcat(K1, K2, λ*eye)
 
 @timeit to "D=8" begin
-    A1 = nonneg_lsq(K̄1,ȳ1;alg=:nnls)
-    S1 = map((x,y) -> SArelation(x,y,β), ω, A1)
+    S1 = nonneg_lsq(K̄1,ȳ1;alg=:nnls)
+    A1 = map((x,y) -> ASrelation(x,y,β), ω, S1)
 end
 
-@timeit to "D=8×2" begin
-    A2 = nonneg_lsq(K̄2,ȳ2;alg=:nnls) 
-    S2 = map((x,y) -> SArelation(x,y,β), ω, A2)
-end
-
-Rnorm1 = norm(K1 * A1 - y1); Anorm1 = norm(A1)
-Rnorm2 = norm(K2 * A2 - y2); Anorm2 = norm(A2)
-
+Rnorm1 = norm(vcat(K1, K2) * S1 - vcat(y1,y2)); Snorm1 = norm(S1)
 
 #WRITE RESULT 
 open(WP_ResultFile1, "w+") do file
-    writedlm(file, [λ Rnorm1 Anorm1])
-end
-
-open(WP_ResultFile2, "w+") do file
-    writedlm(file, [λ Rnorm2 Anorm2])
+    writedlm(file, [λ Rnorm1 Snorm1])
 end
 
 open(SW_ResultFile1, "w+") do file
@@ -124,21 +109,9 @@ open(SW_ResultFile1, "w+") do file
     end
 end
 
-open(SW_ResultFile2, "w+") do file
-    for i = 1:len
-        writedlm(file, [ω[i] S2[i]])
-    end
-end
-
 open(AW_ResultFile1, "w+") do file
     for i = 1:len
         writedlm(file, [ω[i] A1[i]])
-    end
-end
-
-open(AW_ResultFile2, "w+") do file
-    for i = 1:len
-        writedlm(file, [ω[i] A2[i]])
     end
 end
 
