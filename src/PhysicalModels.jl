@@ -113,7 +113,7 @@ function XYmodel(W::Int64)
         R[:,:,1] = 1/√2 * sp ; R[:,:,W+1] = 1/√2 * sm
         Q = zeros(2,2)
         P = zeros(2,2,2W,2W)
-        for j=1:2, i=2:W
+        for j=0:1, i=2:W
             P[:,:,j*W+i,j*W+i-1] = Matrix{Float64}(I,2,2)
         end
         return CMPO(Q,R,L,P)
@@ -144,7 +144,7 @@ function XXZmodel(Δ::Real, W::Int)
             R[:,:,2W+1] = √Δ * sz
             Q = zeros(2,2)
             P = zeros(2,2,3W,3W)
-            for j=1:3, i=2:W
+            for j=0:2, i=2:W
                 P[:,:,j*W+i,j*W+i-1] = Matrix{Float64}(I,2,2)
             end
             return CMPO(Q,R,L,P)
