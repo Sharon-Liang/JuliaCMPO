@@ -25,7 +25,7 @@ settings = ArgParseSettings(prog="NNLS code for TFIsing model"
         default = 0.0
         help = "using the result wave fuction of β = prevbeta as initial wave function"
     "--D"
-        arg_type = Integer
+        arg_type = Int64
         default = 8
         help = "cMPO bond dimension"
     "--ResultFolder"

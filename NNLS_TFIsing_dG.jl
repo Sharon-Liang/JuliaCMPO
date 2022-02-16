@@ -17,7 +17,7 @@ settings = ArgParseSettings(prog="NNLS code for TFIsing model"
         default = 10.0
         help = "β: inverse temperature"
     "--D"
-        arg_type = Integer
+        arg_type = Int64
         default = 8
         help = "cMPO bond dimension"
     "--lambda"

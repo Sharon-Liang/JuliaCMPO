@@ -19,7 +19,7 @@ settings = ArgParseSettings(prog="G(τ) and dGtau for TFIsing model"
         default = 10.0
         help = "β: inverse temperature"
     "--D"
-        arg_type = Integer
+        arg_type = Int64
         default = 8
         help = "cMPO bond dimension"
     "--operator"
@@ -27,7 +27,7 @@ settings = ArgParseSettings(prog="G(τ) and dGtau for TFIsing model"
         default = :z
         help = "spin operators in the correlation function"
     "--Ntau"
-        arg_type = Integer
+        arg_type = Int64
         default = 1601
         help = "number of τ"
     "--DataFolder"

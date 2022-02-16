@@ -19,10 +19,10 @@ logdir = logdir*"/cmpo"
 isdir(logdir) || mkdir(logdir)
 
 #CLEAR LOG FOLDER
-if length(readdir(logdir))!=0
-    for file in readdir(logdir)
-    run(```rm $(logdir)/$(file)```) end
-end
+#if length(readdir(logdir))!=0
+#    for file in readdir(logdir)
+#    run(```rm $(logdir)/$(file)```) end
+#end
 
 for j = 1:length(JzRange), w = 1:length(WidthRange)
     Jz = @sprintf "%.1f" JzRange[j]
