@@ -11,32 +11,32 @@ using OMEinsum
 import Base: *, isequal
 import LinearAlgebra: normalize
 
-export pauli 
-       ,delta 
-       ,Masubara_freq 
-       ,symmetrize 
-       ,TrExp, trexp, value, logtrexp
-       ,gradient_function, hessian_function
+export pauli,
+       delta,
+       Masubara_freq,
+       symmetrize, 
+       TrExp, trexp, value, logtrexp,
+       gradient_function, hessian_function
 
-export CMPS, CMPO
-       ,toarray, tovector, tocmps
-       ,init_cmps 
-       ,normalize, ovlp
+export CMPS, CMPO,
+       toarray, tovector, tocmps,
+       init_cmps,
+       normalize, ovlp
 
 export ⊗
 
-export TFIsing
-       ,XYmodel, XXZmodel, HeisenbergModel
+export TFIsing,
+       XYmodel, XXZmodel, HeisenbergModel
 
-export make_operator
-       ,thermal_average
-       ,partitian
-       ,free_energy
-       ,energy
-       ,specific_heat
-       ,entropy
-       ,correlation_2time
-       ,Masubara_freq_GF
+export make_operator,
+       thermal_average,
+       partitian,
+       free_energy,
+       energy,
+       specific_heat,
+       entropy,
+       correlation_2time,
+       Masubara_freq_GF
 
 
 include("utilities.jl")
