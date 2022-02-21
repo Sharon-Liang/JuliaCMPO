@@ -8,8 +8,8 @@ end
 beta_max = 30.0
 #beta_min = 1.0
 #beta_step = 0.1  #defalt β-format %.2f
-JzRange =[1.0]
-WidthRange = [3.0]
+JzRange =[2.0]
+WidthRange = [1.0]
 
 
 #CREAT LOG FOLDER

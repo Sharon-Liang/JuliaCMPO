@@ -24,10 +24,18 @@ settings = ArgParseSettings(prog="NNLS code for TFIsing model"
         arg_type = Float64
         default = 0.0
         help = "weight parameter"
+    "--spectrum"
+        arg_type = Symbol
+        default = :S
+        help = "spectrum to be calculated"
     "--dw"
         arg_type = Float64
         default = 0.01
-         help = "ω step size"
+        help = "ω step size"
+    "--wmin"
+        arg_type = Float64
+        default = 0.0
+        help = "minimum ω value"
     "--wmax"
         arg_type = Float64
         default = 10.0
@@ -48,7 +56,9 @@ const g = parsed_args[:g]
 const β = parsed_args[:beta]
 const D = parsed_args[:D]
 const λ = parsed_args[:lambda]
+const spectrum = parsed_args[:spectrum]
 const dω = parsed_args[:dw]
+const ωmin = parsed_args[:wmin]
 const ωmax = parsed_args[:wmax]
 const DataFolder = parsed_args[:DataFolder]
 const ResultFolder = parsed_args[:ResultFolder]
@@ -59,25 +69,25 @@ DataFile2 = @sprintf "%s/gtau/g_%.1f_D_%im2_beta_%i.txt" DataFolder g D β
 #Existence of DataFile
 @assert isfile(DataFile1) && isfile(DataFile2)
 
+#Creat ResultFolders if there is none
+isdir(ResultFolder) || mkdir(ResultFolder)
+isdir(ResultFolder*"/weightparam") || mkdir(ResultFolder*"/weightparam")
+isdir(ResultFolder*"/weightparam/$(spectrum)w") || mkdir(ResultFolder*"/weightparam/$(spectrum)w")
+isdir(ResultFolder*"/$(spectrum)w") || mkdir(ResultFolder*"/$(spectrum)w")
+
 #ResultFile Path
-WP_ResultFile1 = @sprintf "%s/weightparam/g_%.1f_D_%i_beta_%i_lambda_%e.txt" ResultFolder g D β λ
-WP_ResultFile2 = @sprintf "%s/weightparam/g_%.1f_D_%im2_beta_%i_lambda_%e.txt" ResultFolder g D β λ
+WP_ResultFile1 = @sprintf "%s/weightparam/%sw/g_%.1f_D_%i_beta_%i_lambda_%e.txt" ResultFolder spectrum g D β λ
+WP_ResultFile2 = @sprintf "%s/weightparam/%sw/g_%.1f_D_%im2_beta_%i_lambda_%e.txt" ResultFolder spectrum g D β λ
 
-SW_ResultFile1 = @sprintf "%s/Sw/g_%.1f_D_%i_beta_%i_lambda_%e.txt" ResultFolder g D β λ
-SW_ResultFile2 = @sprintf "%s/Sw/g_%.1f_D_%im2_beta_%i_lambda_%e.txt" ResultFolder g D β λ
-
-AW_ResultFile1 = @sprintf "%s/Aw/g_%.1f_D_%i_beta_%i_lambda_%e.txt" ResultFolder g D β λ
-AW_ResultFile2 = @sprintf "%s/Aw/g_%.1f_D_%im2_beta_%i_lambda_%e.txt" ResultFolder g D β λ
+ResultFile1 = @sprintf "%s/%sw/g_%.1f_D_%i_beta_%i_lambda_%e.txt" ResultFolder spectrum g D β λ
+ResultFile2 = @sprintf "%s/%sw/g_%.1f_D_%im2_beta_%i_lambda_%e.txt" ResultFolder spectrum g D β λ
 
 #Remove old ResultFile in the first step
 isfile(WP_ResultFile1) && rm(WP_ResultFile1) 
 isfile(WP_ResultFile2) && rm(WP_ResultFile2)
 
-isfile(SW_ResultFile1) && rm(SW_ResultFile1) 
-isfile(SW_ResultFile2) && rm(SW_ResultFile2)
-
-isfile(AW_ResultFile1) && rm(AW_ResultFile1) 
-isfile(AW_ResultFile2) && rm(AW_ResultFile2)
+isfile(ResultFile1) && rm(ResultFile1) 
+isfile(ResultFile2) && rm(ResultFile2)
 
 
 #LOAD DATA
@@ -85,9 +95,9 @@ d1 = readdlm(DataFile1); x1 = d1[:,1]; y1 = d1[:,2]
 d2 = readdlm(DataFile2); x2 = d2[:,1]; y2 = d2[:,2]
 
 #BUILD KERNEL
-ω, len = build_range(dω, ωmax)
-K1 = build_kernal(0, x1, ω, β)
-K2 = build_kernal(0, x2, ω, β)
+ω, len = build_range(dω, ωmax, ωmin)
+K1 = build_kernal(0, x1, ω, β, spectrum)
+K2 = build_kernal(0, x2, ω, β, spectrum)
 
 #NNT METHOD 
 eye = Matrix(1.0I, len, len)
@@ -97,12 +107,10 @@ ȳ2 = vcat(y2, zeros(len)); K̄2 = vcat(K2, λ*eye)
 
 @timeit to "D=8" begin
     S1 = nonneg_lsq(K̄1,ȳ1;alg=:nnls)
-    A1 = map((x,y) -> ASrelation(x,y,β), ω, S1)
 end
 
 @timeit to "D=8×2" begin
     S2 = nonneg_lsq(K̄2,ȳ2;alg=:nnls) 
-    A2 = map((x,y) -> ASrelation(x,y,β), ω, S2)
 end
 
 Rnorm1 = norm(K1 * S1 - y1); Snorm1 = norm(S1)
@@ -118,27 +126,15 @@ open(WP_ResultFile2, "w+") do file
     writedlm(file, [λ Rnorm2 Snorm2])
 end
 
-open(SW_ResultFile1, "w+") do file
+open(ResultFile1, "w+") do file
     for i = 1:len
         writedlm(file, [ω[i] S1[i]])
     end
 end
 
-open(SW_ResultFile2, "w+") do file
+open(ResultFile2, "w+") do file
     for i = 1:len
         writedlm(file, [ω[i] S2[i]])
-    end
-end
-
-open(AW_ResultFile1, "w+") do file
-    for i = 1:len
-        writedlm(file, [ω[i] A1[i]])
-    end
-end
-
-open(AW_ResultFile2, "w+") do file
-    for i = 1:len
-        writedlm(file, [ω[i] A2[i]])
     end
 end
 
