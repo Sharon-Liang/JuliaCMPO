@@ -1,5 +1,10 @@
 #module PhysicalModels
 #include("Setup.jl")
+struct PhysModel
+    Tm::CMPO # local Transfer matrix
+    pD::Int64 #pD: bond dimension of physical legs
+    vD::Int64 # vD+1: virtual bond dimension of the horizontal legs
+end
 
 """
 NN Transvers field Ising model
@@ -11,7 +16,7 @@ function TFIsing(J::Real, Γ::Real; field::Symbol=:N, η::Float64 = 1.e-2)
     else
         h = η .* pauli(field)
     end
-    return CMPO(Γ*pauli(:x)+h, √J*pauli(:z), √J*pauli(:z), zeros(2,2))
+    return PhysModel(CMPO(Γ*pauli(:x)+h, √J*pauli(:z), √J*pauli(:z), zeros(2,2)),2,1)
 end
 
 """
@@ -28,7 +33,7 @@ function XYmodel()
     R[:,:,1] = 1/√2 * sp ; R[:,:,2] = 1/√2 * sm
     Q = zeros(2,2)
     P = zeros(2,2,2,2)
-    return CMPO(Q,R,L,P)
+    return PhysModel(CMPO(Q,R,L,P),2,2)
 end
 
 
@@ -49,7 +54,7 @@ function XXZmodel(Δ::Real)
         R[:,:,1] = 1/√2 * sp ; R[:,:,2] = 1/√2 * sm; R[:,:,3] = √Δ * sz
         Q = zeros(2,2)
         P = zeros(2,2,3,3)
-        return CMPO(Q,R,L,P)
+        return PhysModel(CMPO(Q,R,L,P),2,3)
     end
 end
 
@@ -90,7 +95,7 @@ function TFIsing(J::Real, Γ::Real, W::Int64; field::Symbol=:N, η::Float64 = 1.
         for i=2:W
             P[:,:,i,i-1] = Matrix{Float64}(I,2,2)
         end
-        return CMPO(Q,R,L,P)
+        return PhysModel(CMPO(Q,R,L,P),2,W)
     end
 end
 
@@ -116,7 +121,7 @@ function XYmodel(W::Int64)
         for j=0:1, i=2:W
             P[:,:,j*W+i,j*W+i-1] = Matrix{Float64}(I,2,2)
         end
-        return CMPO(Q,R,L,P)
+        return PhysModel(CMPO(Q,R,L,P),2,2W)
     end
 end
 
@@ -147,7 +152,7 @@ function XXZmodel(Δ::Real, W::Int)
             for j=0:2, i=2:W
                 P[:,:,j*W+i,j*W+i-1] = Matrix{Float64}(I,2,2)
             end
-            return CMPO(Q,R,L,P)
+            return PhysModel(CMPO(Q,R,L,P),2,3W)
         end
     end
 end
