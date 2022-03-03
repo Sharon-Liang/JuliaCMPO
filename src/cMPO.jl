@@ -8,43 +8,53 @@ using Random; Random.seed!()
 using StatsFuns, SpecialFunctions, HCubature
 using OMEinsum
 
-import Base: *, isequal
+import Base: *, isequal, transpose, adjoint
 import LinearAlgebra: normalize
 
 export pauli,
        delta,
        Masubara_freq,
-       symmetrize, 
-       TrExp, trexp, value, logtrexp,
+       symmetrize, symeigen, 
+       logtrexp,
        gradient_function, hessian_function
 
 export CMPS, CMPO,
        toarray, tovector, tocmps,
-       init_cmps,
-       normalize, ovlp
+       normalize, 
+       log_overlap,
+       transpose,
+       project,
+       diagQ
 
 export ⊗
 
-export TFIsing,
+export init_cmps
+
+export PhysModel, TFIsing,
        XYmodel, XXZmodel, HeisenbergModel
 
 export make_operator,
        thermal_average,
-       partitian,
        free_energy,
        energy,
        specific_heat,
-       entropy,
-       correlation_2time,
-       Masubara_freq_GF
+       entropy
+
+export correlation_2time,
+       LehmannGFKernel, Masubara_freq_GF,
+       Lehmann_spectral_function, Lehmann_A, 
+       Lehmann_structure_factor, Lehmann_S
 
 
 include("utilities.jl")
 include("setup.jl")
+include("cMPSInitiate.jl")
 include("rrule.jl")
 include("multiplications.jl")
+inclide("PowerProjection.jl")
 include("PhysicalModels.jl")
-include("PhysicalObservables.jl")
+include("ThermaldynamicQuanties.jl")
+include("Correlations.jl")
 
 
 

@@ -88,7 +88,7 @@ end
 Lehmann_spectral_function(ω::Real, A::AbstractMatrix,B::AbstractMatrix, 
     ψ::CMPS, W::CMPO, β::Real; η::Real=0.01, type::Symbol = :b) =
     Lehmann_spectral_function(ω, A, B, ψ, ψ, W, β, η=η, type = type)
-
+Lehmann_A = Lehmann_spectral_function
 
 function Lehmann_structure_factor(ω::Real, A::AbstractMatrix,B::AbstractMatrix,
         ψl::CMPS, ψr::CMPS, W::CMPO, β::Real; η::Real=0.01, type::Symbol = :b)
@@ -114,5 +114,6 @@ end
 Lehmann_structure_factor(ω::Real, A::AbstractMatrix,B::AbstractMatrix, 
         ψ::CMPS, W::CMPO, β::Real; η::Real=0.01, type::Symbol = :b) =
     Lehmann_structure_factor(ω, A, B, ψ, ψ, W, β, η=η, type = type)
+Lehmann_S = Lehmann_structure_factor
 
 #end  # module Correlations
