@@ -46,35 +46,18 @@ end
 
 
 """
-    Symmetrize of matrices
+    Symmetrize a matrix M
 """
-function symmetrize(A::AbstractMatrix)
-    (A + A')/2
+function symmetrize(M::AbstractMatrix)
+   return (M + M')/2 |> Hermitian
 end
 
 
+""" symeigen
+    manually symmetrize M before the eigen decomposition
 """
-    Tr[exp(A)] function
-"""
-struct TrExp{T<:Number}
-    max::T
-    res::T
-end
-
-function value(x::TrExp)
-    exp(x.max) * x.res
-end
-
-function trexp(A::AbstractMatrix)
-    #if ishermitian(A) == false
-    if isapprox(A,A') == false
-        error("The input matrix should be hermitian")
-    end
-    A = symmetrize(A) |> Hermitian
-    val = eigvals(A)
-    max = maximum(val)
-    res = exp.(val .- max) |> sum
-    return TrExp(max, res)
+function symeigen(M::AbstractMatrix)
+    return M |> symmetrize |> eigen
 end
 
 
@@ -82,30 +65,9 @@ end
     ln(Tr[exp(A)]) function
 """
 function logtrexp(A::AbstractMatrix)
-    #if isapprox(A,A') == false
-    #    error("The input matrix should be hermitian")
-    #end
-    A = symmetrize(A) |> Hermitian
-    return eigvals(A) |> logsumexp
+    val, _ = eigensolver(A)
+    return logsumexp(val)
 end
 
-
-
-"""
-    function manipulation
-"""
-function gradient_function(f::Function)
-    function func(val::Array{T}, var::Array{T}) where T<:Number
-        val[1:end] = gradient(f,var)[1][1:end]
-    end
-    return func
-end
-
-function hessian_function(f::Function)
-    function func(val::Matrix{T}, var::Vector{T}) where T<:Number
-        val[1:end] = hessian(f,var)[1:end]
-    end
-    return func
-end
 
 #end  # module utilities
