@@ -62,6 +62,9 @@ Masubara_freq_GF(n::Integer, A::AbstractMatrix,B::AbstractMatrix,
     Masubara_freq_GF(n, A, B, ψ, ψ, W, β, type = type)
 
 
+"""
+    Lehmann representation of spectral function
+"""
 function Lehmann_spectral_function(ω::Real, A::AbstractMatrix,B::AbstractMatrix,
                                 ψl::CMPS, ψr::CMPS, W::CMPO, β::Real; η::Real=0.01, type::Symbol = :b)
     if type == :b
@@ -90,6 +93,10 @@ Lehmann_spectral_function(ω::Real, A::AbstractMatrix,B::AbstractMatrix,
     Lehmann_spectral_function(ω, A, B, ψ, ψ, W, β, η=η, type = type)
 Lehmann_A = Lehmann_spectral_function
 
+
+"""
+    Lehmann representation of the structure factor
+"""
 function Lehmann_structure_factor(ω::Real, A::AbstractMatrix,B::AbstractMatrix,
         ψl::CMPS, ψr::CMPS, W::CMPO, β::Real; η::Real=0.01, type::Symbol = :b)
     if type == :b
