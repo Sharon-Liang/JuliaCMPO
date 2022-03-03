@@ -1,16 +1,25 @@
 #module setup
+"""
+bD::Int64 # bD: bond dimension along imaginary time direction
+vD::Int64 # vD+1: virtual bond dimension of the horizontal legs
+pD::Int64 #pD: bond dimension of physical legs
+"""
 struct CMPS{T<:Number}
-    Q::Matrix{T}
-    R::Array{T}
+    Q::Matrix{T} # Dimension: bD × bD
+    R::Array{T}  # Dimension: bD × bD × vD
 end
 
 struct CMPO{T<:Number}
-    Q::Matrix{T}  #onsite
-    R::Array{T}  #interaction, column vector
-    L::Array{T}  #interaction, row vector
-    P::Array{T}  #long-range
+    Q::Matrix{T} # Dimension: pD × pD
+    R::Array{T}  # Column : pD × pD × vD
+    L::Array{T}  # Row: pD × pD × vD
+    P::Array{T}  # long-range interaction: pD × pD × vD × vD
 end
 
+
+"""
+    Flattern cMPS: cMPS <-> Array
+"""
 function toarray(ψ::CMPS)
     sq = size(ψ.Q)
     sr = size(ψ.R)  #sr: dimension of ψ.R array
@@ -47,36 +56,10 @@ function tocmps(V::Vector{T} where T, dim::Tuple)
 end
 
 
-""" init cmps """
-function init_cmps(χ::Int64; D::Int64 = 1, hermition = true, dtype = Float64)
-    Q = rand(dtype, χ, χ)
-    if D == 1
-        R = rand(dtype, χ, χ)
-    else
-        R = rand(dtype, χ, χ, D)
-    end
 
-    if hermition
-        Q = symmetrize(Q)
-        for d = 1:D
-            R[:,:,d] = symmetrize(R[:,:,d])
-        end
-    end
-    return CMPS(Q,R)
-end
-
-function init_cmps(χ::Int64, W::CMPO)
-    # r = 0 case
-    d = size(W.Q)[1];  (q,r) = divrem(log(d,χ), 1)
-    ψ = CMPS(W.Q, W.R)
-    if r == 0
-        for i = 1:Integer(q-1)  ψ = W * ψ  end
-    else
-        error("Not support yet :)")
-    end
-    return ψ
-end
-
+"""
+    Normalize a cMPS, i.e. ⟨ψ|ψ⟩ = 1
+"""
 function normalize(s::CMPS, β::Real)
     T = -β*(s*s) |> trexp
     λ = (T.max + log(T.res))/β
@@ -86,12 +69,57 @@ function normalize(s::CMPS, β::Real)
     return CMPS(Q, s.R)
 end
 
-function ovlp(sl::CMPS, sr::CMPS, β::Real)
-    -β*(sl*sr) |> trexp |> value
+
+"""
+    Logarithm of the overlap of two cMPS:
+        log_overlap = ln(⟨ψl|ψr⟩)
+"""
+function log_overlap(sl::CMPS, sr::CMPS, β::Real)
+    K = sl * sr
+    return logtrexp(-β * K)
 end
 
-function ovlp(s::CMPS, β::Real)
-    -β*(s*s) |> trexp |> value
+
+"""
+    transpose of a CMPO
+"""
+function transpose(o::CMPO)
+    Q = o.Q
+    R = o.L
+    L = o.R
+    P = ein"ijkl->ijlk"(o.P)
+    return CMPO(Q,R,L,P)
 end
+
+
+"""
+    Perform a unitary transformation in the imaginary-time direction
+    (i.e. One physical bond of cMPO and virtual bond of cMPS)
+    if U is a square matrix, this is a guage transformation
+"""
+function project(s::CMPS, u::AbstractMatrix)
+    Q = u' * s.Q * u
+    R = ein"(ip,pql),qj -> ijl"(u', s.R, u)
+    return CMPS(Q, R)
+end
+
+function project(o::CMPO, u::AbstractMatrix)
+    Q = u' * o.Q * u
+    R = ein"(ip,pql),qj -> ijl"(u', o.R, u)
+    L = ein"(ip,pql),qj -> ijl"(u', o.L, u)
+    P = ein"(ip,pqlm),qj -> ijlm"(u', o.R, u)
+    return CMPO(Q,R,L,P)
+end
+
+
+""" 
+    transform the cMPS to the gauge where Q is a diagonalized matrix
+"""
+function diagQ(s::CMPS; dim::Integer = 999)
+    χ = min(size(s.Q)[1], dim)
+    _, u = eigensolver(s.Q)
+    return project(s, u[:,end+1-χ:end])
+end
+
 
 #end module setup
