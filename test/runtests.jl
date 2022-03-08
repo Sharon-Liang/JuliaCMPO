@@ -1,7 +1,7 @@
 using cMPO, Test
 
-@testset "setup" begin
-    include("setup.jl")
+@testset "utilities.jl" begin
+    include("utilities.jl")
 end
 
 @testset "multiplication" begin
