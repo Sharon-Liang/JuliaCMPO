@@ -8,31 +8,42 @@ using Random; Random.seed!()
 using StatsFuns, SpecialFunctions, HCubature
 using OMEinsum
 
-import Base: *, isequal, transpose, adjoint
+import Base: *, isequal, transpose, adjoint, cat
 import LinearAlgebra: normalize
 
+# utilities
 export pauli,
        delta,
        Masubara_freq,
        symmetrize, symeigen, 
        logtrexp,
-       gradient_function, hessian_function
+       gradfunc_gen, hessfunc_gen
 
-export CMPS, CMPO,
-       toarray, tovector, tocmps,
-       normalize, 
+# structs
+export CMPS, CMPO, PhysModel
+
+# operations
+export toarray, tovector, tocmps,
+       #normalize, 
        log_overlap,
-       transpose,
+       transpose, adjoint, 
        project,
        diagQ
 
+# multiplications
 export ⊗
 
+# cMPSInitiate
 export init_cmps
 
-export PhysModel, TFIsing,
-       XYmodel, XXZmodel, HeisenbergModel
+# PhysicalModels
+export Ising_CMPO, generalUt, expand
+export TFIsing, XYmodel, XXZmodel, #HeisenbergModel,
+       TFIsing_2D_helical,
+       XYmodel_2D_helical,
+       XXZmodel_2D_helical
 
+# ThermaldynamicQuanties
 export make_operator,
        thermal_average,
        free_energy,
@@ -40,6 +51,7 @@ export make_operator,
        specific_heat,
        entropy
 
+# Correlations
 export correlation_2time,
        LehmannGFKernel, Masubara_freq_GF,
        Lehmann_spectral_function, Lehmann_A, 
@@ -47,11 +59,12 @@ export correlation_2time,
 
 
 include("utilities.jl")
-include("setup.jl")
+include("structs.jl")
+include("operations.jl")
 include("cMPSInitiate.jl")
 include("rrule.jl")
 include("multiplications.jl")
-inclide("PowerProjection.jl")
+#inclide("PowerProjection.jl")
 include("PhysicalModels.jl")
 include("ThermaldynamicQuanties.jl")
 include("Correlations.jl")
