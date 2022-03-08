@@ -49,7 +49,7 @@ end
     Symmetrize a matrix M
 """
 function symmetrize(M::AbstractMatrix)
-   return (M + M')/2 |> Hermitian
+   return (M + M')/2 #|> Hermitian
 end
 
 
@@ -65,9 +65,25 @@ end
     ln(Tr[exp(A)]) function
 """
 function logtrexp(A::AbstractMatrix)
-    val, _ = eigensolver(A)
+    val, _ = symeigen(A)
     return logsumexp(val)
 end
 
 
+"""
+    Generate gradient function which is used in Optim.jl
+"""
+function gradfunc_gen(f::Function)
+    function func(val::Array{T}, var::Array{T}) where T<:Number
+        val[1:end] = gradient(f,var)[1][1:end]
+    end
+    return func
+end
+
+function hessfunc_gen(f::Function)
+    function func(val::Matrix{T}, var::Vector{T}) where T<:Number
+        val[1:end] = hessian(f,var)[1:end]
+    end
+    return func
+end
 #end  # module utilities

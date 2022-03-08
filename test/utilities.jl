@@ -10,10 +10,10 @@ using Random; Random.seed!()
         log_trexp = log(tr_exp)
 
         @test ishermitian(sa)
-        @test isapprox(trexp(sa) |> value, tr_exp, rtol=1e-5)
-        @test isapprox(logtrexp(sa), log_trexp, rtol=1e-5)
+        @test logtrexp(A) ≈ log_trexp
     end
 end
+
 
 @testset "-β * eigvals(A) |> sum and eigvals(-β * A) |> sum" begin
     D = 4; T = ComplexF64
@@ -28,12 +28,3 @@ end
     end
 end
 
-@testset "normalize" begin
-    T = ComplexF64
-    D = 4
-    for T in [Float64, ComplexF64]
-        s = init_cmps(D, dtype=T); β = 20
-        ns = normalize(s, β)
-        @test isapprox(ovlp(ns, β), 1, rtol=1.e-5)
-    end
-end
