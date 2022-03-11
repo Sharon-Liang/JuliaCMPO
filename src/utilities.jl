@@ -72,7 +72,7 @@ end
 
 """
     Generate gradient function which is used in Optim.jl
-"""
+
 function gradfunc_gen(f::Function)
     function func(val::Array{T}, var::Array{T}) where T<:Number
         val[1:end] = gradient(f,var)[1][1:end]
@@ -86,4 +86,5 @@ function hessfunc_gen(f::Function)
     end
     return func
 end
+"""
 #end  # module utilities

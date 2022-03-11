@@ -1,7 +1,6 @@
-#module setup
+#module operations
 """
     Flattern cMPS: cMPS <-> Array
-"""
 function toarray(ψ::CMPS)
     sq = size(ψ.Q)
     sr = size(ψ.R)  #sr: dimension of ψ.R array
@@ -36,7 +35,7 @@ function tocmps(V::Vector{T} where T, dim::Tuple)
     arr = reshape(V, dim)
     return tocmps(arr)
 end
-
+"""
 
 
 """
@@ -109,6 +108,11 @@ function isequal(a::CMPO, b::CMPO)
     res[4] = all(isequal.(a.P, b.P))
     return all(res)
 end
+
+"""
+    Determine if a CMPO is hermitian
+"""
+ishermitian(o::CMPO) = isequal(o, adjoint(o))
 
 
 """
@@ -202,4 +206,4 @@ function diagQ(s::CMPS; dim::Integer = 999)
 end
 
 
-#end module setup
+#end module operations

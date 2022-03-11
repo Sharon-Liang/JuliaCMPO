@@ -1,8 +1,6 @@
 #module PhysicalModels
 #include("Setup.jl")
 
-
-
 """
     Ising type CMPO: H = -J ôl ôr block
 """
@@ -139,7 +137,7 @@ function XXZmodel(Δ::Real)
         Q = zeros(2, 2)
         P = zeros(2, 2, 3, 3)
         Tmatrix = CMPO(Q,R,L,P)
-        Ut = Matrix(1.0I, vir_dim, vir_dim) 
+        Ut = Matrix(1.0I, 3, 3) 
         return PhysModel(Tmatrix, 2, 3, Ut)
     end
 end
@@ -164,7 +162,7 @@ end
 2D NN Transvers field Ising model,helical boundary condition
     H = ∑ J [Zi Z_(i+1) +Zi Z_(i+W)]  + ∑ Γ Xi
 """
-function TFIsing_2D_helical(J::Real, Γ::Real, wid::Int64; field::Symbol=:N, η::Float64 = 1.e-2)
+function TFIsing_2D_helical(J::Real, Γ::Real, wid::Integer = 1; field::Symbol=:N, η::Float64 = 1.e-2)
     if field == :N
         h = zeros(2,2)
     else
@@ -195,14 +193,13 @@ function XYmodel_2D_helical(wid::Integer = 1)
 end
 
 
-
 """
 2D Heisenberg XXZ model helical boundary condition
     H = ∑ [Xi X_(i+1) +Xi X_(i+W) + Yi Y_(i+1) +Yi Y_(i+W)] + Δ [Zi Z_(i+1) +Zi Z_(i+W)]
 after unitary transformation : U=exp(iπSy) on odd sites:
     H = -0.5 ∑ [S+_i S+_(i+1) + S-_iS-_(i+1) + S+_i S+_(i+W) + S-_iS-_(i+W)] - Δ [Zi Z_(i+1) +Zi Z_(i+W)]
 """
-function XXZmodel_2D_helical(Δ::Real, wid::Int)
+function XXZmodel_2D_helical(Δ::Real, wid::Integer = 1)
     phy_dim = 2; vir_dim = 3*wid
     sp = pauli(:+); sm = pauli(:-); sz = 0.5 * pauli(:z)
     Tp = Ising_CMPO(0.5, sp, sp, wid)

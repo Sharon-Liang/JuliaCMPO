@@ -43,6 +43,7 @@ function thermal_average(Op::AbstractMatrix, ψl::CMPS, ψr::CMPS, β::Real)
 end
 thermal_average(Op::AbstractMatrix, ψ::CMPS, β::Real) =thermal_average(Op, ψ, ψ, β)
 
+
 """
     Free energy: F = -1/(βL) lnZ
 """
@@ -51,15 +52,6 @@ function free_energy(ψl::CMPS, ψr::CMPS, W::CMPO, β::Real)
     return -res/β
 end
 free_energy(ψ::CMPS, W::CMPO, β::Real) = free_energy(ψ, ψ, W, β)
-
-
-function free_energy(param::Array{<:Number,3}, W::CMPO, β::Real)
-    free_energy(tocmps(param), W, β)
-end
-
-function free_energy(param::Vector{<:Number}, dim::Tuple, W::CMPO, β::Real)
-    free_energy(tocmps(param, dim), W, β)
-end
 
 
 """
@@ -103,6 +95,5 @@ function entropy(ψl::CMPS, ψr::CMPS, W::CMPO, β::Real)
     return β*s
 end
 entropy(ψ::CMPS, W::CMPO, β::Real) = entropy(ψ, ψ, W, β)
-
 
 #end  # module ThermaldynamicQuanties
