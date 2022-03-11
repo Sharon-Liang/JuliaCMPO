@@ -7,8 +7,11 @@ using Optim, FluxOptTools
 using Random; Random.seed!()
 using StatsFuns, SpecialFunctions, HCubature
 using OMEinsum
+using Printf
+using HDF5, DelimitedFiles
 
 import Base: *, isequal, transpose, adjoint, cat
+import LinearAlgebra: ishermitian
 
 # utilities
 export pauli,
@@ -17,11 +20,11 @@ export pauli,
        symmetrize, symeigen, 
        logtrexp
 
-#SaveAndLoad
-export saveCMPS, readCMPS
-
 # structs
 export CMPS, CMPO, PhysModel
+
+#SaveAndLoad
+export saveCMPS, readCMPS
 
 # operations
 export toarray, tovector, tocmps,
@@ -65,8 +68,8 @@ export evaluate,
 
 
 include("utilities.jl")
-include("SaveAndLoad.jl")
 include("structs.jl")
+include("SaveAndLoad.jl")
 include("multiplications.jl")
 include("operations.jl")
 include("cMPSCompress.jl")
@@ -76,6 +79,5 @@ include("Correlations.jl")
 include("evaluate.jl")
 
 #include("rrule.jl")
-#inclide("PowerProjection.jl")
 
 end # module

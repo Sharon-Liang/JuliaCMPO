@@ -61,7 +61,7 @@ end
     or force to do power projection 
 """
 function non_hermitian_evaluate(m::PhysModel, χ::Integer, β::Real, ResultFolder::String; 
-                                init::Union{CMPS, Nothing} = nothing, max_pow_step::integer = 100)
+                                init::Union{CMPS, Nothing} = nothing, max_pow_step::Integer = 100)
     isdir(ResultFolder) || mkdir(ResultFolder)
     ChkpFolder = @sprintf "%s/CheckPoint_bondD_%2i_beta_%.1f" ResultFolder χ β
     isdir(ChkpFolder) || mkdir(ChkpFolder)

@@ -1,4 +1,4 @@
-#begin module
+#module SaveAndLoad
 function saveCMPS(path::String, ψ::CMPS, dict::Dict = Dict())
     h5open(path, "w") do file
         file["Q"] = ψ.Q
