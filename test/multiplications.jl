@@ -104,9 +104,9 @@ end
 
         sos = -(i2 ⊗ osq + x ⊗ i2 ⊗ i2 + z ⊗ osr)
         
-        @test s_arr ≈ toarray(s)  
-        @test s.Q ≈ tocmps(s_arr).Q 
-        @test s.R ≈ tocmps(s_arr).R
+        #@test s_arr ≈ toarray(s)  
+        #@test s.Q ≈ tocmps(s_arr).Q 
+        #@test s.R ≈ tocmps(s_arr).R
         @test s*s ≈ ss         
         @test (o*s).Q ≈ osq 
         @test (o*s).R ≈ osr 
@@ -157,9 +157,9 @@ end
 
         sos = -(i2 ⊗ osq + x ⊗ i2 ⊗ i2 + x ⊗ osr[:,:,1] + x ⊗ osr[:,:,2])
 
-        @test s_arr ≈ toarray(s)  
-        @test s.Q ≈ tocmps(s_arr).Q 
-        @test s.R ≈ tocmps(s_arr).R
+        #@test s_arr ≈ toarray(s)  
+        #@test s.Q ≈ tocmps(s_arr).Q 
+        #@test s.R ≈ tocmps(s_arr).R
         @test s*s ≈ ss         
         @test (o*s).Q ≈ osq 
         @test (o*s).R ≈ osr 

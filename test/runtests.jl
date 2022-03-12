@@ -4,14 +4,18 @@ using cMPO, Test
     include("utilities.jl")
 end
 
-@testset "multiplication" begin
+@testset "multiplication.jl" begin
     include("multiplications.jl")
 end
 
-@testset "gradient" begin
-    include("gradient.jl")
+@testset "operations.jl" begin
+    include("operations.jl")
 end
 
-@testset "hessian" begin
-    include("hessian.jl")
-end
+#@testset "gradient" begin
+#    include("gradient.jl")
+#end
+
+#@testset "hessian" begin
+#    include("hessian.jl")
+#end
