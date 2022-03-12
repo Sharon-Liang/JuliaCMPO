@@ -5,75 +5,74 @@ using Optim
 
 const to = TimerOutput()
 const Start_Time = Dates.format(now(), "yyyy-mm-dd HH:MM:SS")
-settings = ArgParseSettings(prog="CMPO: TFIsing model"
+settings = ArgParseSettings(prog="CMPO code for XXZ model"
 )
 @add_arg_table! settings begin
-    "--J"
+    "--Jxy"
         arg_type = Float64
         default = 1.0
-        help = "Transverse Field Ising σz coupling constant"
-    "--gamma"
+        help = "Jxy: coupling constant for Sx and Sy terms"
+    "--Jz"
         arg_type = Float64
         default = 1.0
-        help = "Transverse Field strength: Γ"
+        help = "Jz: coupling constant for Sz term"
+    "--width"
+        arg_type = Int64
+        default = 1
+        help = "width of the cylinder, should be an odd number"
     "--beta_min"
         arg_type = Float64
         default = 1.0
-        help = "minimum value of β(inverse temperature)"
+        help = "minimum β(inverse temperature) value"
     "--beta_max"
         arg_type = Float64
-        default = 1.0
-        help = "maximum value of β(inverse temperature)"
+        default = 20.0
+        help = "maximum β(inverse temperature) value"
     "--beta_step"
         arg_type = Float64
-        default = 1.0
-        help = "step size of β(inverse temperature)"   
+        default = 0.1
+        help = "β(inverse temperature) step size"
     "--init"
         arg_type = Float64
         default = 0.0
-        help = "initiate with the cMPS at β = init"        
+        help = "initiate with the cMPS at β = init"            
     "--bondD"
         arg_type = Int64
         default = 8
         help = "cMPS bond dimension"
     "--power_step"
         arg_type = Int64
-        default = 0
+        default = 100
         help = "maximum power step if power method is used"
     "--ResultFolder"
         arg_type = String
-        default = "/data/sliang/CMPO/TFIsing"
+        default = "/data/sliang/CMPO/XXZ_2D_helical"
         help = "result folder"
 end
-
 parsed_args = parse_args(settings; as_symbols=true)
 print(parsed_args,"\n")
 
-const J = parsed_args[:J]
-const Γ = parsed_args[:gamma]
-const beta_min = parsed_args[:beta_min]
+const Jxy = parsed_args[:Jxy]
+const Jz = parsed_args[:Jz]
+const width = parsed_args[:width]
 const beta_max = parsed_args[:beta_max]
+const beta_min = parsed_args[:beta_min]
 const beta_step = parsed_args[:beta_step]
 const bondD = parsed_args[:bondD]
-const init = parsed_args[:init]
 const power_step = parsed_args[:power_step]
+const init = parsed_args[:init]
+
 
 #Creat ResultFolders if there is none
 ResultFolder = parsed_args[:ResultFolder]
 isdir(ResultFolder) || mkdir(ResultFolder)
 
-if power_step == 0
-    hermitian = true
-    ResultFolder = @sprintf "%s/J_%.2f_G_%.2f" ResultFolder J Γ
-    isdir(ResultFolder) || mkdir(ResultFolder)
-else
-    hermitian = false
-    ResultFolder = @sprintf "%s/Power_J_%.2f_G_%.2f" ResultFolder J Γ
-    isdir(ResultFolder) || mkdir(ResultFolder) 
-end
-   
+ResultFolder = @sprintf "%s/Jxy_%.2f_Jz_%.2f_wid_%02i" ResultFolder Jxy Jz width
+isdir(ResultFolder) || mkdir(ResultFolder)
+
+
 #CMPO
-model = TFIsing(J, Γ)
+model = XXZmodel_2D_helical(Jz/Jxy, width)
 
 if init == 0.0
     ψ0 = init_cmps(bondD, model, beta_min)
@@ -82,10 +81,9 @@ else
     ψ0 = readCMPS(initFilePath) 
 end
 
-
 for β in range(beta_min, beta_max, step = beta_step)
     @timeit to "evaluate" begin
-        ψ, dict = evaluate(model, bondD, β, ResultFolder, init = ψ0, hermitian = hermitian, max_pow_step = power_step)
+        ψ, dict = evaluate(model, bondD, β, ResultFolder, init = ψ0, hermitian = false, max_pow_step = power_step)
     end
     for key in keys(dict)
         filename = @sprintf "%s/Obsv_%s_bondD_%02i.txt" ResultFolder key bondD
@@ -102,4 +100,3 @@ const Running_TimeTable = string(to)
 @show Start_Time
 @show End_Time
 print(Running_TimeTable,"\n")
-

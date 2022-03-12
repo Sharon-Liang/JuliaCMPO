@@ -1,5 +1,7 @@
 using Printf
 
+phys_model = "TFIsing"
+
 beta_min = 1.0
 beta_max = 40.0
 beta_step = 0.1
@@ -12,7 +14,7 @@ power = [0, 100]
 #CREAT LOG FOLDER
 logdir = "/data/sliang/log/CMPO"
 isdir(logdir) || mkdir(logdir)
-logdir = logdir*"/TFIsing"
+logdir = "$(logdir)/$(phys_model)"
 isdir(logdir) || mkdir(logdir)
 
 #CLEAR LOG FOLDER
@@ -28,8 +30,8 @@ for j = 1:length(J_Range), g = 1:length(Γ_Range), d = 1:length(bondD_Range)
     bondD = @sprintf "%02i" bondD_Range[d]
     for p in 1:length(power)
         power_step = power[p]
-        power_step == 0 ? job_name = "CMPO_TFIsing_J_$(J)_G_$(Γ)_D_$(bondD)" : 
-            job_name = "CMPO_TFIsing_Power_J_$(J)_G_$(Γ)_D_$(bondD)"
+        power_step == 0 ? job_name = "CMPO_$(phys_model)_J_$(J)_G_$(Γ)_D_$(bondD)" : 
+            job_name = "CMPO_$(phys_model)_Power_J_$(J)_G_$(Γ)_D_$(bondD)"
         log_file_path = "$(logdir)/$(job_name).log"
     
         R = rand(Int)
@@ -41,7 +43,7 @@ for j = 1:length(J_Range), g = 1:length(Γ_Range), d = 1:length(bondD_Range)
             #SBATCH --output=$(log_file_path) \n\
             #SBATCH --error=$(log_file_path) \n\
             julia --project=/home/sliang/JuliaCode/mycMPO \
-                /home/sliang/JuliaCode/mycMPO/jobs/CMPO_TFIsing.jl \
+                /home/sliang/JuliaCode/mycMPO/jobs/CMPO_$(phys_model).jl \
                 --J $(J) --gamma $(Γ) \
                 --beta_min $(beta_min) --beta_max $(beta_max) --beta_step $(beta_step) \
                 --bondD $(bondD) --power_step $(power_step)"
