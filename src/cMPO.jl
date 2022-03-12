@@ -38,7 +38,7 @@ export toarray, tovector, tocmps,
 export ⊗
 
 # cMPSCompress
-export init_cmps, cmps_compress
+export init_cmps, fidelity, cmps_compress
 
 # PhysicalModels
 export Ising_CMPO, generalUt, expand

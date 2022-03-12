@@ -68,14 +68,7 @@ function transpose(o::CMPO)
     Q = o.Q
     R = o.L
     L = o.R
-
-    if length(size(o.P)) == 2
-        oP = reshape(o.P, size(o.P)[1], size(o.P)[2], 1, 1)
-    else
-        oP = o.P
-    end
-    P = ein"ijkl->ijlk"(oP)
-
+    length(size(o.P)) == 2 ? P = ein"ij->ij"(o.P) : P = ein"ijkl->ijlk"(o.P)
     return CMPO(Q,R,L,P)
 end
 
@@ -84,15 +77,11 @@ end
     Hermitian conjuate (adjoint) of a CMPO
 """
 function adjoint(o::CMPO)
-    Q = conj.(o.Q)
-    R = conj.(o.L)
-    L = conj.(o.R)
-    if length(size(o.P)) == 2
-        oP = reshape(o.P, size(o.P)[1], size(o.P)[2], 1, 1)
-    else
-        oP = o.P
-    end
-    P = conj.(ein"ijkl->ijlk"(oP))
+    ot = transpose(o)
+    Q = conj.(ot.Q)
+    R = conj.(ot.L)
+    L = conj.(ot.R)
+    P = conj.(ot.P)
     return CMPO(Q,R,L,P)
 end
 
@@ -101,12 +90,15 @@ end
     isequal(a::CMPO, b::CMPO)
 """
 function isequal(a::CMPO, b::CMPO)
-    res = Vector{Bool}(undef, 4)
-    res[1] = all(isequal.(a.Q, b.Q))
-    res[2] = all(isequal.(a.R, b.R))
-    res[3] = all(isequal.(a.L, b.L))
-    res[4] = all(isequal.(a.P, b.P))
-    return all(res)
+    return isequal(a.Q, b.Q) && 
+            isequal(a.R, b.R) &&
+            isequal(a.L, b.L) &&
+            isequal(a.P, b.P) 
+end
+
+function isequal(a::CMPS, b::CMPS)
+    return isequal(a.Q, b.Q) && 
+            isequal(a.R, b.R)
 end
 
 """
@@ -123,11 +115,10 @@ ishermitian(o::CMPO) = isequal(o, adjoint(o))
 function project(s::CMPS, u::AbstractMatrix)
     Q = u' * s.Q * u
     if length(size(s.R)) == 2
-        sR = reshape(s.R, size(s.R)[1], size(s.R)[2], 1)
+        R = u' * s.R * u
     else
-        sR = s.R
+        R = ein"(ip,pql),qj -> ijl"(u', s.R, u)
     end
-    R = ein"(ip,pql),qj -> ijl"(u', sR, u)
     return CMPS(Q, R)
 end
 
@@ -135,17 +126,14 @@ end
 function project(o::CMPO, u::AbstractMatrix)
     Q = u' * o.Q * u
     if length(size(o.R)) == 2
-        oR = reshape(o.R, size(o.R)[1], size(o.R)[2], 1)
-        oL = reshape(o.L, size(o.L)[1], size(o.L)[2], 1)
-        oP = reshape(o.P, size(o.P)[1], size(o.P)[2], 1, 1)
+        R = u' * o.R * u
+        L = u' * o.R * u
+        P = u' * o.P * u
     else
-        oR = o.R
-        oL = o.L
-        oP = o.P
+        R = ein"(ip,pql),qj -> ijl"(u', o.R, u)
+        L = ein"(ip,pql),qj -> ijl"(u', o.L, u)
+        P = ein"(ip,pqlm),qj -> ijlm"(u', o.P, u)
     end
-    R = ein"(ip,pql),qj -> ijl"(u', oR, u)
-    L = ein"(ip,pql),qj -> ijl"(u', oL, u)
-    P = ein"(ip,pqlm),qj -> ijlm"(u', oP, u)
     return CMPO(Q,R,L,P)
 end
 
@@ -160,38 +148,30 @@ end
     --        --   --            --
 """
 function *(Ut::AbstractMatrix, s::CMPS)
-    if length(size(s.R)) == 2
-        sR = reshape(s.R, size(s.R)[1], size(s.R)[2], 1)
-    else
-        sR = s.R
-    end
-    R = ein"mn, ijn -> ijm"(Ut, sR)
+    length(size(s.R)) == 2 ? R = Ut[1,1] * s.R :
+        R = ein"mn, ijn -> ijm"(Ut, sR)
     return CMPS(s.Q, R)
 end
 
 function *(Ut::AbstractMatrix, o::CMPO)
     if length(size(o.R)) == 2
-        oR = reshape(o.R, size(o.R)[1], size(o.R)[2], 1)
-        oP = reshape(o.P, size(o.P)[1], size(o.P)[2], 1, 1)
+        R = Ut[1,1] * o.R
+        P = Ut[1,1] * o.P
     else
-        oR = o.R
-        oP = o.P
+        R = ein"mk, ijk -> ijm"(Ut, o.R)
+        P = ein"mk, ijkn -> ijmn"(Ut, o.P)
     end
-    R = ein"mk, ijk -> ijm"(Ut, oR)
-    P = ein"mk, ijkn -> ijmn"(Ut, oP) 
     return CMPO(o.Q, R, o.L, P)
 end
 
 function *(o::CMPO, Ut::AbstractMatrix)
     if length(size(o.L)) == 2
-        oL = reshape(o.L, size(o.L)[1], size(o.L)[2], 1)
-        oP = reshape(o.P, size(o.P)[1], size(o.P)[2], 1, 1)
+        L = Ut[1,1] * o.L
+        P = Ut[1,1] * o.P
     else
-        oL = o.L
-        oP = o.P
+        L = ein"ijk, km -> ijm"(o.L, Ut)
+        P = ein"ijnk, km -> ijnm"(o.P, Ut) 
     end
-    L = ein"ijk, km -> ijm"(oL, Ut)
-    P = ein"ijnk, km -> ijnm"(oP, Ut) 
     return CMPO(o.Q, o.R, L, P)
 end
 

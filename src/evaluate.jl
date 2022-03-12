@@ -9,7 +9,6 @@ function init_cmps(χ::Int64, model::PhysModel, β::Real)
     ψ = CMPS(Tm.Q, Tm.R)
     pow_step, remainder = divrem(log(phy_dim, χ), 1)
 
-    ψ = CMPS(W.Q, W.R)
     for i = 1:Integer(pow_step - 1) ψ = Tm * ψ end
     if remainder != 0
         ψ0 = Tm * ψ
@@ -23,8 +22,10 @@ end
     Evaluate PhysModel m when the hermiticty of its transfer matrix is unknown or not specified
 """
 function evaluate(m::PhysModel, χ::Integer, β::Real, ResultFolder::String; 
-                    init::Union{CMPS, Nothing} = nothing, max_pow_step::Integer = 100)
-    if ishermitian(m.Tmatrix)
+                    init::Union{CMPS, Nothing} = nothing, max_pow_step::Integer = 100,
+                    hermitian::Union{Bool, Nothing} = nothing)
+    hermitian === nothing ? hermitian = ishermitian(m.Tmatrix) : hermitian = hermitian
+    if hermitian
         hermitian_evaluate(m, χ, β, ResultFolder, init = init)
     else
         non_hermitian_evaluate(m, χ, β, ResultFolder, init = init, max_pow_step = max_pow_step)
@@ -50,9 +51,9 @@ function hermitian_evaluate(m::PhysModel, χ::Integer, β::Real, ResultFolder::S
     # calculate thermal dynamic quanties
     dict = Dict()
     dict["F"] = minimum(opt)
-    ResultFile = @sprintf "%s/bondD_%2i_beta_%.1f.hdf5" ResultFolder χ β
+    ResultFile = @sprintf "%s/bondD_%02i_beta_%.2f.hdf5" ResultFolder χ β
     saveCMPS(ResultFile, ψ, dict)
-    return ψ     
+    return ψ, dict     
 end
 
 
@@ -63,7 +64,7 @@ end
 function non_hermitian_evaluate(m::PhysModel, χ::Integer, β::Real, ResultFolder::String; 
                                 init::Union{CMPS, Nothing} = nothing, max_pow_step::Integer = 100)
     isdir(ResultFolder) || mkdir(ResultFolder)
-    ChkpFolder = @sprintf "%s/CheckPoint_bondD_%2i_beta_%.1f" ResultFolder χ β
+    ChkpFolder = @sprintf "%s/CheckPoint_bondD_%02i_beta_%.2f" ResultFolder χ β
     isdir(ChkpFolder) || mkdir(ChkpFolder)
 
     #initiate cmps
@@ -73,7 +74,7 @@ function non_hermitian_evaluate(m::PhysModel, χ::Integer, β::Real, ResultFolde
     ChkpEngFile = "$(ChkpFolder)/free_energy.txt"
     open(ChkpEngFile,"w") do cfile
         for pow_step = 0 : max_pow_step
-            ChkpStateFile = @sprintf "%s/cmps_step_%3i.hdf5" ChkpFolder pow_step
+            ChkpStateFile = @sprintf "%s/cmps_step_%03i.hdf5" ChkpFolder pow_step
             saveCMPS(ChkpStateFile, ψ)
             writedlm(cfile, [pow_step free_energy(m.Ut*ψ, ψ, m.Tmatrix, β)])
 
@@ -87,7 +88,7 @@ function non_hermitian_evaluate(m::PhysModel, χ::Integer, β::Real, ResultFolde
     dict["F"] = free_energy(m.Ut*ψ, ψ, m.Tmatrix, β)
     ResultFile = @sprintf "%s/bondD_%2i_beta_%.1f.hdf5" ResultFolder χ β
     saveCMPS(ResultFile, ψ, dict)
-    return ψ
+    return ψ, dict
 end
 
 #end    # module evaluate
