@@ -149,7 +149,7 @@ end
 """
 function *(Ut::AbstractMatrix, s::CMPS)
     length(size(s.R)) == 2 ? R = Ut[1,1] * s.R :
-        R = ein"mn, ijn -> ijm"(Ut, sR)
+        R = ein"mn, ijn -> ijm"(Ut, s.R)
     return CMPS(s.Q, R)
 end
 

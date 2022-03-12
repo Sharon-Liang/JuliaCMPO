@@ -86,7 +86,7 @@ function non_hermitian_evaluate(m::PhysModel, χ::Integer, β::Real, ResultFolde
     # calculate thermal dynamic quanties
     dict = Dict()
     dict["F"] = free_energy(m.Ut*ψ, ψ, m.Tmatrix, β)
-    ResultFile = @sprintf "%s/bondD_%2i_beta_%.1f.hdf5" ResultFolder χ β
+    ResultFile = @sprintf "%s/bondD_%2i_beta_%.2f.hdf5" ResultFolder χ β
     saveCMPS(ResultFile, ψ, dict)
     return ψ, dict
 end
