@@ -71,7 +71,7 @@ function non_hermitian_evaluate(m::PhysModel, χ::Integer, β::Real, ResultFolde
     init === nothing ? ψ = init_cmps(χ, m, β) : ψ = init
     ψ = ψ |> diagQ
 
-    ChkpEngFile = "$(ChkpFolder)/free_energy.txt"
+    ChkpEngFile = "$(ChkpFolder)/Obsv_F.txt"
     open(ChkpEngFile,"w") do cfile
         for pow_step = 0 : max_pow_step
             ChkpStateFile = @sprintf "%s/cmps_step_%03i.hdf5" ChkpFolder pow_step
