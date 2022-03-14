@@ -37,17 +37,23 @@ function cmps_compress(ψ0::CMPS, χ::Integer, β::Real; init::Union{CMPS, Nothi
     length(size(ψ0.R)) == 2 ? vir_dim = 1 : vir_dim = size(ψ0.R)[3]
     if χ0 <= χ
         @warn "The bond dimension of the initial CMPS ≤ target bond dimension."
+        return ψ
     else
         init === nothing ? ψ = init_cmps(χ, vir_dim) : ψ = init
-        ψ = ψ |> diagQ
-        loss() = -fidelity(CMPS(diag(ψ.Q)|> diagm, ψ.R), ψ0, β)
+        if size(ψ.Q) != (χ, χ) 
+            msg = "χ of init cmps should be $(χ) instead of $(size(ψ.Q)[1])"
+            @error DimensionMismatch(msg)
+        else
+            ψ = ψ |> diagQ
+            loss() = -fidelity(CMPS(diag(ψ.Q)|> diagm, ψ.R), ψ0, β)
 
-        #FluxOptTools: Zygote.refresh() currently needed when defining new adjoints
-        Zygote.refresh() 
-        lossfun, gradfun, fg!, p0 = optfuns(loss, Params([ψ.Q, ψ.R]))
-        opt = Optim.optimize(Optim.only_fg!(fg!), p0, LBFGS(),Optim.Options(iterations=10000, store_trace=true))
+            #FluxOptTools: Zygote.refresh() currently needed when defining new adjoints
+            Zygote.refresh() 
+            lossfun, gradfun, fg!, p0 = optfuns(loss, Params([ψ.Q, ψ.R]))
+            opt = Optim.optimize(Optim.only_fg!(fg!), p0, LBFGS(),Optim.Options(iterations=10000, store_trace=true))
+            return ψ
+        end
     end 
-    return ψ
 end
 
 #end    # module cMPSCompress

@@ -12,6 +12,10 @@ end
     include("operations.jl")
 end
 
+@testset "cmpsInitiate.jl" begin
+    include("cmpsInitiate.jl")
+end
+
 #@testset "gradient" begin
 #    include("gradient.jl")
 #end
