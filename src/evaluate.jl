@@ -1,24 +1,5 @@
 #module evaluate
 """
-    Initiate via boundary cMPS
-"""
-function init_cmps(bondD::Int64, model::PhysModel, β::Real)
-    Tm = model.Tmatrix
-    phy_dim = model.phy_dim
-
-    ψ = CMPS(Tm.Q, Tm.R)
-    pow_step, remainder = divrem(log(phy_dim, bondD), 1)
-
-    for i = 1:Integer(pow_step - 1) ψ = Tm * ψ end
-    if remainder != 0
-        ψ0 = Tm * ψ
-        ψ  = cmps_compress(ψ0, bondD, β)
-    end
-    return ψ
-end
-
-
-"""
     Evaluate PhysModel m when the hermiticty of its transfer matrix is unknown or not specified
 """
 function evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder::String; 
@@ -42,19 +23,26 @@ function hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder
     CMPSResultFolder: CMPS information, classified by bond dimension
     """
     CMPSResultFolder = @sprintf "%s/bondD_%02i_CMPS" ResultFolder bondD
+    OptResultFolder = @sprintf "%s/bondD_%02i_Opt" CMPSResultFolder bondD
     isdir(ResultFolder) || mkdir(ResultFolder)
     isdir(CMPSResultFolder) || mkdir(CMPSResultFolder) 
+    isdir(OptResultFolder) || mkdir(OptResultFolder)
 
     #initiate cmps
     init === nothing ? ψ = init_cmps(bondD, m, β) : ψ = init
-    ψ = ψ |> diagQ
 
+    ψ = ψ |> diagQ
     loss() = free_energy(CMPS(diag(ψ.Q)|> diagm, ψ.R), m.Tmatrix, β)
-    #FluxOptTools: Zygote.refresh() currently needed when defining new adjoints
-    Zygote.refresh() 
-    lossfun, gradfun, fg!, p0 = optfuns(loss, Params([ψ.Q, ψ.R]))
-    opt = Optim.optimize(Optim.only_fg!(fg!), p0, LBFGS(),Optim.Options(iterations=10000, store_trace=true))
+
+    p0, f, g! = optim_functions(loss, Params([ψ.Q, ψ.R]))
+    opt = Optim.optimize(f, g!, p0, LBFGS(),Optim.Options(iterations=10000))
     
+    #save optimize result
+    OptResultFile = @sprintf "%s/beta_%.2f.txt" OptResultFolder β
+    open(OptResultFile, "w") do file
+        write(file, opt)
+    end
+
     # calculate thermal dynamic quanties
     dict = Dict()
     dict["F"] = minimum(opt)
@@ -93,7 +81,11 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
             writedlm(cfile, [pow_step free_energy(m.Ut*ψ, ψ, m.Tmatrix, β)])
 
             ψ0 = m.Tmatrix * ψ
-            ψ  = cmps_compress(ψ0, bondD, β, init = ψ)
+            ψ, opt  = compress_cmps(ψ0, bondD, β, init = ψ, return_opt = true)
+            OptResultFile = @sprintf "%s/cmps_step_%03i.txt" ChkpFolder β
+            open(OptResultFile, "w") do file
+                write(file, opt)
+            end
         end
     end
 

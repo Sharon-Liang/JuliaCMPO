@@ -23,4 +23,13 @@ struct PhysModel
     Ut::Matrix{T} where T <: Number # unitrary transformation: Ut^+ Tm Ut = transpose(Tm)
 end
 
+struct MeraUpdateStep{Ti<:Integer, T<:Real, Tf<:Real}
+    SN::Ti
+    θ::T
+    loss_diff::Tf
+    fidelity::Tf
+end
+
+MeraUpdateTrace = Vector{MeraUpdateStep}
+
 #end module structs

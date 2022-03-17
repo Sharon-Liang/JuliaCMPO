@@ -1,17 +1,14 @@
 module cMPO
 __precompile__()
 
-using LinearAlgebra, GenericLinearAlgebra
-using Zygote, FiniteDifferences, ChainRulesCore
-using Optim, FluxOptTools
 using Random; Random.seed!()
-using StatsFuns, SpecialFunctions, HCubature
-using OMEinsum
-using Printf
-using HDF5, DelimitedFiles
+using HDF5, DelimitedFiles, Printf
+using StatsFuns
+using OMEinsum, LinearAlgebra #, GenericLinearAlgebra
+using Zygote, Optim
 
 import Base: *, isequal, transpose, adjoint, cat
-import LinearAlgebra: ishermitian
+import LinearAlgebra: ishermitian, norm, normalize
 
 # utilities
 export pauli,
@@ -20,15 +17,19 @@ export pauli,
        symmetrize, symeigen, 
        logtrexp
 
-# structs
-export CMPS, CMPO, PhysModel
+# OptimFunctions
+export veclength, optim_functions
 
-#SaveAndLoad
+# structs
+export CMPS, CMPO, PhysModel, 
+       MeraUpdateStep, MeraUpdateTrace
+
+# SaveAndLoad
 export saveCMPS, readCMPS
 
-# operations
+# cMPSOperations
 export toarray, tovector, tocmps,
-       #normalize, 
+       norm, normalize, 
        log_overlap,
        transpose, adjoint, ishermitian,
        project,
@@ -37,8 +38,11 @@ export toarray, tovector, tocmps,
 # multiplications
 export ⊗
 
-# cMPSCompress
-export init_cmps, fidelity, cmps_compress
+# cMPSInitiate
+export init_cmps, 
+       logfidelity, fidelity, 
+       interpolate_isometry, adaptive_mera_update,
+       compress_cmps
 
 # PhysicalModels
 export Ising_CMPO, generalUt, expand
@@ -68,11 +72,12 @@ export evaluate,
 
 
 include("utilities.jl")
+include("OptimFunctions.jl")
 include("structs.jl")
 include("SaveAndLoad.jl")
 include("multiplications.jl")
-include("operations.jl")
-include("cMPSCompress.jl")
+include("cMPSOperations.jl")
+include("cMPSInitiate.jl")
 include("PhysicalModels.jl")
 include("ThermaldynamicQuanties.jl")
 include("Correlations.jl")
