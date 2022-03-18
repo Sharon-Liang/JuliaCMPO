@@ -1,12 +1,14 @@
 using Printf
 
-beta_min = 1.0
-beta_max = 40.0
+beta_min = 4.7
+beta_max = 6.0
 beta_step = 0.1
 Jxy_Range = [1.0]
-Jz_Range = [0.0, 1.0]
+Jz_Range = [0.0]
 bondD_Range = [10]
-wid_Range = [1, 3, 5]
+wid_Range = [5]
+
+init = beta_min - beta_step
 
 phys_model = "XXZ_2D_helical"
 
@@ -39,7 +41,7 @@ for jxy = 1:length(Jxy_Range), jz = 1:length(Jz_Range),
                 /home/sliang/JuliaCode/mycMPO/jobs/CMPO_$(phys_model).jl \
                 --Jxy $(Jxy) --Jz $(Jz) --width $(width) \
                 --beta_min $(beta_min) --beta_max $(beta_max) --beta_step $(beta_step) \
-                --bondD $(bondD)"
+                --bondD $(bondD) --init $(init)"
             )
     close(io)
     println("Run: tmp$(R).sh")

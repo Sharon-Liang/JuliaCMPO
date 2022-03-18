@@ -77,7 +77,7 @@ model = XXZmodel_2D_helical(Jz/Jxy, width)
 if init == 0.0
     ψ0 = init_cmps(bondD, model, beta_min)
 else
-    initFilePath = @sprintf "%s/bondD_%02i_beta_%.2f.hdf5" ResultFolder bondD init
+    initFilePath = @sprintf "%s/CMPS/bondD_%02i_beta_%.2f.hdf5" ResultFolder bondD init
     ψ0 = readCMPS(initFilePath) 
 end
 
@@ -87,8 +87,8 @@ for β in range(beta_min, beta_max, step = beta_step)
     end
     for key in keys(dict)
         filename = @sprintf "%s/Obsv_%s_bondD_%02i.txt" ResultFolder key bondD
-        β == beta_min ? mode = "w" : mode = "a"
-        open(filename, mode) do file
+        #β == beta_min ? mode = "w" : mode = "a"
+        open(filename, "a") do file
             writedlm(file, [β dict[key]])
         end
     end

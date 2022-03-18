@@ -67,7 +67,7 @@ model = XXZmodel(Jz/Jxy)
 if init == 0.0
     ψ0 = init_cmps(bondD, model, beta_min)
 else
-    initFilePath = @sprintf "%s/bondD_%02i_beta_%.2f.hdf5" ResultFolder bondD init
+    initFilePath = @sprintf "%s/CMPS/bondD_%02i_beta_%.2f.hdf5" ResultFolder bondD init
     ψ0 = readCMPS(initFilePath) 
 end
 
