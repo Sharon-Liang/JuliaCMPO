@@ -32,3 +32,21 @@ for b in 1:length(betaRange)
     #end
 end
 
+
+
+#CLEAR LOG FOLDER
+#if length(readdir(logdir))!=0
+#    for file in readdir(logdir)
+#    run(```rm $(logdir)/$(file)```) end
+#end
+
+using Printf
+ResultFolder = "/data/sliang/CMPO/TFIsing/Power_J_1.00_G_1.00/"
+χ = 8
+for β in range(1.0, 16.7, step = 0.1)
+    #β = 16.9
+    OldFile = @sprintf "%s/bondD_%2i_beta_%.1f.hdf5" ResultFolder χ β
+    NewFile = @sprintf "%s/bondD_%02i_beta_%.2f.hdf5" ResultFolder χ β
+    #run(```cp $(OldFile) $(NewFile)```)
+    run(```rm $(OldFile)```)
+end
