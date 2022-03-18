@@ -13,8 +13,8 @@ end
     Norm of a CMPS
 """
 function norm(s::CMPS, β::Real)
-    λ = log_overlap(s, s, β)
-    return exp(β*λ/2)
+    λ = log_overlap(s, s, β) 
+    return exp(λ/2)
 end
 
 

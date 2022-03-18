@@ -8,17 +8,17 @@ end
     include("multiplications.jl")
 end
 
-@testset "operations.jl" begin
-    include("operations.jl")
+@testset "cMPSOperations.jl" begin
+    include("cMPSOperations.jl")
 end
 
-@testset "cmpsInitiate.jl" begin
-    include("cmpsInitiate.jl")
+@testset "cMPSInitiate.jl" begin
+    include("cMPSInitiate.jl")
 end
 
-#@testset "gradient" begin
-#    include("gradient.jl")
-#end
+@testset "gradient" begin
+    include("gradient.jl")
+end
 
 #@testset "hessian" begin
 #    include("hessian.jl")

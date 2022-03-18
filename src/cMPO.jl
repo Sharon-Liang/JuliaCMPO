@@ -46,9 +46,11 @@ export init_cmps,
 
 # PhysicalModels
 export Ising_CMPO, generalUt, expand
-export TFIsing, XYmodel, XXZmodel, #HeisenbergModel,
+export TFIsing, 
+       XYmodel, 
+       XXZmodel, 
        TFIsing_2D_helical,
-       XYmodel_2D_helical,
+       XYmodel_2D_helical, 
        XXZmodel_2D_helical
 
 # ThermaldynamicQuanties

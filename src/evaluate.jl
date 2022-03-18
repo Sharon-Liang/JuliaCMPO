@@ -81,7 +81,7 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
             writedlm(cfile, [pow_step free_energy(m.Ut*ψ, ψ, m.Tmatrix, β)])
 
             ψ0 = m.Tmatrix * ψ
-            ψ, opt  = compress_cmps(ψ0, bondD, β, init = ψ, return_opt = true)
+            ψ, opt = compress_cmps(ψ0, bondD, β, init = ψ, return_opt = true)
             OptResultFile = @sprintf "%s/cmps_step_%03i.txt" ChkpFolder β
             open(OptResultFile, "w") do file
                 write(file, opt)

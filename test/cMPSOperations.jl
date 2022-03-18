@@ -1,5 +1,12 @@
 using Test, cMPO
 
+@testset "normalize CMPS" begin
+    β = rand(1:5)
+    ψ = init_cmps(rand(2:5), rand(1:2))
+    ψ = normalize(ψ, β)
+    @test norm(ψ, β) ≈ 1.
+end
+
 @testset "adjoint and ishermitian" begin
     for m in [TFIsing(1.0,1.0), XYmodel(), XXZmodel(1.0)]
         T = m.Tmatrix

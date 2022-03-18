@@ -125,6 +125,26 @@ Heisenberg XXZ model
 after unitary transformation : U=exp(iπSy) on odd sites:
     H = -0.5 ∑ (S+ S+ + S-S-) - ∑ Δ Zi Zj
 """
+
+"""
+function XXZmodel_tw(Δ::Real)
+    if Δ == 0
+        return XYmodel()
+    else
+        sp = pauli(:+); sm = pauli(:-); sz = 0.5 * pauli(:z)
+        L = zeros(2, 2, 3)
+        L[:,:,1] = 1/√2 * sp ; L[:,:,2] = 1/√2 * sm; L[:,:,3] = √Δ * sz
+        R = zeros(2, 2, 3)
+        R[:,:,1] = 1/√2 * sm ; R[:,:,2] = 1/√2 * sp; R[:,:,3] = -√Δ * sz
+        Q = zeros(2, 2)
+        P = zeros(2, 2, 3, 3)
+        Tmatrix = CMPO(Q,R,L,P)
+        Ut = [0 1 0; 1 0 0; 0 0 -1] 
+        return PhysModel(Tmatrix, 2, 3, Ut)
+    end
+end
+"""
+
 function XXZmodel(Δ::Real)
     if Δ == 0
         return XYmodel()
