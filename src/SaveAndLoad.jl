@@ -84,20 +84,16 @@ end
     write Optim trace
 """
 function Base.write(io::IO, tr::Optim.OptimizationTrace)
-    #@printf io "Iter     Function value   Gradient norm \n"
-    #@printf io "------   --------------   --------------\n"
+    @printf io "\n"
+    @printf io "Iter      Function value     Gradient norm  \n"
+    @printf io "------   ----------------   ----------------\n"
     for state in tr
         writedlm(io, [state.iteration state.value state.g_norm])
     end
     return
 end
 
-function Base.write(io::IO, tr::Nothing)
-    #@printf io "Iter     Function value   Gradient norm \n"
-    #@printf io "------   --------------   --------------\n"
-    write(io, "Skip L-BFGS optim process.")
-    return
-end
+
 
 """
     write MERA update trace
@@ -114,8 +110,8 @@ end
 function Base.println(step::MeraUpdateStep)
     #@printf io "step   θ   loss_diff   fidelity \n"
     #@printf io "----  ---  ---------   ---------\n"
-    println("step: ", step.SN, "; θ=", step.θ, 
-                "; loss_diff=", step.loss_diff, "; fidelity=", step.fidelity)
+    str = @sprintf "step=%3i, θ=%.16f; loss_diff=%.16e; fidelity=%.16f" step.SN step.θ step.loss_diff step.fidelity
+    println(str)
     return
 end
 

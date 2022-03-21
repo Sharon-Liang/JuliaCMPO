@@ -22,7 +22,9 @@ export veclength, optim_functions
 
 # structs
 export CMPS, CMPO, PhysModel, 
-       MeraUpdateStep, MeraUpdateTrace
+       MeraUpdateStep, MeraUpdateTrace,
+       MeraUpdateResult, MeraUpdateOptions,
+       CompressResult
 
 # SaveAndLoad
 export saveCMPS, readCMPS

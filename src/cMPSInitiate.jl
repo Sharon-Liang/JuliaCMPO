@@ -50,14 +50,7 @@ function interpolate_isometry(p1::AbstractMatrix, p2::AbstractMatrix, θ::Real)
 end
 
 function adaptive_mera_update(ψ0::CMPS, χ::Integer, β::Real; 
-    atol::Float64 = 1.e-5, ldiff_tol::Float64 = 1.e-12, maxiter::Integer=50, 
-    interpolate::Bool = true,
-    store_trace::Bool = false, show_trace::Bool=false)
-    """
-        atol: tolerance of absolute difference of fidelity(ψ, ψ0, β, Normalize = true) and 1.0
-        ldiff_tol: tolerance of absolute difference of the value of loss function between two MERA update steps
-    """
-    #Initiate: step = 0
+    options::MeraUpdateOptions = MeraUpdateOptions())
     step = 1
     logfidelity0 = logfidelity(ψ0, ψ0, β)
     loss(p_matrix) = logfidelity(project(ψ0, p_matrix), ψ0, β)
@@ -71,13 +64,11 @@ function adaptive_mera_update(ψ0::CMPS, χ::Integer, β::Real;
     ldiff = abs(loss_current - loss_previous)
     
     trace = MeraUpdateTrace()
-    if store_trace
-        step_info = MeraUpdateStep(step, π, 9.9e9, exp(-adiff))
-        push!(trace, step_info)
-    end
-    if show_trace println(step_info) end
+    step_info = MeraUpdateStep(step, π, ldiff, exp(-adiff))
+    if options.store_trace push!(trace, step_info) end
+    if options.show_trace println(step_info) end
 
-    while step < maxiter
+    while step < options.maxiter
         step += 1   
         grad = Zygote.gradient(x -> loss(x), p_current)[1]
         F = svd(grad)
@@ -87,7 +78,7 @@ function adaptive_mera_update(ψ0::CMPS, χ::Integer, β::Real;
         #https://groups.google.com/forum/#!topic/manopttoolbox/2zhx67doXaU
         #interpolate between unitary matrices
         θ = π
-        proceed = interpolate
+        proceed = options.interpolate
         while proceed
             θ = θ/2
             if θ < π/(1.9^12) #12-times bisection, cos(θ) = 0.9999989926433588
@@ -109,16 +100,14 @@ function adaptive_mera_update(ψ0::CMPS, χ::Integer, β::Real;
         loss_previous = loss_current
 
         #store_trace
-        if store_trace
-            step_info = MeraUpdateStep(step, θ, ldiff, exp(-adiff))
-            push!(trace, step_info)
-        end 
-        if show_trace println(step_info) end
+        step_info = MeraUpdateStep(step, θ, ldiff, exp(-adiff))
+        if options.store_trace push!(trace, step_info) end 
+        if options.show_trace println(step_info) end
 
-        if adiff < atol || ldiff < ldiff_tol break end
+        if adiff < options.atol || ldiff < options.ldiff_tol break end
     end
     ψ = project(ψ0, p_current)
-    store_trace ? (return ψ, trace) : return ψ
+    return MeraUpdateResult(ψ, trace)
 end
 
 
@@ -127,10 +116,11 @@ end
 """
 function compress_cmps(ψ0::CMPS, χ::Integer, β::Real; 
     init::Union{CMPS, Nothing} = nothing, atol::Float64 = 1.e-5, 
-    return_opt::Bool = false, show_trace::Bool = false)
+    high_fidel_maxiter::Int64 = 1000, low_fidel_maxiter::Int64=5000,
+    mera_update_options::MeraUpdateOptions = MeraUpdateOptions())
     χ0 = size(ψ0.Q)[1]
     length(size(ψ0.R)) == 2 ? vir_dim = 1 : vir_dim = size(ψ0.R)[3]
-    opt = nothing
+    optim_result = nothing
     fidelity_initial = 1.
     fidelity_final = 1.
 
@@ -138,26 +128,29 @@ function compress_cmps(ψ0::CMPS, χ::Integer, β::Real;
         ψ = ψ0
         @warn "The bond dimension of the initial CMPS ≤ target bond dimension."
     else
-        init === nothing ? ψ = adaptive_mera_update(ψ0, χ, β) : ψ = init
+        init === nothing ? 
+            ψ = adaptive_mera_update(ψ0, χ, β, options = mera_update_options).ψ : 
+            ψ = init
         if size(ψ.Q) != (χ, χ) 
             msg = "χ of init cmps should be $(χ) instead of $(size(ψ.Q)[1])"
             @error DimensionMismatch(msg)
         else
             fidelity_initial = fidelity(ψ, ψ0, β, Normalize = true)
-            abs(fidelity_initial - 1.0) < atol ? max_iter = 1000 : max_iter = 10000
+            abs(fidelity_initial - 1.0) < atol ? maxiter = high_fidel_maxiter : maxiter = low_fidel_maxiter
 
             ψ = ψ |> diagQ
             loss() = -logfidelity(CMPS(diag(ψ.Q)|> diagm, ψ.R), ψ0, β)
             p0, f, g! = optim_functions(loss, Params([ψ.Q, ψ.R]))
-            optim_result = Optim.optimize(f, g!, p0, LBFGS(),
-                    Optim.Options(iterations = max_iter, store_trace = true, 
-                    show_trace = show_trace, show_every = 10))
+
+            optim_options = Optim.Options(iterations = maxiter,
+                                show_trace = true, show_every = 10,
+                                store_trace = true)
+            optim_result = Optim.optimize(f, g!, p0, LBFGS(), optim_options)
 
             fidelity_final = fidelity(ψ, ψ0, β, Normalize = true)
-            return_opt ? opt = optim_result : opt = nothing
         end
     end 
-    return (ψ, fidelity_initial, fidelity_final, opt)
+    return CompressResult(ψ, fidelity_initial, fidelity_final, optim_result)
 end
 
 
@@ -172,7 +165,8 @@ function init_cmps(bondD::Int64, model::PhysModel, β::Real)
     end
 
     if size(ψ.Q)[1] > bondD 
-        ψ, _= compress_cmps(ψ, bondD, β)
+        res = compress_cmps(ψ, bondD, β, low_fidel_maxiter=1000)
+        ψ = res.ψ
     end
     return ψ
 end

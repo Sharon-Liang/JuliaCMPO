@@ -32,4 +32,41 @@ end
 
 MeraUpdateTrace = Vector{MeraUpdateStep}
 
+struct MeraUpdateResult
+    ψ::CMPS
+    trace::MeraUpdateTrace
+end
+
+
+"""
+atol: tolerance of absolute difference of fidelity(ψ, ψ0, β, Normalize = true) and 1.0
+ldiff_tol: tolerance of absolute difference of the value of loss function between two MERA update steps
+"""
+struct MeraUpdateOptions{T<:Number}
+    atol::T
+    ldiff_tol::T
+    maxiter::Int64
+    interpolate::Bool
+    store_trace::Bool
+    show_trace::Bool
+end
+
+function MeraUpdateOptions(;
+    atol = 1.e-5,
+    ldiff_tol = 1.e-12,
+    maxiter = 50,
+    interpolate = true,
+    store_trace = false,
+    show_trace = false)
+    MeraUpdateOptions(atol, ldiff_tol, maxiter, interpolate,
+        store_trace, show_trace)
+end
+
+struct CompressResult{T<:Number, Tf}
+    ψ::CMPS
+    fidelity_initial::T
+    fidelity_final::T
+    optim_result::Tf
+end
+
 #end module structs
