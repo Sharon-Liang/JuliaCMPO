@@ -20,18 +20,10 @@ settings = ArgParseSettings(prog="CMPO code for XXZ model"
         arg_type = Int64
         default = 1
         help = "width of the cylinder, should be an odd number"
-    "--beta_min"
+    "--beta"
         arg_type = Float64
         default = 1.0
-        help = "minimum β(inverse temperature) value"
-    "--beta_max"
-        arg_type = Float64
-        default = 20.0
-        help = "maximum β(inverse temperature) value"
-    "--beta_step"
-        arg_type = Float64
-        default = 0.1
-        help = "β(inverse temperature) step size"
+        help = "β: inverse temperature"
     "--init"
         arg_type = Float64
         default = 0.0
@@ -46,7 +38,7 @@ settings = ArgParseSettings(prog="CMPO code for XXZ model"
         help = "maximum power step if power method is used"
     "--ResultFolder"
         arg_type = String
-        default = "/data/sliang/CMPO/XXZ_2D_helical"
+        default = "/data/sliang/JuliaCMPO/XXZ_2D_helical"
         help = "result folder"
 end
 parsed_args = parse_args(settings; as_symbols=true)
@@ -55,45 +47,37 @@ print(parsed_args,"\n")
 const Jxy = parsed_args[:Jxy]
 const Jz = parsed_args[:Jz]
 const width = parsed_args[:width]
-const beta_max = parsed_args[:beta_max]
-const beta_min = parsed_args[:beta_min]
-const beta_step = parsed_args[:beta_step]
+const β = parsed_args[:beta]
 const bondD = parsed_args[:bondD]
 const power_step = parsed_args[:power_step]
-const init = parsed_args[:init]
 
 
 #Creat ResultFolders if there is none
 ResultFolder = parsed_args[:ResultFolder]
+
+ResultFolder = "/data/sliang/JuliaCMPO/XXZ_2D_helical"
 isdir(ResultFolder) || mkdir(ResultFolder)
 
-ResultFolder = @sprintf "%s/Jxy_%.2f_Jz_%.2f_wid_%02i" ResultFolder Jxy Jz width
-isdir(ResultFolder) || mkdir(ResultFolder)
-
+ModelResultFolder = @sprintf "%s/Jxy_%.2f_Jz_%.2f_wid_%02i" ResultFolder Jxy Jz width
+isdir(ModelResultFolder) || mkdir(ModelResultFolder)
 
 #CMPO
 model = XXZmodel_2D_helical(Jz/Jxy, width)
 
-if init == 0.0
-    ψ0 = init_cmps(bondD, model, beta_min)
-else
-    initFilePath = @sprintf "%s/CMPS/bondD_%02i_beta_%.2f.hdf5" ResultFolder bondD init
-    ψ0 = readCMPS(initFilePath) 
+
+@timeit to "evaluate" begin
+    ψ, dict = evaluate(model, bondD, β, ModelResultFolder, hermitian = false, max_pow_step = power_step)
 end
 
-for β in range(beta_min, beta_max, step = beta_step)
-    @timeit to "evaluate" begin
-        ψ, dict = evaluate(model, bondD, β, ResultFolder, init = ψ0, hermitian = false, max_pow_step = power_step)
+for key in keys(dict)
+    ObsvFolder = @sprintf "%s/Obsv_%s_bondD_%02i" ModelResultFolder key bondD
+    isdir(ObsvFolder) || mkdir(ObsvFolder)
+    ObsvFile = @sprintf "%s/beta_%.2f.txt" ObsvFolder β
+    open(ObsvFile, "w") do file
+        writedlm(file, [β dict[key]])
     end
-    for key in keys(dict)
-        filename = @sprintf "%s/Obsv_%s_bondD_%02i.txt" ResultFolder key bondD
-        #β == beta_min ? mode = "w" : mode = "a"
-        open(filename, "a") do file
-            writedlm(file, [β dict[key]])
-        end
-    end
-    global ψ0 = ψ
 end
+
 
 const End_Time = Dates.format(now(), "yyyy-mm-dd HH:MM:SS")
 const Running_TimeTable = string(to)

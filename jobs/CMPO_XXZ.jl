@@ -38,7 +38,7 @@ settings = ArgParseSettings(prog="CMPO code for XXZ model"
         help = "cMPS bond dimension"
     "--ResultFolder"
         arg_type = String
-        default = "/data/sliang/CMPO/XXZ"
+        default = "/data/sliang/JuliaCMPO/XXZ"
         help = "result folder"
 end
 parsed_args = parse_args(settings; as_symbols=true)

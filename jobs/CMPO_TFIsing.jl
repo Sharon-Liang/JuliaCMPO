@@ -34,7 +34,7 @@ settings = ArgParseSettings(prog="CMPO: TFIsing model"
         help = "cMPS bond dimension"
     "--ResultFolder"
         arg_type = String
-        default = "/data/sliang/CMPO/TFIsing"
+        default = "/data/sliang/JuliaCMPO/TFIsing"
         help = "result folder"
 end
 
