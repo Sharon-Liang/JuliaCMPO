@@ -1,10 +1,10 @@
 using Printf
 
-beta_Range = [1.0, 16.0]
+beta_Range = [1.0, 9.0]
 Jxy_Range = [1.0]
 Jz_Range = [1.0]
 bondD_Range = [10]
-wid_Range = [1]
+wid_Range = [3]
 
 phys_model = "XXZ_2D_helical"
 
