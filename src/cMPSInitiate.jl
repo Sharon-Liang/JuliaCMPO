@@ -19,7 +19,6 @@ function init_cmps(χ::Int64, vD::Int64 = 1;
     end
     return CMPS(Q,R)
 end
-init_cmps(χ::Int64) = init_cmps(χ, 1)
 
 """
     Fidelity between the target cMPS |ψ⟩ and the origional cMPS T|r⟩:
@@ -131,29 +130,34 @@ function compress_cmps(ψ0::CMPS, χ::Integer, β::Real;
     return_opt::Bool = false, show_trace::Bool = false)
     χ0 = size(ψ0.Q)[1]
     length(size(ψ0.R)) == 2 ? vir_dim = 1 : vir_dim = size(ψ0.R)[3]
+    opt = nothing
+    fidelity_initial = 1.
+    fidelity_final = 1.
+
     if χ0 <= χ
+        ψ = ψ0
         @warn "The bond dimension of the initial CMPS ≤ target bond dimension."
-        res = (ψ, nothing)
     else
         init === nothing ? ψ = adaptive_mera_update(ψ0, χ, β) : ψ = init
         if size(ψ.Q) != (χ, χ) 
             msg = "χ of init cmps should be $(χ) instead of $(size(ψ.Q)[1])"
             @error DimensionMismatch(msg)
         else
-            if abs(fidelity(ψ, ψ0, β, Normalize = true) - 1.0) < atol
-                res = (ψ, nothing)
-            else
-                ψ = ψ |> diagQ
-                loss() = -logfidelity(CMPS(diag(ψ.Q)|> diagm, ψ.R), ψ0, β)
-                p0, f, g! = optim_functions(loss, Params([ψ.Q, ψ.R]))
-                opt = Optim.optimize(f, g!, p0, LBFGS(),
-                    Optim.Options(iterations=3000, store_trace = true, 
+            fidelity_initial = fidelity(ψ, ψ0, β, Normalize = true)
+            abs(fidelity_initial - 1.0) < atol ? max_iter = 1000 : max_iter = 10000
+
+            ψ = ψ |> diagQ
+            loss() = -logfidelity(CMPS(diag(ψ.Q)|> diagm, ψ.R), ψ0, β)
+            p0, f, g! = optim_functions(loss, Params([ψ.Q, ψ.R]))
+            optim_result = Optim.optimize(f, g!, p0, LBFGS(),
+                    Optim.Options(iterations = max_iter, store_trace = true, 
                     show_trace = show_trace, show_every = 10))
-                return_opt ? res = (ψ, opt) : res = (ψ, nothing)
-            end
+
+            fidelity_final = fidelity(ψ, ψ0, β, Normalize = true)
+            return_opt ? opt = optim_result : opt = nothing
         end
     end 
-    return res
+    return (ψ, fidelity_initial, fidelity_final, opt)
 end
 
 
@@ -163,7 +167,7 @@ end
 function init_cmps(bondD::Int64, model::PhysModel, β::Real)
     Tm = model.Tmatrix
     ψ = CMPS(Tm.Q, Tm.R)
-    while size(ψ.Q)[1] <= bondD
+    while size(ψ.Q)[1] < bondD
         ψ = Tm * ψ
     end
 
