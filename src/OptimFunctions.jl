@@ -28,6 +28,24 @@ function optim_functions(loss, pars::Zygote.Params)
     return p0, loss_function, gradient_function
 end
 
+function optim_functions_py(loss, pars::Zygote.Params)
+    grads = Zygote.gradient(loss, pars)
+    p0 = zeros(pars)
+    copy!(p0, pars)
+
+    gradient_function = function (w)
+        copy!(pars, w)
+        grads = Zygote.gradient(loss, pars)
+        g = similar(w)
+        copy!(g, grads)
+    end
+
+    loss_function = function (w)
+        copy!(pars, w)
+        loss()
+    end
+    return p0, loss_function, gradient_function
+end
 
 #end #module OptimFunctions
 
