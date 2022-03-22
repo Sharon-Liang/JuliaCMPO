@@ -99,8 +99,8 @@ end
     write MERA update trace
 """
 function Base.write(io::IO, tr::MeraUpdateTrace)
-    #@printf io "step   θ   loss_diff   fidelity \n"
-    #@printf io "----  ---  ---------   ---------\n"
+    @printf io "step          θ            loss_diff           fidelity    \n"
+    @printf io "----  ----------------  ----------------   ----------------\n"
     for state in tr
         writedlm(io, [state.SN state.θ state.loss_diff state.fidelity])
     end
@@ -108,9 +108,7 @@ function Base.write(io::IO, tr::MeraUpdateTrace)
 end
 
 function Base.println(step::MeraUpdateStep)
-    #@printf io "step   θ   loss_diff   fidelity \n"
-    #@printf io "----  ---  ---------   ---------\n"
-    str = @sprintf "step=%3i, θ=%.16f; loss_diff=%.16e; fidelity=%.16f" step.SN step.θ step.loss_diff step.fidelity
+    str = @sprintf "%3i   %.16f   %.16e   %.16f \n" step.SN step.θ step.loss_diff step.fidelity
     println(str)
     return
 end

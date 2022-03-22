@@ -34,21 +34,3 @@ end
 
 
 
-
-"""
-    Generate gradient function which is used in Optim.jl
-
-function gradfunc_gen(f::Function)
-    function func(val::Array{T}, var::Array{T}) where T<:Number
-        val[1:end] = gradient(f,var)[1][1:end]
-    end
-    return func
-end
-
-function hessfunc_gen(f::Function)
-    function func(val::Matrix{T}, var::Vector{T}) where T<:Number
-        val[1:end] = hessian(f,var)[1:end]
-    end
-    return func
-end
-"""

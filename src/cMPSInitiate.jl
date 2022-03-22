@@ -66,7 +66,12 @@ function adaptive_mera_update(ψ0::CMPS, χ::Integer, β::Real;
     trace = MeraUpdateTrace()
     step_info = MeraUpdateStep(step, π, ldiff, exp(-adiff))
     if options.store_trace push!(trace, step_info) end
-    if options.show_trace println(step_info) end
+    if options.show_trace
+        println("-----------------MERA update------------------")
+        println("step          θ            loss_diff           fidelity    \n")
+        println("----  ----------------  ----------------   ----------------\n")
+        println(step_info) 
+    end
 
     while step < options.maxiter
         step += 1   
@@ -115,9 +120,13 @@ end
     compress a CMPS(ψ0) to a target dimension(χ)
 """
 function compress_cmps(ψ0::CMPS, χ::Integer, β::Real; 
-    init::Union{CMPS, Nothing} = nothing, atol::Float64 = 1.e-5, 
-    high_fidel_maxiter::Int64 = 1000, low_fidel_maxiter::Int64=5000,
-    mera_update_options::MeraUpdateOptions = MeraUpdateOptions())
+    init::Union{CMPS, Nothing} = nothing,
+    show_trace::Bool = false,
+    mera_update_options::MeraUpdateOptions = MeraUpdateOptions(show_trace=show_trace))
+    if show_trace 
+        println("----------------Compress CMPS-----------------") 
+    end
+
     χ0 = size(ψ0.Q)[1]
     length(size(ψ0.R)) == 2 ? vir_dim = 1 : vir_dim = size(ψ0.R)[3]
     optim_result = nothing
@@ -136,15 +145,15 @@ function compress_cmps(ψ0::CMPS, χ::Integer, β::Real;
             @error DimensionMismatch(msg)
         else
             fidelity_initial = fidelity(ψ, ψ0, β, Normalize = true)
-            abs(fidelity_initial - 1.0) < atol ? maxiter = high_fidel_maxiter : maxiter = low_fidel_maxiter
 
             ψ = ψ |> diagQ
             loss() = -logfidelity(CMPS(diag(ψ.Q)|> diagm, ψ.R), ψ0, β)
             p0, f, g! = optim_functions(loss, Params([ψ.Q, ψ.R]))
 
-            optim_options = Optim.Options(iterations = maxiter,
-                                show_trace = true, show_every = 10,
-                                store_trace = true)
+            optim_options = Optim.Options(f_tol = 1.e-10, g_tol = 1.e-8,
+                                iterations = 2000,
+                                store_trace = true,
+                                show_trace = show_trace, show_every = 10)
             optim_result = Optim.optimize(f, g!, p0, LBFGS(), optim_options)
 
             fidelity_final = fidelity(ψ, ψ0, β, Normalize = true)
@@ -157,7 +166,10 @@ end
 """
     Initiate via boundary cMPS
 """
-function init_cmps(bondD::Int64, model::PhysModel, β::Real)
+function init_cmps(bondD::Int64, model::PhysModel, β::Real; show_trace::Bool = false)
+    if show_trace 
+        println("----------------Initiate CMPS-----------------") 
+    end
     Tm = model.Tmatrix
     ψ = CMPS(Tm.Q, Tm.R)
     while size(ψ.Q)[1] < bondD
@@ -165,9 +177,11 @@ function init_cmps(bondD::Int64, model::PhysModel, β::Real)
     end
 
     if size(ψ.Q)[1] > bondD 
-        res = compress_cmps(ψ, bondD, β, low_fidel_maxiter=1000)
+        res = compress_cmps(ψ, bondD, β, show_trace=show_trace)
         ψ = res.ψ
     end
     return ψ
 end
+
+
 #end    # module cMPSCompress

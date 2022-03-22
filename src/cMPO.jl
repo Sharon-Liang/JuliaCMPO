@@ -7,6 +7,7 @@ using StatsFuns
 using OMEinsum, LinearAlgebra #, GenericLinearAlgebra
 using Zygote, Optim
 
+
 import Base: *, isequal, transpose, adjoint, cat
 import LinearAlgebra: ishermitian, norm, normalize
 
@@ -18,7 +19,8 @@ export pauli,
        logtrexp
 
 # OptimFunctions
-export veclength, optim_functions
+export veclength, optim_functions,
+       optim_functions_py
 
 # structs
 export CMPS, CMPO, PhysModel, 
@@ -45,6 +47,8 @@ export init_cmps,
        logfidelity, fidelity, 
        interpolate_isometry, adaptive_mera_update,
        compress_cmps
+       #init_cmps_py,
+       #compress_cmps_py
 
 # PhysicalModels
 export Ising_CMPO, generalUt, expand
@@ -70,9 +74,9 @@ export correlation_2time,
        Lehmann_structure_factor, Lehmann_S
 
 # evaluate
-export evaluate,
-       hermitian_evaluate,
-       non_hermitian_evaluate
+export evaluate, evaluate_py, 
+       hermitian_evaluate, #hermitian_evaluate_py,
+       non_hermitian_evaluate#, non_hermitian_evaluate_py
 
 
 include("utilities.jl")
