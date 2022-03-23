@@ -46,7 +46,6 @@ function hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder
     F_initial = loss()
 
     p0, f, g! = optim_functions(loss, Params([ψ.Q, ψ.R]))
-    #the same as scipy L-BFGS-B
     optim_options = Optim.Options(f_tol = eps(), g_tol = 1.e-8,
                             iterations = 10000,
                             store_trace = true,
@@ -68,6 +67,9 @@ function hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder
     # calculate thermal dynamic quanties
     dict = Dict()
     dict["F"] = F_final
+    dict["E"] = energy(ψ, Tm, β)
+    dict["Cv"] = specific_heat(ψ, Tm, β)
+    dict["S"] = β * (dict["E"] - dict["F"])
     ResultFile = @sprintf "%s/beta_%.2f.hdf5" CMPSResultFolder β
     saveCMPS(ResultFile, ψ, dict)
     return ψ, dict
@@ -138,6 +140,9 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
     # calculate thermal dynamic quanties
     dict = Dict()
     dict["F"] = free_energy(m.Ut*ψ, ψ, Tm, β)
+    dict["E"] = energy(m.Ut*ψ, ψ, Tm, β)
+    dict["Cv"] = specific_heat(m.Ut*ψ, ψ, Tm, β)
+    dict["S"] = β * (dict["E"] - dict["F"])
     ResultFile = @sprintf "%s/beta_%.2f.hdf5" CMPSResultFolder β
     saveCMPS(ResultFile, ψ, dict)
     return ψ, dict
