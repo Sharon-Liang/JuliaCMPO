@@ -117,16 +117,16 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
         E = energy(m.Ut*ψ, ψ, Tm, β)
         Cv = specific_heat(m.Ut*ψ, ψ, Tm, β)
         S = β * (E - F)    
-        write(cfile, "step      free_energy          energy            specific_heat        entropy       \n")
-        write(cfile, "---- ------------------- ------------------- ------------------- -------------------\n")
+        write(cfile, "step      free_energy               energy              specific_heat            entropy       \n")
+        write(cfile, "----  ---------------------  ---------------------  ---------------------  ---------------------\n")
         EngString = @sprintf "%3i   %.16f   %.16f   %.16f   %.16f \n" pow_step F E Cv S
         write(cfile, EngString)
     end
 
     ChkpFidelityFile = "$(ChkpFolder)/Fidelity.txt"
     open(ChkpFidelityFile,"w") do cfile
-        write(cfile, "step      free energy       fidelity_initial    fidelity_final\n")
-        write(cfile, "------   ----------------   ----------------   ----------------\n")
+        write(cfile, "step   fidelity_initial     fidelity_final  \n")
+        write(cfile, "----  ------------------  ------------------\n")
         FidelityString = @sprintf "%3i   %.16f   %.16f \n" pow_step fidelity_initial fidelity_final
         write(cfile, FidelityString)
     end

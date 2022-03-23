@@ -6,7 +6,7 @@ using HDF5, DelimitedFiles, Printf
 using StatsFuns
 using OMEinsum, LinearAlgebra #, GenericLinearAlgebra
 using Zygote, Optim
-
+using FiniteDifferences
 
 import Base: *, isequal, transpose, adjoint, cat
 import LinearAlgebra: ishermitian, norm, normalize
