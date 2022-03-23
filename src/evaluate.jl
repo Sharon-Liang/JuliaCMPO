@@ -47,7 +47,7 @@ function hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder
 
     p0, f, g! = optim_functions(loss, Params([ψ.Q, ψ.R]))
     #the same as scipy L-BFGS-B
-    optim_options = Optim.Options(f_tol = 2.220446049250313e-09, g_tol = 1.e-5,
+    optim_options = Optim.Options(f_tol = eps(), g_tol = 1.e-8,
                             iterations = 10000,
                             store_trace = true,
                             show_trace = show_trace, show_every = 10)
@@ -115,21 +115,23 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
         writedlm(cfile, [pow_step free_energy(m.Ut*ψ, ψ, Tm, β) fidelity_initial fidelity_final])
     end
 
-    open(ChkpEngFile,"a") do cfile
-        while pow_step < max_pow_step
-            pow_step += 1
-            res = compress_cmps(Tm * ψ, bondD, β, show_trace = show_trace)
-            ψ = res.ψ
+    
+    while pow_step < max_pow_step
+        pow_step += 1
+        res = compress_cmps(Tm * ψ, bondD, β, show_trace = show_trace)
+        ψ = res.ψ
 
-            ChkpStateFile = @sprintf "%s/cmps_step_%03i.hdf5" ChkpFolder pow_step
-            saveCMPS(ChkpStateFile, ψ)
+        ChkpStateFile = @sprintf "%s/cmps_step_%03i.hdf5" ChkpFolder pow_step
+        saveCMPS(ChkpStateFile, ψ)
+
+        open(ChkpEngFile,"a") do cfile
             writedlm(cfile, [pow_step free_energy(m.Ut*ψ, ψ, Tm, β) res.fidelity_initial res.fidelity_final])
+        end
 
-            OptResultFile = @sprintf "%s/cmps_opt_step_%03i.txt" ChkpFolder pow_step
-            open(OptResultFile, "w") do file
-                write(file, res.optim_result)
-                if res.optim_result.trace !== nothing write(file, res.optim_result.trace) end
-            end
+        OptResultFile = @sprintf "%s/cmps_opt_step_%03i.txt" ChkpFolder pow_step
+        open(OptResultFile, "w") do file
+            write(file, res.optim_result)
+            if res.optim_result.trace !== nothing write(file, res.optim_result.trace) end
         end
     end
 
