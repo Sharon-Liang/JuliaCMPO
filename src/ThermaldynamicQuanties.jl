@@ -78,8 +78,8 @@ function specific_heat(ψl::CMPS, ψr::CMPS, W::CMPO, β::Real; method::Symbol =
         c = thermal_average(K2, ψl, ψr, W, β) - thermal_average(K, ψl, ψr, W, β)^2
         c -= thermal_average(H2, ψl, ψr, β) - thermal_average(H, ψl, ψr, β)^2
     elseif method == :ndiff
-        e = b -> energy(ψl, ψr, W, b)
-        c = central_fdm(5, 1)(-e, β)
+        minus_e = b -> -energy(ψl, ψr, W, b)
+        c = central_fdm(5, 1)(minus_e, β)
     else @error "method should be :adiff or :ndiff"
     end
     return β^2 * c
