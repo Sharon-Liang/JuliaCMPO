@@ -148,7 +148,7 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
             write(cfile, EngString)
         end
 
-        open(ChkpFidelityFile,"w") do cfile
+        open(ChkpFidelityFile,"a") do cfile
             FidelityString = @sprintf "%3i   %.16f   %.16f \n" pow_step res.fidelity_initial res.fidelity_final
             write(cfile, FidelityString)
         end
