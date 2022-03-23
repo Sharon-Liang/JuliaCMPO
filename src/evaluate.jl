@@ -110,14 +110,27 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
 
     ChkpStateFile = @sprintf "%s/cmps_step_%03i.hdf5" ChkpFolder pow_step
     saveCMPS(ChkpStateFile, ψ)
-    ChkpEngFile = "$(ChkpFolder)/Obsv_F_fidelity.txt"
+
+    ChkpEngFile = "$(ChkpFolder)/Obsv_FECvS.txt"
     open(ChkpEngFile,"w") do cfile
-        write(cfile, "step      free energy       fidelity_initial    fidelity_final\n")
-        write(cfile, "------   ----------------   ----------------   ----------------\n")
-        writedlm(cfile, [pow_step free_energy(m.Ut*ψ, ψ, Tm, β) fidelity_initial fidelity_final])
+        F = free_energy(m.Ut*ψ, ψ, Tm, β)
+        E = energy(m.Ut*ψ, ψ, Tm, β)
+        Cv = specific_heat(m.Ut*ψ, ψ, Tm, β)
+        S = β * (E - F)    
+        write(cfile, "step      free_energy          energy            specific_heat        entropy       \n")
+        write(cfile, "---- ------------------- ------------------- ------------------- -------------------\n")
+        EngString = @sprintf "%3i   %.16f   %.16f   %.16f   %.16f \n" pow_step F E Cv S
+        write(cfile, EngString)
     end
 
-    
+    ChkpFidelityFile = "$(ChkpFolder)/Fidelity.txt"
+    open(ChkpFidelityFile,"w") do cfile
+        write(cfile, "step      free energy       fidelity_initial    fidelity_final\n")
+        write(cfile, "------   ----------------   ----------------   ----------------\n")
+        FidelityString = @sprintf "%3i   %.16f   %.16f \n" pow_step fidelity_initial fidelity_final
+        write(cfile, FidelityString)
+    end
+
     while pow_step < max_pow_step
         pow_step += 1
         res = compress_cmps(Tm * ψ, bondD, β, show_trace = show_trace)
@@ -127,7 +140,17 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
         saveCMPS(ChkpStateFile, ψ)
 
         open(ChkpEngFile,"a") do cfile
-            writedlm(cfile, [pow_step free_energy(m.Ut*ψ, ψ, Tm, β) res.fidelity_initial res.fidelity_final])
+            F = free_energy(m.Ut*ψ, ψ, Tm, β)
+            E = energy(m.Ut*ψ, ψ, Tm, β)
+            Cv = specific_heat(m.Ut*ψ, ψ, Tm, β)
+            S = β * (E - F)
+            EngString = @sprintf "%3i   %.16f   %.16f   %.16f   %.16f \n" pow_step F E Cv S
+            write(cfile, EngString)
+        end
+
+        open(ChkpFidelityFile,"w") do cfile
+            FidelityString = @sprintf "%3i   %.16f   %.16f \n" pow_step res.fidelity_initial res.fidelity_final
+            write(cfile, FidelityString)
         end
 
         OptResultFile = @sprintf "%s/cmps_opt_step_%03i.txt" ChkpFolder pow_step
