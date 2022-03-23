@@ -150,8 +150,9 @@ function compress_cmps(ψ0::CMPS, χ::Integer, β::Real;
             loss() = -logfidelity(CMPS(diag(ψ.Q)|> diagm, ψ.R), ψ0, β)
             p0, f, g! = optim_functions(loss, Params([ψ.Q, ψ.R]))
 
-            optim_options = Optim.Options(f_tol = 1.e-10, g_tol = 1.e-8,
-                                iterations = 2000,
+            # The same as scipy L-BFGS-B
+            optim_options = Optim.Options(f_tol = 2.220446049250313e-09, g_tol = 1.e-5,
+                                iterations = 10000,
                                 store_trace = true,
                                 show_trace = show_trace, show_every = 10)
             optim_result = Optim.optimize(f, g!, p0, LBFGS(), optim_options)
