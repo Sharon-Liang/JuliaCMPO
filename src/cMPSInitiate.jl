@@ -87,6 +87,7 @@ function adaptive_mera_update(ψ0::CMPS, χ::Integer, β::Real;
         while proceed
             θ = θ/2
             if θ < π/(1.9^12) #12-times bisection, cos(θ) = 0.9999989926433588
+                p_next = p_current
                 proceed = false
             else
                 p_interpolate = interpolate_isometry(p_next, p_current, θ)
