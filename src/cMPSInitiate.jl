@@ -67,9 +67,9 @@ function adaptive_mera_update(ψ0::CMPS, χ::Integer, β::Real;
     step_info = MeraUpdateStep(step, π, ldiff, exp(-adiff))
     if options.store_trace push!(trace, step_info) end
     if options.show_trace
-        println("-----------------MERA update------------------")
-        println("step          θ            loss_diff           fidelity    \n")
-        println("----  ----------------  ----------------   ----------------\n")
+        println("-----------------------------MERA update------------------------------")
+        println("step           θ                 loss_diff             fidelity      \n")
+        println("----  -------------------  --------------------   -------------------\n")
         println(step_info) 
     end
 
@@ -124,7 +124,7 @@ function compress_cmps(ψ0::CMPS, χ::Integer, β::Real;
     show_trace::Bool = false,
     mera_update_options::MeraUpdateOptions = MeraUpdateOptions(show_trace=show_trace))
     if show_trace 
-        println("----------------Compress CMPS-----------------") 
+        println("----------------------------Compress CMPS-----------------------------") 
     end
 
     χ0 = size(ψ0.Q)[1]
@@ -169,7 +169,7 @@ end
 """
 function init_cmps(bondD::Int64, model::PhysModel, β::Real; show_trace::Bool = false)
     if show_trace 
-        println("----------------Initiate CMPS-----------------") 
+        println("----------------------------Initiate CMPS-----------------------------") 
     end
     Tm = model.Tmatrix
     ψ = CMPS(Tm.Q, Tm.R)
