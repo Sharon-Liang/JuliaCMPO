@@ -91,9 +91,14 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
     """
     CMPSResultFolder = @sprintf "%s/bondD_%02i_CMPS" ResultFolder bondD
     ChkpFolder = @sprintf "%s/CheckPoint_beta_%.2f" CMPSResultFolder β
+    ChkpStateFolder = @sprintf "%s/cmps" CMPSResultFolder
+    ChkpOptFolder = @sprintf "%s/cmps_opt" CMPSResultFolder
+    
     isdir(ResultFolder) || mkdir(ResultFolder)
     isdir(CMPSResultFolder) || mkdir(CMPSResultFolder) 
     isdir(ChkpFolder) || mkdir(ChkpFolder)
+    isdir(ChkpStateFolder) || mkdir(ChkpStateFolder)
+    isdir(ChkpOptFolder) || mkdir(ChkpOptFolder)
 
     Tm = m.Tmatrix
 
@@ -108,7 +113,7 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
     fidelity_initial = 1.0
     fidelity_final = fidelity(ψ, ψ0, β, Normalize = true)
 
-    ChkpStateFile = @sprintf "%s/cmps_step_%03i.hdf5" ChkpFolder pow_step
+    ChkpStateFile = @sprintf "%s/step_%03i.hdf5" ChkpStateFolder pow_step
     saveCMPS(ChkpStateFile, ψ)
 
     ChkpEngFile = "$(ChkpFolder)/Obsv_FECvS.txt"
@@ -133,10 +138,13 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
 
     while pow_step < max_pow_step
         pow_step += 1
-        res = compress_cmps(Tm * ψ, bondD, β, show_trace = show_trace)
+
+        mera_update_options = MeraUpdateOptions(show_trace=true, maxiter = 500)
+        res = compress_cmps(Tm * ψ, bondD, β, show_trace = show_trace, mera_update_options = mera_update_options)
+
         ψ = res.ψ
 
-        ChkpStateFile = @sprintf "%s/cmps_step_%03i.hdf5" ChkpFolder pow_step
+        ChkpStateFile = @sprintf "%s/step_%03i.hdf5" ChkpStateFolder pow_step
         saveCMPS(ChkpStateFile, ψ)
 
         open(ChkpEngFile,"a") do cfile
@@ -153,7 +161,7 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
             write(cfile, FidelityString)
         end
 
-        OptResultFile = @sprintf "%s/cmps_opt_step_%03i.txt" ChkpFolder pow_step
+        OptResultFile = @sprintf "%s/tep_%03i.txt" ChkpOptFolder pow_step
         open(OptResultFile, "w") do file
             write(file, res.optim_result)
             if res.optim_result.trace !== nothing write(file, res.optim_result.trace) end
