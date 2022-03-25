@@ -108,7 +108,7 @@ function Base.write(io::IO, tr::MeraUpdateTrace)
 end
 
 function Base.println(step::MeraUpdateStep)
-    str = @sprintf "%3i   %.16f   %.16e   %.16f \n" step.SN step.θ step.loss_diff step.fidelity
+    str = @sprintf "%03i   %.16f   %.16e   %.16f \n" step.SN step.θ step.loss_diff step.fidelity
     println(str)
     return
 end

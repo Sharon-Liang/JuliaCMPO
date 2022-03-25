@@ -91,8 +91,8 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
     """
     CMPSResultFolder = @sprintf "%s/bondD_%02i_CMPS" ResultFolder bondD
     ChkpFolder = @sprintf "%s/CheckPoint_beta_%.2f" CMPSResultFolder β
-    ChkpStateFolder = @sprintf "%s/cmps" CMPSResultFolder
-    ChkpOptFolder = @sprintf "%s/cmps_opt" CMPSResultFolder
+    ChkpStateFolder = @sprintf "%s/cmps" ChkpFolder
+    ChkpOptFolder = @sprintf "%s/cmps_opt" ChkpFolder
     
     isdir(ResultFolder) || mkdir(ResultFolder)
     isdir(CMPSResultFolder) || mkdir(CMPSResultFolder) 
@@ -161,7 +161,7 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
             write(cfile, FidelityString)
         end
 
-        OptResultFile = @sprintf "%s/tep_%03i.txt" ChkpOptFolder pow_step
+        OptResultFile = @sprintf "%s/step_%03i.txt" ChkpOptFolder pow_step
         open(OptResultFile, "w") do file
             write(file, res.optim_result)
             if res.optim_result.trace !== nothing write(file, res.optim_result.trace) end
