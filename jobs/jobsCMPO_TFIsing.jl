@@ -34,7 +34,7 @@ for j = 1:length(J_Range), g = 1:length(Γ_Range), d = 1:length(bondD_Range)
     io = open("tmp$(R).sh","w+")
     write(io,"#!/bin/bash -l \n\
         #SBATCH --partition=a100 \n\
-        #SBATCH --time=999 \n\
+        #SBATCH --time=100:00:00 \n\
         #SBATCH --job-name=$(job_name) \n\
         #SBATCH --output=$(log_file_path) \n\
         #SBATCH --error=$(log_file_path) \n\
