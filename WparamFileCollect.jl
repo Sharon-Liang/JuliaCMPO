@@ -50,3 +50,22 @@ for β in range(1.0, 16.7, step = 0.1)
     #run(```cp $(OldFile) $(NewFile)```)
     run(```rm $(OldFile)```)
 end
+
+
+using Printf
+
+for wid in [1,3,5]
+    for bondD in [8, 10, 12]
+        for β in [1, 2, 4, 8, 16]
+            ChkpFolder = @sprintf "/data/sliang/JuliaCMPO/XXZ_2D_helical/Jz_1.00_Jxy_1.00_wid_%02i/bondD_%02i_CMPS/CheckPoint_beta_%.2f" wid bondD β
+
+            if isdir(ChkpFolder)
+                println(ChkpFolder)
+                FFile = @sprintf "%s/Obsv_F_fidelity.txt" ChkpFolder
+                if isfile(FFile)
+                    rm(FFile)
+                end
+            end
+        end
+    end
+end
