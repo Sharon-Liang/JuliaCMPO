@@ -153,7 +153,7 @@ function compress_cmps(ψ0::CMPS, χ::Integer, β::Real;
 
             # The same as scipy L-BFGS-B
             optim_options = Optim.Options(f_tol = 2.220446049250313e-9, g_tol = 1.e-5,
-                                iterations = 10000,
+                                iterations = 1000,
                                 store_trace = true,
                                 show_trace = show_trace, show_every = 10)
             optim_result = Optim.optimize(f, g!, p0, LBFGS(), optim_options)
@@ -168,11 +168,10 @@ end
 """
     Initiate via boundary cMPS
 """
-function init_cmps(bondD::Int64, model::PhysModel, β::Real; show_trace::Bool = false)
+function init_cmps(bondD::Int64, Tm::CMPO, β::Real; show_trace::Bool = false)
     if show_trace 
         println("----------------------------Initiate CMPS-----------------------------") 
     end
-    Tm = model.Tmatrix
     ψ = CMPS(Tm.Q, Tm.R)
     while size(ψ.Q)[1] < bondD
         ψ = Tm * ψ

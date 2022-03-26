@@ -41,11 +41,10 @@ function generalUt(vir_dim::Integer)
     return cat(col1, col2, dims = 2), 2*vir_dim
 end
 
-
 """
     Expand cmpo
 """
-function expand(o::CMPO)
+function expand_cmpo(o::CMPO)
     R = √(0.5) * cat(o.R, o.L, dims = 3)
     L = √(0.5) * cat(o.L, o.R, dims = 3)
 
@@ -85,7 +84,7 @@ end
 
 """
 NN Transvers field Ising model
-    H = ∑ J Zi Zj + ∑ Γ Xi
+    H = -∑ J Zi Zj - ∑ Γ Xi
 """
 function TFIsing(J::Real, Γ::Real; field::Symbol=:N, η::Float64 = 1.e-2)
     if field == :N
@@ -164,35 +163,26 @@ end
 
 
 """
-Heisenberg model
-    H = J ∑ Xi Xj + Yi Yj + Zi Zj
-AFM case: J = 1.0, after unitary transformation : U=exp(iπSy) on odd sites:
-    H = -0.5 ∑ (S+ S+ + S-S-) - ∑ Zi Zj
-"""
-function HeisenbergModel(; J::Real=1.0)
-    if J > 0
-        return XXZmodel(1.0)
-    else
-        @error "Not support yet!"
-    end
-end
-
-
-"""
 2D NN Transvers field Ising model,helical boundary condition
     H = ∑ J [Zi Z_(i+1) +Zi Z_(i+W)]  + ∑ Γ Xi
 """
-function TFIsing_2D_helical(J::Real, Γ::Real, wid::Integer = 1; field::Symbol=:N, η::Float64 = 1.e-2)
+function TFIsing_2D_helical(J::Real, Γ::Real, wid::Integer = 1; 
+            field::Symbol=:N, η::Float64 = 1.e-2, expand::Bool = false)
     if field == :N
         h = zeros(2,2)
     else
         h = η .* pauli(field)
     end
+    phy_dim = 2; vir_dim = wid
     Q = Γ*pauli(:x)+h
     T = Ising_CMPO(J, pauli(:z), pauli(:z), wid)
-    Tmatrix = CMPO(Q, T.R, T.L, T.P) |> expand
-    Ut, vir_dim = generalUt(wid)
-    return PhysModel(Tmatrix, 2, vir_dim, Ut)
+    Tmatrix = CMPO(Q, T.R, T.L, T.P)
+    Ut = nothing
+    if expand
+        Tmatrix = Tmatrix |> expand_cmpo
+        Ut, vir_dim = generalUt(vir_dim)
+    end
+    return PhysModel(Tmatrix, phy_dim, vir_dim, Ut)
 end
 
 
@@ -202,13 +192,17 @@ end
 after unitary transformation : U=exp(iπSy) on odd sites:
     H = -0.5 ∑ [S+_i S+_(i+1) + S-_iS-_(i+1) + S+_i S+_(i+W) + S-_iS-_(i+W)]
 """
-function XYmodel_2D_helical(wid::Integer = 1)
+function XYmodel_2D_helical(wid::Integer = 1; expand::Bool = false)
     phy_dim = 2; vir_dim = 2*wid
     sp = pauli(:+); sm = pauli(:-);
     Tp = Ising_CMPO(0.5, sp, sp, wid)
     Tm = Ising_CMPO(0.5, sm, sm, wid)
-    Tmatrix = cat(Tp, Tm) |> expand
-    Ut, vir_dim = generalUt(vir_dim)
+    Tmatrix = cat(Tp, Tm)
+    Ut = nothing
+    if expand
+        Tmatrix = Tmatrix |> expand_cmpo
+        Ut, vir_dim = generalUt(vir_dim)
+    end
     return PhysModel(Tmatrix, phy_dim, vir_dim, Ut)
 end
 
@@ -219,15 +213,40 @@ end
 after unitary transformation : U=exp(iπSy) on odd sites:
     H = -0.5 ∑ [S+_i S+_(i+1) + S-_iS-_(i+1) + S+_i S+_(i+W) + S-_iS-_(i+W)] - Δ [Zi Z_(i+1) +Zi Z_(i+W)]
 """
-function XXZmodel_2D_helical(Δ::Real, wid::Integer = 1)
+function XXZmodel_2D_helical(Δ::Real, wid::Integer = 1; expand::Bool=false)
     phy_dim = 2; vir_dim = 3*wid
     sp = pauli(:+); sm = pauli(:-); sz = 0.5 * pauli(:z)
     Tp = Ising_CMPO(0.5, sp, sp, wid)
     Tm = Ising_CMPO(0.5, sm, sm, wid)
     Tz = Ising_CMPO(Δ, sz, sz, wid)
-    Tmatrix = cat(cat(Tp, Tm), Tz) |> expand
-    Ut, vir_dim = generalUt(vir_dim)
+    Tmatrix = cat(cat(Tp, Tm), Tz) 
+    Ut = nothing
+    if expand 
+        Tmatrix = Tmatrix |> expand_cmpo
+        Ut, vir_dim = generalUt(vir_dim)
+    end
     return PhysModel(Tmatrix, phy_dim, vir_dim, Ut)
 end
 
+
+"""
+2D general XXZ model helical boundary condition
+    H = ∑ Jxy[Xi X_(i+1) +Xi X_(i+W) + Yi Y_(i+1) +Yi Y_(i+W)] + Jz [Zi Z_(i+1) +Zi Z_(i+W)]
+after unitary transformation : U=exp(iπSy) on odd sites:
+    H = 0.5Jxy ∑ [S+_i S-_(i+1) + S-_iS+_(i+1) + S+_i S-_(i+W) + S-_iS+_(i+W)] + Δ [Zi Z_(i+1) +Zi Z_(i+W)]
+"""
+function XXZmodel_2D_helical(Jxy::Real, Jz::Real, wid::Integer = 1; expand::Bool=false)
+    phy_dim = 2; vir_dim = 3*wid
+    sp = pauli(:+); sm = pauli(:-); sz = 0.5 * pauli(:z)
+    Tp = Ising_CMPO(-0.5*Jxy, sp, sm, wid)
+    Tm = Ising_CMPO(-0.5*Jxy, sm, sp, wid)
+    Tz = Ising_CMPO(-Jz, sz, sz, wid)
+    Tmatrix = cat(cat(Tp, Tm), Tz) 
+    Ut = nothing
+    if expand 
+        Tmatrix = Tmatrix |> expand_cmpo
+        Ut, vir_dim = generalUt(vir_dim)
+    end
+    return PhysModel(Tmatrix, phy_dim, vir_dim, Ut)
+end
 #end module PhysicalModels

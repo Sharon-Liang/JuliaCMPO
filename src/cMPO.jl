@@ -51,7 +51,7 @@ export init_cmps,
        #compress_cmps_py
 
 # PhysicalModels
-export Ising_CMPO, generalUt, expand
+export Ising_CMPO, generalUt, expand_cmpo
 export TFIsing, 
        XYmodel, 
        XXZmodel, 

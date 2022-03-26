@@ -16,11 +16,11 @@ struct CMPO{T<:Number}
     P::Array{T}  # long-range interaction: phy_dim × phy_dim × vir_dim × vir_dim
 end
 
-struct PhysModel
+struct PhysModel{T}
     Tmatrix::CMPO # local Transfer matrix
     phy_dim::Int64  # phy_dim: bond dimension of physical legs
     vir_dim::Int64  # vir_dim: virtual bond dimension of the horizontal legs
-    Ut::Matrix{T} where T <: Number # unitrary transformation: Ut^+ Tm Ut = transpose(Tm)
+    Ut::T # unitrary transformation: Ut^+ Tm Ut = transpose(Tm)
 end
 
 struct MeraUpdateStep{Ti<:Integer, T<:Real, Tf<:Real}
@@ -54,7 +54,7 @@ end
 function MeraUpdateOptions(;
     atol = 1.e-5,
     ldiff_tol = 1.e-12,
-    maxiter = 50,
+    maxiter = 100,
     interpolate = true,
     store_trace = false,
     show_trace = false)

@@ -21,7 +21,6 @@ function readCMPS(path::String; python::Bool = false)
     end
 end
 
-
 #Reference: https://github.com/JuliaNLSolvers/Optim.jl/blob/master/src/types.jl
 """
     Write Optim.optimize result

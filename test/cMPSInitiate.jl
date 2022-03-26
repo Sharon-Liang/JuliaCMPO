@@ -19,7 +19,7 @@ end
     m = TFIsing(1.0,1.0)
     β = 2.0
     χ = rand(3:6)
-    ψ = init_cmps(χ, m, β)
+    ψ = init_cmps(χ, m.Tmatrix, β)
     @test size(ψ.Q) == (χ, χ)
     @test size(ψ.R) == (χ, χ) 
 end
