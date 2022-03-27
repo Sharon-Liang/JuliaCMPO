@@ -73,7 +73,7 @@ function hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder
     dict["S"] = β * (dict["E"] - dict["F"])
     ResultFile = @sprintf "%s/beta_%.2f.hdf5" CMPSResultFolder β
     saveCMPS(ResultFile, ψ, dict)
-    return 
+    return  ψ, dict
 end
 
 
