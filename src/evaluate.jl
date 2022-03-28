@@ -3,10 +3,11 @@
     Evaluate PhysModel m when the hermiticty of its transfer matrix is unknown or not specified
 """
 function evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder::String; 
-                    init::Union{CMPS, Nothing} = nothing, 
+                    init = nothing, 
                     max_pow_step::Integer = 100,
                     hermitian::Union{Bool, Nothing} = nothing,
-                    show_trace::Bool = false)
+                    show_trace::Bool = false,
+                    Continue::Union{Bool, Integer} = false)
     hermitian === nothing ? hermitian = ishermitian(m.Tmatrix) : hermitian = hermitian
     if hermitian
         hermitian_evaluate(m, bondD, β, ResultFolder, 
@@ -16,7 +17,8 @@ function evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder::String;
         non_hermitian_evaluate(m, bondD, β, ResultFolder, 
             init = init, 
             max_pow_step = max_pow_step,
-            show_trace = show_trace)
+            show_trace = show_trace,
+            Continue = Continue)
     end
 end
 
@@ -82,14 +84,17 @@ end
     or force to do power projection 
 """
 function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder::String; 
-                                init::Union{CMPS, Nothing} = nothing, 
+                                init = nothing, 
                                 max_pow_step::Integer = 100,
-                                show_trace::Bool = false)
+                                show_trace::Bool = false,
+                                Continue::Union{Bool, Integer} = false)
     """
         ResultFolder: classified by Model parameters(interaction, width), store CMPS and Obsv files
         CMPSResultFolder: CMPS information, classified by bond dimension
         ChkpFolder: Check points
     """
+    Tm = m.Tmatrix
+
     CMPSResultFolder = @sprintf "%s/bondD_%02i_CMPS" ResultFolder bondD
     ChkpFolder = @sprintf "%s/CheckPoint_beta_%.2f" CMPSResultFolder β
     ChkpPsiFolder = @sprintf "%s/cmps_psi" ChkpFolder
@@ -98,59 +103,87 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
     isdir(ResultFolder) || mkdir(ResultFolder)
     isdir(CMPSResultFolder) || mkdir(CMPSResultFolder) 
     isdir(ChkpFolder) || mkdir(ChkpFolder)
-    isdir(ChkpPsiFolder) || mkdir(ChkpPsiFolder)
-    isdir(ChkpLpsiFolder) || mkdir(ChkpLpsiFolder)
-    isdir(ChkpOptPsiFolder) || mkdir(ChkpOptPsiFolder)
-
-    if m.Ut === nothing
-        ChkpOptLpsiFolder = @sprintf "%s/opt_Lpsi" ChkpFolder
-        isdir(ChkpOptLpsiFolder) || mkdir(ChkpOptLpsiFolder)
-    end
-
-    Tm = m.Tmatrix
-    
-    #initiate cmps
-    pow_step = 0
-    if init === nothing 
-        ψr = init_cmps(bondD, Tm, β, show_trace = show_trace)
-        m.Ut === nothing ? ψl = init_cmps(bondD, transpose(Tm), β, show_trace = show_trace) : ψl = m.Ut * ψr
-        ψr = ψr |> diagQ
-        ψl = ψl |> diagQ
-    else 
-        #incomplete code!
-        ψ = init
-        ψ = ψ |> diagQ
-    end
-
-    ChkpPsiFile = @sprintf "%s/step_%03i.hdf5" ChkpPsiFolder pow_step
-    ChkpLpsiFile = @sprintf "%s/step_%03i.hdf5" ChkpLpsiFolder pow_step
-    saveCMPS(ChkpPsiFile, ψr)
-    saveCMPS(ChkpLpsiFile, ψl)
 
     ChkpEngFile = "$(ChkpFolder)/Obsv_FECvS.txt"
-    open(ChkpEngFile,"w") do cfile
-        F = free_energy(ψl, ψr, Tm, β)
-        E = energy(ψl, ψr, Tm, β)
-        Cv = specific_heat(ψl, ψr, Tm, β)
-        S = β * (E - F)    
-        write(cfile, "step      free_energy           energy              specific_heat            entropy      \n")
-        write(cfile, "----  -------------------  --------------------   -------------------  -------------------\n")
-        EngString = @sprintf "%3i   %.16f   %.16f   %.16f   %.16f \n" pow_step F E Cv S
-        write(cfile, EngString)
-    end
-
     PsiFidelityFile = "$(ChkpFolder)/Fidelity_psi.txt"
-    open(PsiFidelityFile,"w") do cfile
-        write(cfile, "step   fidelity_initial      fidelity_final  \n")
-        write(cfile, "----  ------------------   ------------------\n")
-    end
+    LpsiFidelityFile = "$(ChkpFolder)/Fidelity_Lpsi.txt"
 
-    if m.Ut === nothing
-        LpsiFidelityFile = "$(ChkpFolder)/Fidelity_Lpsi.txt"
-        open(LpsiFidelityFile,"w") do cfile
+    if Continue == false || Continue == 0
+        #CLEAR ChkpFolder
+        if length(readdir(ChkpFolder)) != 0
+            for file in readdir(ChkpFolder) rm("$(ChkpFolder)/$(file)",recursive=true) end
+        end
+        isdir(ChkpPsiFolder) || mkdir(ChkpPsiFolder)
+        isdir(ChkpLpsiFolder) || mkdir(ChkpLpsiFolder)
+        isdir(ChkpOptPsiFolder) || mkdir(ChkpOptPsiFolder)
+
+        if m.Ut === nothing
+            ChkpOptLpsiFolder = @sprintf "%s/opt_Lpsi" ChkpFolder
+            isdir(ChkpOptLpsiFolder) || mkdir(ChkpOptLpsiFolder)
+        end
+
+        #initiate cmps
+        pow_step = 0
+        if init === nothing 
+            ψr = init_cmps(bondD, Tm, β, show_trace = show_trace)
+            m.Ut === nothing ? ψl = init_cmps(bondD, transpose(Tm), β, show_trace = show_trace) : ψl = m.Ut * ψr
+        else 
+            ψr, ψl = init
+        end
+
+        ψr = ψr |> diagQ
+        ψl = ψl |> diagQ
+        ChkpPsiFile = @sprintf "%s/step_%03i.hdf5" ChkpPsiFolder pow_step
+        ChkpLpsiFile = @sprintf "%s/step_%03i.hdf5" ChkpLpsiFolder pow_step
+        saveCMPS(ChkpPsiFile, ψr)
+        saveCMPS(ChkpLpsiFile, ψl)
+
+        open(ChkpEngFile,"w") do cfile
+            F = free_energy(ψl, ψr, Tm, β)
+            E = energy(ψl, ψr, Tm, β)
+            Cv = specific_heat(ψl, ψr, Tm, β)
+            S = β * (E - F)    
+            write(cfile, "step      free_energy           energy              specific_heat            entropy      \n")
+            write(cfile, "----  -------------------  --------------------   -------------------  -------------------\n")
+            EngString = @sprintf "%3i   %.16f   %.16f   %.16f   %.16f \n" pow_step F E Cv S
+            write(cfile, EngString)
+        end
+    
+        open(PsiFidelityFile,"w") do cfile
             write(cfile, "step   fidelity_initial      fidelity_final  \n")
             write(cfile, "----  ------------------   ------------------\n")
         end
+    
+        if m.Ut === nothing
+            open(LpsiFidelityFile,"w") do cfile
+                write(cfile, "step   fidelity_initial      fidelity_final  \n")
+                write(cfile, "----  ------------------   ------------------\n")
+            end
+        end
+    else
+        if Continue == true
+            pow_step = readdlm(ChkpEngFile, skipstart=2)[end,1]
+        else
+            pow_step = Continue
+            EngData = readlines(ChkpEngFile, keep=true)
+            open(ChkpEngFile, "w") do file
+                for i = 1:pow_step+3 write(file, EngData[i]) end
+            end
+            PsiFidelity = readlines(PsiFidelityFile, keep=true)
+            open(PsiFidelityFile, "w") do file
+                for i = 1:pow_step+2 write(file, PsiFidelity[i]) end
+            end
+            if m.Ut === nothing
+                LpsiFidelity = readlines(LpsiFidelityFile, keep=true)
+                open(LpsiFidelityFile, "w") do file
+                    for i = 1:pow_step+2 write(file, LpsiFidelity[i]) end
+                end
+            end
+        end
+        ChkpPsiFile = @sprintf "%s/step_%03i.hdf5" ChkpPsiFolder pow_step
+        ChkpLpsiFile = @sprintf "%s/step_%03i.hdf5" ChkpLpsiFolder pow_step
+        ψr = readCMPS(ChkpPsiFile)
+        ψl = readCMPS(ChkpLpsiFile)
     end
 
     while pow_step < max_pow_step
