@@ -164,7 +164,7 @@ end
 
 """
 2D NN Transvers field Ising model,helical boundary condition
-    H = ∑ J [Zi Z_(i+1) +Zi Z_(i+W)]  + ∑ Γ Xi
+    H = -∑ J [Zi Z_(i+1) +Zi Z_(i+W)]  - ∑ Γ Xi
 """
 function TFIsing_2D_helical(J::Real, Γ::Real, wid::Integer = 1; 
             field::Symbol=:N, η::Float64 = 1.e-2, expand::Bool = false)
