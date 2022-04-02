@@ -71,6 +71,7 @@ isdir(ModelResultFolder) || mkdir(ModelResultFolder)
 
 #CMPO
 model = XXZmodel(Jz/Jxy)
+group = 2  #AFM XXZ
 
 if β0 == 0
     ψ0 = nothing
@@ -91,7 +92,7 @@ end
 for b = 1:length(βlist)
     β = βlist[b]
     @timeit to "evaluate" begin
-        res = evaluate(model, bondD, β, ModelResultFolder, init = ψ0)
+        res = evaluate(model, bondD, β, ModelResultFolder, init = ψ0, group = group)
     end
 
     open(EngFile,"a") do file  

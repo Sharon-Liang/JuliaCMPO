@@ -7,13 +7,13 @@ prog = env * "/jobs/CMPO_$(phys_model).jl"
 
 Wait = nothing
 
-βlist = [i for i = 6.0:10.0]
+βlist = [1.0, 2.0, 4.0, 8.0, 16.0]
 Jzlist = [1.0]
 Jxylist = [1.0]
-bondDlist = [32]
-widlist = [3]
-Continue = 999  #Continue > max_pow_step,  Continue = true
-max_pow_step = 50
+bondDlist = [12, 16]
+widlist = [1]
+Continue = 0  #Continue > max_pow_step,  Continue = true
+max_pow_step = 100
 
 #CREAT LOG FOLDER
 logdir = "/data/sliang/log/JuliaCMPO"

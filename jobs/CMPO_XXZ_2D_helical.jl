@@ -62,13 +62,17 @@ ModelResultFolder = @sprintf "%s/Jz_%.2f_Jxy_%.2f_wid_%02i" ResultFolder Jz Jxy 
 isdir(ModelResultFolder) || mkdir(ModelResultFolder)
 
 #CMPO
-model = XXZmodel_2D_helical(Jz/Jxy, width, expand=true)
+expand = false
+model = XXZmodel_2D_helical(Jz/Jxy, width, expand = expand)
+expand == false ? group = 2 : group = 1  #AFM XXZ
 
 if Continue ≥ max_pow_step Continue = true end
 @timeit to "evaluate" begin
     res = evaluate(model, bondD, β, ModelResultFolder, 
                         hermitian = false, 
-                        max_pow_step = max_pow_step, Continue = Continue)
+                        max_pow_step = max_pow_step, 
+                        group = group,
+                        Continue = Continue)
 end
 
 const End_Time = Dates.format(now(), "yyyy-mm-dd HH:MM:SS")

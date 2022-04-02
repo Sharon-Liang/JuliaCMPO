@@ -213,7 +213,7 @@ end
 after unitary transformation : U=exp(iπSy) on odd sites:
     H = -0.5 ∑ [S+_i S+_(i+1) + S-_iS-_(i+1) + S+_i S+_(i+W) + S-_iS-_(i+W)] - Δ [Zi Z_(i+1) +Zi Z_(i+W)]
 """
-function XXZmodel_2D_helical(Δ::Real, wid::Integer = 1; expand::Bool=true)
+function XXZmodel_2D_helical(Δ::Real, wid::Integer = 1; expand::Bool=false)
     phy_dim = 2; vir_dim = 3*wid
     sp = pauli(:+); sm = pauli(:-); sz = 0.5 * pauli(:z)
     Tp = Ising_CMPO(0.5, sp, sp, wid)

@@ -168,13 +168,15 @@ end
 """
     Initiate via boundary cMPS
 """
-function init_cmps(bondD::Int64, Tm::CMPO, β::Real; show_trace::Bool = false)
+function init_cmps(bondD::Int64, Tm::CMPO, β::Real; 
+                    group::Integer=1,
+                    show_trace::Bool = false)
     if show_trace 
         println("----------------------------Initiate CMPS-----------------------------") 
     end
     ψ = CMPS(Tm.Q, Tm.R)
     while size(ψ.Q)[1] < bondD
-        ψ = Tm * ψ
+        for g = 1:group ψ = Tm * ψ end
     end
 
     if size(ψ.Q)[1] > bondD 

@@ -6,6 +6,7 @@ function evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder::String;
                     init = nothing, 
                     max_pow_step::Integer = 100,
                     hermitian::Union{Bool, Nothing} = nothing,
+                    group::Integer = 1,
                     show_trace::Bool = false,
                     Continue::Union{Bool, Integer} = false)
     hermitian === nothing ? hermitian = ishermitian(m.Tmatrix) : hermitian = hermitian
@@ -18,7 +19,8 @@ function evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder::String;
             init = init, 
             max_pow_step = max_pow_step,
             show_trace = show_trace,
-            Continue = Continue)
+            Continue = Continue,
+            group = group)
     end
 end
 
@@ -85,6 +87,7 @@ end
 """
 function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder::String; 
                                 init = nothing, 
+                                group::Integer = 1,
                                 max_pow_step::Integer = 100,
                                 show_trace::Bool = false,
                                 Continue::Union{Bool, Integer} = false)
@@ -125,8 +128,10 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
         #initiate cmps
         pow_step = 0
         if init === nothing 
-            ψr = init_cmps(bondD, Tm, β, show_trace = show_trace)
-            m.Ut === nothing ? ψl = init_cmps(bondD, transpose(Tm), β, show_trace = show_trace) : ψl = m.Ut * ψr
+            ψr = init_cmps(bondD, Tm, β, group = group, show_trace = show_trace)
+            m.Ut === nothing ? 
+                ψl = init_cmps(bondD, transpose(Tm), β, group = group, show_trace = show_trace) : 
+                ψl = m.Ut * ψr
         else 
             ψr, ψl = init
         end
@@ -190,10 +195,12 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
         pow_step += 1
         if show_trace println(@sprintf "Power Step = %03i" pow_step) end
 
-        res = compress_cmps(Tm * ψr, bondD, β, show_trace = show_trace)
+        for g = 1:group ψr = Tm * ψr end
+        res = compress_cmps(ψr, bondD, β, show_trace = show_trace)
         ψr = res.ψ
         if m.Ut === nothing
-            res2 = compress_cmps(transpose(Tm) * ψl, bondD, β, show_trace = show_trace)
+            for g = 1:group ψl = transpose(Tm) * ψl end
+            res2 = compress_cmps(ψl, bondD, β, show_trace = show_trace)
             ψl = res2.ψ
         else
             ψl = m.Ut * ψr
