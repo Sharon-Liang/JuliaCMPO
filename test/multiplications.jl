@@ -173,3 +173,12 @@ end
     end
 end
 
+@testset "T^2 * ψ" begin
+    β = 2.0
+    for m in [TFIsing(1.0,1.0), XXZmodel(1.0)]
+        ψ = init_cmps(4, m.Tmatrix, β)
+        ψ1 =  m.Tmatrix * (m.Tmatrix * ψ)
+        ψ2 =  (m.Tmatrix * m.Tmatrix) * ψ
+        @test isequal(ψ1, ψ2)
+    end
+end
