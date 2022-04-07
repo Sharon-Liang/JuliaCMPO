@@ -23,6 +23,10 @@ settings = ArgParseSettings(prog="CMPO code for XXZ model"
         arg_type = Float64
         default = 1.0
         help = "initial value of β: inverse temperature"
+    "--expand"
+        arg_type = Bool
+        default = false
+        help = "expand a cmpo or not"
     "--bf"
         arg_type = Float64
         default = 30.0

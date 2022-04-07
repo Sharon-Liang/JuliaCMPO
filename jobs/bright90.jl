@@ -5,6 +5,7 @@ using Random; Random.seed!()
     submitJob: Prepare a jobfile
 """
 function submitJob(env, prog, args, jobname;
+                  cpu_per_task::Integer = 4,
                   Run=false, 
                   Remove=true,
                   Wait=nothing, 
@@ -16,11 +17,11 @@ function submitJob(env, prog, args, jobname;
     #SBATCH --partition=a100 
     #SBATCH --nodes=1 
     #SBATCH --time=100:00:00 
-    #SBATCH --cpus-per-task=4
+    #SBATCH --cpus-per-task=%i
     #SBATCH --job-name=%s 
     #SBATCH --output=%s 
     #SBATCH --error=%s 
-    """ jobname log_file_path log_file_path
+    """ cpu_per_task jobname log_file_path log_file_path
     
     if Wait !== nothing
         dependency = @sprintf """

@@ -23,6 +23,14 @@ settings = ArgParseSettings(prog="CMPO code for XXZ model"
         arg_type = Int64
         default = 1
         help = "width of the cylinder, should be an odd number"
+    "--expand"
+        arg_type = Bool
+        default = false
+        help = "expand a cmpo or not"
+    "--group"
+        arg_type = Int64
+        default = 2
+        help = "group :group sites as a unit cell"
     "--beta"
         arg_type = Float64
         default = 1.0
@@ -50,6 +58,8 @@ print(parsed_args,"\n")
 const Jxy = parsed_args[:Jxy]
 const Jz = parsed_args[:Jz]
 const width = parsed_args[:width]
+const expand = parsed_args[:expand]
+const group = parsed_args[:group]
 const β = parsed_args[:beta]
 const bondD = parsed_args[:bondD]
 const max_pow_step = parsed_args[:max_pow_step]
@@ -62,9 +72,7 @@ ModelResultFolder = @sprintf "%s/Jz_%.2f_Jxy_%.2f_wid_%02i" ResultFolder Jz Jxy 
 isdir(ModelResultFolder) || mkdir(ModelResultFolder)
 
 #CMPO
-expand = false
 model = XXZmodel_2D_helical(Jz/Jxy, width, expand = expand)
-expand == false ? group = 2 : group = 1  #AFM XXZ
 
 if Continue ≥ max_pow_step Continue = true end
 @timeit to "evaluate" begin
