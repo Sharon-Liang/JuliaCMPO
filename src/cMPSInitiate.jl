@@ -32,7 +32,7 @@ function fidelity(ψ::CMPS, ψ0::CMPS, β::Real; Normalize::Bool = false)
         ψ = normalize(ψ, β)
         ψ0 = normalize(ψ0, β)
     end
-    return  logfidelity(ψ, ψ0, β) |> exp
+    return logfidelity(ψ, ψ0, β) |> exp
 end
 
 
@@ -169,14 +169,13 @@ end
     Initiate via boundary cMPS
 """
 function init_cmps(bondD::Int64, Tm::CMPO, β::Real; 
-                    group::Integer=1,
                     show_trace::Bool = false)
     if show_trace 
         println("----------------------------Initiate CMPS-----------------------------") 
     end
     ψ = CMPS(Tm.Q, Tm.R)
     while size(ψ.Q)[1] < bondD
-        for g = 1:group ψ = Tm * ψ end
+        ψ = Tm * ψ 
     end
 
     if size(ψ.Q)[1] > bondD 
