@@ -30,13 +30,14 @@ end
 """
 function hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder::String; 
             init::Union{CMPS, Nothing} = nothing,
-            show_trace::Bool=false)
+            show_trace::Bool=false,
+            tag = Dates.format(now(), "yyyy-mm-dd"))
     """
     ResultFolder: classified by Model parameters(interaction, width), store CMPS and Obsv files
     CMPSResultFolder: CMPS information, classified by bond dimension
     """
-    CMPSResultFolder = @sprintf "%s/bondD_%02i_CMPS" ResultFolder bondD
-    OptResultFolder = @sprintf "%s/bondD_%02i_Opt" ResultFolder bondD
+    CMPSResultFolder = @sprintf "%s/bondD_%02i_CMPS_%s" ResultFolder bondD tag
+    OptResultFolder = @sprintf "%s/bondD_%02i_Opt_%s" ResultFolder bondD tag
     isdir(ResultFolder) || mkdir(ResultFolder)
     isdir(CMPSResultFolder) || mkdir(CMPSResultFolder) 
     isdir(OptResultFolder) || mkdir(OptResultFolder)
@@ -90,15 +91,24 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
                                 group::Integer = 1,
                                 max_pow_step::Integer = 100,
                                 show_trace::Bool = false,
-                                Continue::Union{Bool, Integer} = false)
+                                Continue::Union{Bool, Integer} = false,
+                                tag = Dates.format(now(), "yyyy-mm-dd"))
     """
         ResultFolder: classified by Model parameters(interaction, width), store CMPS and Obsv files
         CMPSResultFolder: CMPS information, classified by bond dimension
         ChkpFolder: Check points
     """
     Tm = m.Tmatrix
+    Tr = m.Tmatrix
+    Tl = transpose(m.Tmatrix)
+    g = 1
+    while g < group 
+        Tr = m.Tmatrix * Tr 
+        Tl = transpose(m.Tmatrix) * Tl
+        g += 1
+    end  #enlarged Tmatrix: phy_dim -> phy_dim^group
 
-    CMPSResultFolder = @sprintf "%s/bondD_%02i_CMPS" ResultFolder bondD
+    CMPSResultFolder = @sprintf "%s/bondD_%02i_CMPS_%s" ResultFolder bondD tag
     ChkpFolder = @sprintf "%s/CheckPoint_beta_%.2f" CMPSResultFolder β
     ChkpPsiFolder = @sprintf "%s/cmps_psi" ChkpFolder
     ChkpLpsiFolder = @sprintf "%s/cmps_Lpsi" ChkpFolder
@@ -128,9 +138,9 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
         #initiate cmps
         pow_step = 0
         if init === nothing 
-            ψr = init_cmps(bondD, Tm, β, group = group, show_trace = show_trace)
+            ψr = init_cmps(bondD, Tr, β, show_trace = show_trace)
             m.Ut === nothing ? 
-                ψl = init_cmps(bondD, transpose(Tm), β, group = group, show_trace = show_trace) : 
+                ψl = init_cmps(bondD, Tl, β, show_trace = show_trace) : 
                 ψl = m.Ut * ψr
         else 
             ψr, ψl = init
@@ -195,12 +205,10 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
         pow_step += 1
         if show_trace println(@sprintf "Power Step = %03i" pow_step) end
 
-        for g = 1:group ψr = Tm * ψr end
-        res = compress_cmps(ψr, bondD, β, show_trace = show_trace)
+        res = compress_cmps(Tr * ψr, bondD, β, show_trace = show_trace)
         ψr = res.ψ
         if m.Ut === nothing
-            for g = 1:group ψl = transpose(Tm) * ψl end
-            res2 = compress_cmps(ψl, bondD, β, show_trace = show_trace)
+            res2 = compress_cmps(Tl * ψl, bondD, β, show_trace = show_trace)
             ψl = res2.ψ
         else
             ψl = m.Ut * ψr

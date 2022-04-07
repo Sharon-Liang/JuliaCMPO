@@ -182,3 +182,12 @@ end
         @test isequal(ψ1, ψ2)
     end
 end
+
+@testset "T^2 * ψ" begin
+    for m in [TFIsing(1.0,1.0), XXZmodel_2D_helical(1.0,2)]
+        T1 =  transpose(m.Tmatrix * m.Tmatrix)
+        T2 =  transpose(m.Tmatrix) * transpose(m.Tmatrix)
+        @test isequal(T1, T2) == false
+        #structure inside a unit cell ?
+    end
+end
