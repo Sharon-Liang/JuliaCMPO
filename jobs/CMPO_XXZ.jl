@@ -51,6 +51,10 @@ settings = ArgParseSettings(prog="CMPO code for XXZ model"
         arg_type = String
         default = "/data/sliang/JuliaCMPO/XXZ"
         help = "result folder"
+    "--tag"
+        arg_type = String
+        default = Dates.format(now(), "yyyy-mm-dd")
+        help = "date tag"
 end
 parsed_args = parse_args(settings; as_symbols=true)
 print(parsed_args,"\n")
@@ -65,6 +69,7 @@ const bondD = parsed_args[:bondD]
 const init = parsed_args[:init]
 const Continue = parsed_args[:Continue]
 const ResultFolder = parsed_args[:ResultFolder]
+const tag = parsed_args[:tag]
 
 const wid = 1
 
@@ -96,7 +101,7 @@ end
 for b = 1:length(βlist)
     β = βlist[b]
     @timeit to "evaluate" begin
-        res = evaluate(model, bondD, β, ModelResultFolder, init = ψ0, group = group)
+        res = evaluate(model, bondD, β, ModelResultFolder, init = ψ0, group = group, tag=tag)
     end
 
     open(EngFile,"a") do file  

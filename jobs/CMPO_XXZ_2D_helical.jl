@@ -51,6 +51,10 @@ settings = ArgParseSettings(prog="CMPO code for XXZ model"
         arg_type = String
         default = "/data/sliang/JuliaCMPO/XXZ_2D_helical"
         help = "result folder"
+    "--tag"
+        arg_type = String
+        default = Dates.format(now(), "yyyy-mm-dd")
+        help = "date tag"
 end
 parsed_args = parse_args(settings; as_symbols=true)
 print(parsed_args,"\n")
@@ -63,6 +67,8 @@ const group = parsed_args[:group]
 const β = parsed_args[:beta]
 const bondD = parsed_args[:bondD]
 const max_pow_step = parsed_args[:max_pow_step]
+const tag = parsed_args[:tag]
+
 Continue = parsed_args[:Continue]
 #Creat ResultFolders if there is none
 const ResultFolder = parsed_args[:ResultFolder]
@@ -80,7 +86,8 @@ if Continue ≥ max_pow_step Continue = true end
                         hermitian = false, 
                         max_pow_step = max_pow_step, 
                         group = group,
-                        Continue = Continue)
+                        Continue = Continue,
+                        tag = tag)
 end
 
 const End_Time = Dates.format(now(), "yyyy-mm-dd HH:MM:SS")
