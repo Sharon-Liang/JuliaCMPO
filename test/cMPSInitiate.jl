@@ -24,13 +24,5 @@ end
     @test size(ψ.R) == (χ, χ) 
 end
 
-@testset "Initiate via boundary cmps" begin
-    m = TFIsing(1.0,1.0)
-    β = 2.0
-    χ = rand(3:6)
-    ψ = init_cmps(χ, m.Tmatrix, β, group=2)
-    @test size(ψ.Q) == (χ, χ)
-    @test size(ψ.R) == (χ, χ) 
-end
 
 
