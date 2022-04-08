@@ -9,14 +9,14 @@ logtag = Dates.format(now(), "yyyy-mm-dd")
 Wait = nothing
 cpu_per_task = 16
 
-tag = "2022-04-07"
+tag = logtag
 βlist = [16.0]
 Jzlist = [1.0]
 Jxylist = [1.0]
 bondDlist = [8]
 widlist = [1]
-Continue = 100  #Continue > max_pow_step,  Continue = true
-max_pow_step = 200
+Continue = 0 #Continue > max_pow_step,  Continue = true
+max_pow_step = 100
 
 #CREAT LOG FOLDER
 logdir = "/data/sliang/log/JuliaCMPO"
