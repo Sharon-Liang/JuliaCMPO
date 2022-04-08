@@ -102,14 +102,11 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
         ChkpFolder: Check points
     """
     Tm = m.Tmatrix
-    Tr = m.Tmatrix
-    Tl = transpose(m.Tmatrix)
     g = 1
-    while g < group 
-        Tr = m.Tmatrix * Tr 
-        Tl = transpose(m.Tmatrix) * Tl
-        g += 1
-    end  #enlarged Tmatrix: phy_dim -> phy_dim^group
+    while g < group #enlarged Tmatrix: phy_dim -> phy_dim^group
+        Tm = m.Tmatrix * Tm
+        g+=1
+    end
 
     CMPSResultFolder = @sprintf "%s/bondD_%02i_CMPS_%s" ResultFolder bondD tag
     ChkpFolder = @sprintf "%s/CheckPoint_beta_%.2f" CMPSResultFolder β
@@ -141,9 +138,9 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
         #initiate cmps
         pow_step = 0
         if init === nothing 
-            ψr = init_cmps(bondD, Tr, β, show_trace = show_trace)
+            ψr = init_cmps(bondD, Tm, β, show_trace = show_trace)
             m.Ut === nothing ? 
-                ψl = init_cmps(bondD, Tl, β, show_trace = show_trace) : 
+                ψl = init_cmps(bondD, transpose(Tm), β, show_trace = show_trace) : 
                 ψl = m.Ut * ψr
         else 
             ψr, ψl = init
@@ -157,11 +154,11 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
         saveCMPS(ChkpLpsiFile, ψl)
 
         open(ChkpEngFile,"w") do cfile
-            F = free_energy(ψl, ψr, Tm, β)
-            E = energy(ψl, ψr, Tm, β)
-            Cv = specific_heat(ψl, ψr, Tm, β)
+            F = free_energy(ψl, ψr, Tm, β)/group
+            E = energy(ψl, ψr, Tm, β)/group
+            Cv = specific_heat(ψl, ψr, Tm, β)/group
             S = β * (E - F)    
-            write(cfile, "step      free_energy           energy              specific_heat            entropy      \n")
+            write(cfile, "step    free_energy/site        energy/site       specific_heat/site      entropy/site    \n")
             write(cfile, "----  -------------------  --------------------   -------------------  -------------------\n")
             EngString = @sprintf "%3i   %.16f   %.16f   %.16f   %.16f \n" pow_step F E Cv S
             write(cfile, EngString)
@@ -208,19 +205,19 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
         pow_step += 1
         if show_trace println(@sprintf "Power Step = %03i" pow_step) end
 
-        res = compress_cmps(Tr * ψr, bondD, β, show_trace = show_trace)
+        res = compress_cmps(Tm * ψr, bondD, β, show_trace = show_trace)
         ψr = res.ψ
         if m.Ut === nothing
-            res2 = compress_cmps(Tl * ψl, bondD, β, show_trace = show_trace)
+            res2 = compress_cmps(transpose(Tm) * ψl, bondD, β, show_trace = show_trace)
             ψl = res2.ψ
         else
             ψl = m.Ut * ψr
         end
 
         open(ChkpEngFile,"a") do cfile
-            F = free_energy(ψl, ψr, Tm, β)
-            E = energy(ψl, ψr, Tm, β)
-            Cv = specific_heat(ψl, ψr, Tm, β)
+            F = free_energy(ψl, ψr, Tm, β)/group
+            E = energy(ψl, ψr, Tm, β)/group
+            Cv = specific_heat(ψl, ψr, Tm, β)/group
             S = β * (E - F)
             EngString = @sprintf "%3i   %.16f   %.16f   %.16f   %.16f \n" pow_step F E Cv S
             write(cfile, EngString)
