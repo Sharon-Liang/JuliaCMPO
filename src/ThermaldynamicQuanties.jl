@@ -69,7 +69,7 @@ energy(ψ::CMPS, W::CMPO, β::Real) = energy(ψ, ψ, W, β)
 """
     Specific heat: Cv = -β^2 ∂E/∂β
 """
-function specific_heat(ψl::CMPS, ψr::CMPS, W::CMPO, β::Real; method::Symbol = :ndiff)
+function specific_heat(ψl::CMPS, ψr::CMPS, W::CMPO, β::Real; method::Symbol = :adiff)
     if method == :adiff
         K = ψl * W * ψr 
         H = ψl * ψr 
@@ -84,7 +84,7 @@ function specific_heat(ψl::CMPS, ψr::CMPS, W::CMPO, β::Real; method::Symbol =
     end
     return β^2 * c
 end
-specific_heat(ψ::CMPS, W::CMPO, β::Real; method::Symbol = :ndiff) = specific_heat(ψ, ψ, W, β, method = method)
+specific_heat(ψ::CMPS, W::CMPO, β::Real; method::Symbol = :adiff) = specific_heat(ψ, ψ, W, β, method = method)
 
 
 """
