@@ -175,7 +175,7 @@ end
 
 @testset "T^2 * ψ" begin
     β = 2.0
-    for m in [TFIsing(1.0,1.0), XXZmodel(1.0)]
+    for m in [TFIsing(1.0,1.0), XXZmodel(1.0), XXZmodel_2D_helical(1.0,2)]
         ψ = init_cmps(4, m.Tmatrix, β)
         ψ1 =  m.Tmatrix * (m.Tmatrix * ψ)
         ψ2 =  (m.Tmatrix * m.Tmatrix) * ψ
@@ -183,11 +183,13 @@ end
     end
 end
 
-@testset "T^2 * ψ" begin
+@testset "transpose(T^2) = transpose(T) * transpose(T)" begin
+    #one should compare transfer matrix instead of cMPO local tensor
+    β = rand(1)[1]*10
     for m in [TFIsing(1.0,1.0), XXZmodel_2D_helical(1.0,2)]
+        ψ = init_cmps(2, m.vir_dim)
         T1 =  transpose(m.Tmatrix * m.Tmatrix)
         T2 =  transpose(m.Tmatrix) * transpose(m.Tmatrix)
-        @test isequal(T1, T2) == false
-        #structure inside a unit cell ?
+        @test free_energy(ψ, T1, β) ≈ free_energy(ψ, T2, β)
     end
 end
