@@ -113,6 +113,7 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
     ChkpPsiFolder = @sprintf "%s/cmps_psi" ChkpFolder
     ChkpLpsiFolder = @sprintf "%s/cmps_Lpsi" ChkpFolder
     ChkpOptPsiFolder = @sprintf "%s/opt_psi" ChkpFolder
+    ChkpOptLpsiFolder = @sprintf "%s/opt_Lpsi" ChkpFolder
     isdir(ResultFolder) || mkdir(ResultFolder)
     isdir(CMPSResultFolder) || mkdir(CMPSResultFolder) 
     isdir(ChkpFolder) || mkdir(ChkpFolder)
@@ -131,7 +132,6 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
         isdir(ChkpOptPsiFolder) || mkdir(ChkpOptPsiFolder)
 
         if m.Ut === nothing
-            ChkpOptLpsiFolder = @sprintf "%s/opt_Lpsi" ChkpFolder
             isdir(ChkpOptLpsiFolder) || mkdir(ChkpOptLpsiFolder)
         end
 
