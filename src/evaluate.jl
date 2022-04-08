@@ -8,19 +8,22 @@ function evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder::String;
                     hermitian::Union{Bool, Nothing} = nothing,
                     group::Integer = 1,
                     show_trace::Bool = false,
-                    Continue::Union{Bool, Integer} = false)
+                    Continue::Union{Bool, Integer} = false,
+                    tag = Dates.format(now(), "yyyy-mm-dd"))
     hermitian === nothing ? hermitian = ishermitian(m.Tmatrix) : hermitian = hermitian
     if hermitian
         hermitian_evaluate(m, bondD, β, ResultFolder, 
             init = init, 
-            show_trace = show_trace)
+            show_trace = show_trace,
+            tag = tag)
     else
         non_hermitian_evaluate(m, bondD, β, ResultFolder, 
             init = init, 
             max_pow_step = max_pow_step,
             show_trace = show_trace,
             Continue = Continue,
-            group = group)
+            group = group,
+            tag = tag)
     end
 end
 
