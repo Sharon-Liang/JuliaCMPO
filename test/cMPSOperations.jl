@@ -3,8 +3,10 @@ using Test, cMPO
 @testset "normalize CMPS" begin
     β = rand(1:5)
     ψ = init_cmps(rand(2:5), rand(1:2))
-    ψ = normalize(ψ, β)
-    @test norm(ψ, β) ≈ 1.
+    for device in [:cpu, :gpu]
+        ψ = normalize(ψ, β, device=device)
+        @test norm(ψ, β, device = device) ≈ 1.
+    end
 end
 
 @testset "adjoint and ishermitian" begin

@@ -24,8 +24,10 @@ end
     A = rand(D, D)
 
     grad_ndiff = ngradient(logtrexp, A)
-    grad_zygote = Zygote.gradient(logtrexp, A)
-    @test all(isapprox.(grad_zygote, grad_ndiff; rtol = 1e-5, atol = 1e-5))
+    for device in [:cpu, :gpu]
+        grad_zygote = Zygote.gradient(M->logtrexp(M,device=device), A)
+        @test all(isapprox.(grad_zygote, grad_ndiff; rtol = 1e-5, atol = 1e-5))
+    end
 end
 
 @testset "logfidelity" begin
@@ -35,12 +37,14 @@ end
     ψ0 = init_cmps(χ+2, vir_dim)
     ψ = init_cmps(χ, vir_dim)
 
-    loss() = -logfidelity(CMPS(diag(ψ.Q)|> diagm, ψ.R), ψ0, β)
-    p0, f, g! = optim_functions(loss, Params([ψ.Q, ψ.R]))
+    for device in [:cpu, :gpu]
+        loss() = -logfidelity(CMPS(diag(ψ.Q)|> diagm, ψ.R), ψ0, β, device= device)
+        p0, f, g! = optim_functions(loss, Params([ψ.Q, ψ.R]))
 
-    grad_ndiff = ngradient(f, p0)[1]
-    grad_zygote = similar(p0); g!(grad_zygote, p0)
-    @test all(isapprox.(grad_zygote, grad_ndiff; rtol = 1e-5, atol = 1e-5))
+        grad_ndiff = ngradient(f, p0)[1]
+        grad_zygote = similar(p0); g!(grad_zygote, p0)
+        @test all(isapprox.(grad_zygote, grad_ndiff; rtol = 1e-5, atol = 1e-5))
+    end
 end
 
 @testset "free energy: TFIsing model" begin
@@ -48,12 +52,14 @@ end
     g = rand(1)[1]
     m = TFIsing(1.,g)
     ψ = init_cmps(χ) |> diagQ
-    loss() = free_energy(CMPS(diag(ψ.Q)|> diagm, ψ.R), m.Tmatrix, β)
-    p0, f, g! = optim_functions(loss, Params([ψ.Q, ψ.R]))
-    
-    grad_ndiff = ngradient(f, p0)[1]
-    grad_zygote = similar(p0); g!(grad_zygote, p0)
-    @test all(isapprox.(grad_zygote, grad_ndiff; rtol = 1e-5, atol = 1e-5))
+    for device in [:cpu, :gpu]
+        loss() = free_energy(CMPS(diag(ψ.Q)|> diagm, ψ.R), m.Tmatrix, β)
+        p0, f, g! = optim_functions(loss, Params([ψ.Q, ψ.R]))
+        
+        grad_ndiff = ngradient(f, p0)[1]
+        grad_zygote = similar(p0); g!(grad_zygote, p0)
+        @test all(isapprox.(grad_zygote, grad_ndiff; rtol = 1e-5, atol = 1e-5))
+    end
 end
 
 

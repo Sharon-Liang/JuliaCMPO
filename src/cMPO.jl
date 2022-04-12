@@ -5,9 +5,10 @@ using Random; Random.seed!()
 using HDF5, DelimitedFiles, Printf
 using StatsFuns
 using OMEinsum, LinearAlgebra #, GenericLinearAlgebra
-using Zygote, Optim
+using Zygote, Optim, ChainRules
 using FiniteDifferences
 using Dates
+using CUDA
 
 import Base: *, isequal, transpose, adjoint, cat
 import LinearAlgebra: ishermitian, norm, normalize
@@ -79,7 +80,6 @@ export evaluate, evaluate_py,
        hermitian_evaluate, #hermitian_evaluate_py,
        non_hermitian_evaluate#, non_hermitian_evaluate_py
 
-
 include("utilities.jl")
 include("OptimFunctions.jl")
 include("structs.jl")
@@ -92,6 +92,6 @@ include("ThermaldynamicQuanties.jl")
 include("Correlations.jl")
 include("evaluate.jl")
 
-#include("rrule.jl")
+include("rrule.jl")
 
 end # module

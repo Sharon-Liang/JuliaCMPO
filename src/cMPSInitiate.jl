@@ -25,14 +25,14 @@ end
         fidelity = ⟨ψ|T|r⟩/√(⟨ψ|ψ⟩)
         logfidelity(ψ, ψ0) = ln(Fd)
 """
-logfidelity(ψ::CMPS, ψ0::CMPS, β::Real) = log_overlap(ψ, ψ0, β) - 0.5*log_overlap(ψ, ψ, β)
+logfidelity(ψ::CMPS, ψ0::CMPS, β::Real; device=:cpu) = log_overlap(ψ, ψ0, β, device=device) - 0.5*log_overlap(ψ, ψ, β, device=device)
 
-function fidelity(ψ::CMPS, ψ0::CMPS, β::Real; Normalize::Bool = false)
+function fidelity(ψ::CMPS, ψ0::CMPS, β::Real; Normalize::Bool = false, device=:cpu)
     if Normalize
-        ψ = normalize(ψ, β)
-        ψ0 = normalize(ψ0, β)
+        ψ = normalize(ψ, β, device=device)
+        ψ0 = normalize(ψ0, β, device=device)
     end
-    return logfidelity(ψ, ψ0, β) |> exp
+    return logfidelity(ψ, ψ0, β, device=device) |> exp
 end
 
 
@@ -50,12 +50,13 @@ function interpolate_isometry(p1::AbstractMatrix, p2::AbstractMatrix, θ::Real)
 end
 
 function adaptive_mera_update(ψ0::CMPS, χ::Integer, β::Real; 
-    options::MeraUpdateOptions = MeraUpdateOptions())
+    options::MeraUpdateOptions = MeraUpdateOptions(),
+    device=:cpu)
     step = 1
-    logfidelity0 = logfidelity(ψ0, ψ0, β)
-    loss(p_matrix) = logfidelity(project(ψ0, p_matrix), ψ0, β)
+    logfidelity0 = logfidelity(ψ0, ψ0, β, device=device)
+    loss(p_matrix) = logfidelity(project(ψ0, p_matrix), ψ0, β, device=device)
 
-    _, v = symeigen(ψ0.Q)
+    _, v = symeigen(ψ0.Q, device=device)
     p_current = v[:, end-χ+1:end]
     
     loss_previous = 9.9e9
@@ -91,7 +92,7 @@ function adaptive_mera_update(ψ0::CMPS, χ::Integer, β::Real;
                 proceed = false
             else
                 p_interpolate = interpolate_isometry(p_next, p_current, θ)
-                loss_interpolate = logfidelity(project(ψ0, p_interpolate), ψ0, β)
+                loss_interpolate = logfidelity(project(ψ0, p_interpolate), ψ0, β, device=device)
                 if loss_interpolate > loss_current
                     p_next = p_interpolate
                     proceed = false
@@ -123,7 +124,8 @@ end
 function compress_cmps(ψ0::CMPS, χ::Integer, β::Real; 
     init::Union{CMPS, Nothing} = nothing,
     show_trace::Bool = false,
-    mera_update_options::MeraUpdateOptions = MeraUpdateOptions(show_trace=show_trace))
+    mera_update_options::MeraUpdateOptions = MeraUpdateOptions(show_trace=show_trace),
+    device=:cpu)
     if show_trace 
         println("----------------------------Compress CMPS-----------------------------") 
     end
@@ -139,7 +141,7 @@ function compress_cmps(ψ0::CMPS, χ::Integer, β::Real;
         @warn "The bond dimension of the initial CMPS ≤ target bond dimension."
     else
         init === nothing ? 
-            ψ = adaptive_mera_update(ψ0, χ, β, options = mera_update_options).ψ : 
+            ψ = adaptive_mera_update(ψ0, χ, β, options = mera_update_options, device=device).ψ : 
             ψ = init
         if size(ψ.Q) != (χ, χ) 
             msg = "χ of init cmps should be $(χ) instead of $(size(ψ.Q)[1])"
@@ -148,7 +150,7 @@ function compress_cmps(ψ0::CMPS, χ::Integer, β::Real;
             fidelity_initial = fidelity(ψ, ψ0, β, Normalize = true)
 
             ψ = ψ |> diagQ
-            loss() = -logfidelity(CMPS(diag(ψ.Q)|> diagm, ψ.R), ψ0, β)
+            loss() = -logfidelity(CMPS(diag(ψ.Q)|> diagm, ψ.R), ψ0, β, device=device)
             p0, f, g! = optim_functions(loss, Params([ψ.Q, ψ.R]))
 
             # The same as scipy L-BFGS-B
@@ -169,7 +171,8 @@ end
     Initiate via boundary cMPS
 """
 function init_cmps(bondD::Int64, Tm::CMPO, β::Real; 
-                    show_trace::Bool = false)
+                    show_trace::Bool = false,
+                    device = :cpu)
     if show_trace 
         println("----------------------------Initiate CMPS-----------------------------") 
     end
@@ -179,7 +182,7 @@ function init_cmps(bondD::Int64, Tm::CMPO, β::Real;
     end
 
     if size(ψ.Q)[1] > bondD 
-        res = compress_cmps(ψ, bondD, β, show_trace=show_trace)
+        res = compress_cmps(ψ, bondD, β, show_trace=show_trace, device=device)
         ψ = res.ψ
     end
     return ψ

@@ -9,13 +9,15 @@ function evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder::String;
                     group::Integer = 1,
                     show_trace::Bool = false,
                     Continue::Union{Bool, Integer} = false,
-                    tag = Dates.format(now(), "yyyy-mm-dd"))
+                    tag = Dates.format(now(), "yyyy-mm-dd"),
+                    device=:cpu)
     hermitian === nothing ? hermitian = ishermitian(m.Tmatrix) : hermitian = hermitian
     if hermitian
         hermitian_evaluate(m, bondD, β, ResultFolder, 
             init = init, 
             show_trace = show_trace,
-            tag = tag)
+            tag = tag, 
+            device=device)
     else
         non_hermitian_evaluate(m, bondD, β, ResultFolder, 
             init = init, 
@@ -23,7 +25,8 @@ function evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder::String;
             show_trace = show_trace,
             Continue = Continue,
             group = group,
-            tag = tag)
+            tag = tag, 
+            device=device)
     end
 end
 
@@ -34,7 +37,8 @@ end
 function hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder::String; 
             init::Union{CMPS, Nothing} = nothing,
             show_trace::Bool=false,
-            tag = Dates.format(now(), "yyyy-mm-dd"))
+            tag = Dates.format(now(), "yyyy-mm-dd"),
+            device=:cpu)
     """
     ResultFolder: classified by Model parameters(interaction, width), store CMPS and Obsv files
     CMPSResultFolder: CMPS information, classified by bond dimension
@@ -48,10 +52,10 @@ function hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder
     Tm = m.Tmatrix
     #initiate cmps
     init === nothing ? 
-        ψ = init_cmps(bondD, Tm, β, show_trace = show_trace) : ψ = init
+        ψ = init_cmps(bondD, Tm, β, show_trace = show_trace, device=device) : ψ = init
 
     ψ = ψ |> diagQ
-    loss() = free_energy(CMPS(diag(ψ.Q)|> diagm, ψ.R), Tm, β)
+    loss() = free_energy(CMPS(diag(ψ.Q)|> diagm, ψ.R), Tm, β, device=device)
     F_initial = loss()
 
     p0, f, g! = optim_functions(loss, Params([ψ.Q, ψ.R]))
@@ -76,8 +80,8 @@ function hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder
     # calculate thermal dynamic quanties
     dict = Dict()
     dict["F"] = F_final
-    dict["E"] = energy(ψ, Tm, β)
-    dict["Cv"] = specific_heat(ψ, Tm, β)
+    dict["E"] = energy(ψ, Tm, β, device=device)
+    dict["Cv"] = specific_heat(ψ, Tm, β, device=device)
     dict["S"] = β * (dict["E"] - dict["F"])
     ResultFile = @sprintf "%s/beta_%.2f.hdf5" CMPSResultFolder β
     saveCMPS(ResultFile, ψ, dict)
@@ -95,7 +99,8 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
                                 max_pow_step::Integer = 100,
                                 show_trace::Bool = false,
                                 Continue::Union{Bool, Integer} = false,
-                                tag = Dates.format(now(), "yyyy-mm-dd"))
+                                tag = Dates.format(now(), "yyyy-mm-dd"),
+                                device=:cpu)
     """
         ResultFolder: classified by Model parameters(interaction, width), store CMPS and Obsv files
         CMPSResultFolder: CMPS information, classified by bond dimension
@@ -138,9 +143,9 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
         #initiate cmps
         pow_step = 0
         if init === nothing 
-            ψr = init_cmps(bondD, Tm, β, show_trace = show_trace)
+            ψr = init_cmps(bondD, Tm, β, show_trace = show_trace, device=device)
             m.Ut === nothing ? 
-                ψl = init_cmps(bondD, transpose(Tm), β, show_trace = show_trace) : 
+                ψl = init_cmps(bondD, transpose(Tm), β, show_trace = show_trace, device=device) : 
                 ψl = m.Ut * ψr
         else 
             ψr, ψl = init
@@ -154,9 +159,9 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
         saveCMPS(ChkpLpsiFile, ψl)
 
         open(ChkpEngFile,"w") do cfile
-            F = free_energy(ψl, ψr, Tm, β)/group
-            E = energy(ψl, ψr, Tm, β)/group
-            Cv = specific_heat(ψl, ψr, Tm, β)/group
+            F = free_energy(ψl, ψr, Tm, β, device=device)/group
+            E = energy(ψl, ψr, Tm, β, device=device)/group
+            Cv = specific_heat(ψl, ψr, Tm, β, device=device)/group
             S = β * (E - F)    
             write(cfile, "step    free_energy/site        energy/site       specific_heat/site      entropy/site    \n")
             write(cfile, "----  -------------------  --------------------   -------------------  -------------------\n")
@@ -205,19 +210,19 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
         pow_step += 1
         if show_trace println(@sprintf "Power Step = %03i" pow_step) end
 
-        res = compress_cmps(Tm * ψr, bondD, β, show_trace = show_trace)
+        res = compress_cmps(Tm * ψr, bondD, β, show_trace = show_trace, device=device)
         ψr = res.ψ
         if m.Ut === nothing
-            res2 = compress_cmps(transpose(Tm) * ψl, bondD, β, show_trace = show_trace)
+            res2 = compress_cmps(transpose(Tm) * ψl, bondD, β, show_trace = show_trace, device=device)
             ψl = res2.ψ
         else
             ψl = m.Ut * ψr
         end
 
         open(ChkpEngFile,"a") do cfile
-            F = free_energy(ψl, ψr, Tm, β)/group
-            E = energy(ψl, ψr, Tm, β)/group
-            Cv = specific_heat(ψl, ψr, Tm, β)/group
+            F = free_energy(ψl, ψr, Tm, β, device=device)/group
+            E = energy(ψl, ψr, Tm, β, device=device)/group
+            Cv = specific_heat(ψl, ψr, Tm, β, device=device)/group
             S = β * (E - F)
             EngString = @sprintf "%3i   %.16f   %.16f   %.16f   %.16f \n" pow_step F E Cv S
             write(cfile, EngString)

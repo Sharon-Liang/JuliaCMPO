@@ -3,9 +3,10 @@
     The local two-time correlation functions: C(τ) = -G(τ) = ⟨A(τ)B(0)⟩
 """
 function correlation_2time(τ::Number, A::AbstractMatrix,B::AbstractMatrix,
-                            ψl::CMPS, ψr::CMPS, W::CMPO, β::Real)
+                            ψl::CMPS, ψr::CMPS, W::CMPO, β::Real;
+                            device=:cpu)
     K = ψl * W * ψr 
-    e, v = symeigen(K)
+    e, v = symeigen(K, device=device)
     min = minimum(e); e = e .- min
     A = v' * A * v
     B = v' * B * v
@@ -16,8 +17,8 @@ function correlation_2time(τ::Number, A::AbstractMatrix,B::AbstractMatrix,
     end
     return num/den
 end
-correlation_2time(τ::Number, A::AbstractMatrix, B::AbstractMatrix, ψ::CMPS, W::CMPO, β::Real) = 
-    correlation_2time(τ, A, B, ψ, ψ, W, β)
+correlation_2time(τ::Number, A::AbstractMatrix, B::AbstractMatrix, ψ::CMPS, W::CMPO, β::Real; device=:cpu) = 
+    correlation_2time(τ, A, B, ψ, ψ, W, β, device=device)
 
 
 """
@@ -43,9 +44,11 @@ function LehmannGFKernel(z::Number, En::Real, Em::Real, β::Real; type::Symbol=:
 end
 
 function Masubara_freq_GF(n::Integer, A::AbstractMatrix,B::AbstractMatrix,
-                        ψl::CMPS, ψr::CMPS, W::CMPO, β::Real; type::Symbol = :b)
+                        ψl::CMPS, ψr::CMPS, W::CMPO, β::Real; 
+                        type::Symbol = :b, 
+                        device=:cpu)
     K = ψl * W * ψr
-    e, v = symeigen(K)
+    e, v = symeigen(K, device=device)
     min = minimum(e); e = e .- min
     A = v' * A * v
     B = v' * B * v
@@ -58,15 +61,18 @@ function Masubara_freq_GF(n::Integer, A::AbstractMatrix,B::AbstractMatrix,
     return num/den
 end
 Masubara_freq_GF(n::Integer, A::AbstractMatrix,B::AbstractMatrix, 
-    ψ::CMPS, W::CMPO, β::Real; type::Symbol = :b) =
-    Masubara_freq_GF(n, A, B, ψ, ψ, W, β, type = type)
+    ψ::CMPS, W::CMPO, β::Real; type::Symbol = :b, device=:cpu) =
+    Masubara_freq_GF(n, A, B, ψ, ψ, W, β, type = type, device=device)
 
 
 """
     Lehmann representation of spectral function
 """
 function Lehmann_spectral_function(ω::Real, A::AbstractMatrix,B::AbstractMatrix,
-                                ψl::CMPS, ψr::CMPS, W::CMPO, β::Real; η::Real=0.01, type::Symbol = :b)
+                                ψl::CMPS, ψr::CMPS, W::CMPO, β::Real; 
+                                η::Real=0.01, 
+                                type::Symbol = :b,
+                                device=:cpu)
     if type == :b
         λ = 1.0
     elseif type == :f 
@@ -75,7 +81,7 @@ function Lehmann_spectral_function(ω::Real, A::AbstractMatrix,B::AbstractMatrix
         @error "type should be :b for bosons and :f for fermions"
     end
     K = ψl * W * ψr
-    e, v = symeigen(K)
+    e, v = symeigen(K, device=device)
     min = minimum(e); e = e .- min
     A = v' * A * v
     B = v' * B * v
@@ -89,8 +95,8 @@ function Lehmann_spectral_function(ω::Real, A::AbstractMatrix,B::AbstractMatrix
     return 2π*num/den
 end
 Lehmann_spectral_function(ω::Real, A::AbstractMatrix,B::AbstractMatrix, 
-    ψ::CMPS, W::CMPO, β::Real; η::Real=0.01, type::Symbol = :b) =
-    Lehmann_spectral_function(ω, A, B, ψ, ψ, W, β, η=η, type = type)
+    ψ::CMPS, W::CMPO, β::Real; η::Real=0.01, type::Symbol = :b, device=:cpu) =
+    Lehmann_spectral_function(ω, A, B, ψ, ψ, W, β, η=η, type = type, device=device)
 Lehmann_A = Lehmann_spectral_function
 
 
@@ -98,7 +104,10 @@ Lehmann_A = Lehmann_spectral_function
     Lehmann representation of the structure factor
 """
 function Lehmann_structure_factor(ω::Real, A::AbstractMatrix,B::AbstractMatrix,
-        ψl::CMPS, ψr::CMPS, W::CMPO, β::Real; η::Real=0.01, type::Symbol = :b)
+        ψl::CMPS, ψr::CMPS, W::CMPO, β::Real; 
+        η::Real=0.01, 
+        type::Symbol = :b,
+        device=:cpu)
     if type == :b
         λ = 1.0
     elseif type == :f 
@@ -107,7 +116,7 @@ function Lehmann_structure_factor(ω::Real, A::AbstractMatrix,B::AbstractMatrix,
         @error "type should be :b for bosons and :f for fermions"
     end
     K = ψl * W * ψr
-    e, v = symeigen(K)
+    e, v = symeigen(K, device=device)
     min = minimum(e); e = e .- min
     A = v' * A * v
     B = v' * B * v
@@ -119,8 +128,8 @@ function Lehmann_structure_factor(ω::Real, A::AbstractMatrix,B::AbstractMatrix,
     return 2π*num/den
 end
 Lehmann_structure_factor(ω::Real, A::AbstractMatrix,B::AbstractMatrix, 
-        ψ::CMPS, W::CMPO, β::Real; η::Real=0.01, type::Symbol = :b) =
-    Lehmann_structure_factor(ω, A, B, ψ, ψ, W, β, η=η, type = type)
+        ψ::CMPS, W::CMPO, β::Real; η::Real=0.01, type::Symbol = :b, device=:cpu) =
+    Lehmann_structure_factor(ω, A, B, ψ, ψ, W, β, η=η, type = type, device=device)
 Lehmann_S = Lehmann_structure_factor
 
 #end  # module Correlations

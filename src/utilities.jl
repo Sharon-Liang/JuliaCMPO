@@ -55,16 +55,31 @@ end
 """ symeigen
     manually symmetrize M before the eigen decomposition
 """
-function symeigen(M::AbstractMatrix)
-    return M |> symmetrize |> eigen
+function symeigen(M::AbstractMatrix; device=:cpu)
+    if device == :cpu
+        e, v = M |> symmetrize |> eigen
+    elseif device == :gpu
+        #'V': return both eigenvalues and eigenvectora
+        #'U': Upper triangle of m_d is stored.
+        m_d = M |> symmetrize |> CuArray
+        if eltype(M) <: Real
+            e_d, v_d = CUSOLVER.syevd!('V', 'U', m_d)
+        else
+            e_d, v_d = CUSOLVER.heevd!('V', 'U', m_d)
+        end
+        e, v = Array(e_d), Array(v_d)
+    else
+        @error "device should be :cpu or :gpu"
+    end
+    return e, v
 end
 
 
 """
     ln(Tr[exp(A)]) function
 """
-function logtrexp(A::AbstractMatrix)
-    val, _ = symeigen(A)
+function logtrexp(A::AbstractMatrix; device=:cpu)
+    val, _ = symeigen(A, device = device)
     return logsumexp(val)
 end
 

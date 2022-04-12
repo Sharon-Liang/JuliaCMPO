@@ -3,17 +3,17 @@
     Logarithm of the overlap of two CMPS:
         log_overlap = ln(⟨ψl|ψr⟩)
 """
-function log_overlap(sl::CMPS, sr::CMPS, β::Real)
+function log_overlap(sl::CMPS, sr::CMPS, β::Real; device=:cpu)
     K = sl * sr
-    return logtrexp(-β * K)
+    return logtrexp(-β * K, device=device)
 end
 
 
 """
     Norm of a CMPS
 """
-function norm(s::CMPS, β::Real)
-    λ = log_overlap(s, s, β) 
+function norm(s::CMPS, β::Real; device=:cpu)
+    λ = log_overlap(s, s, β, device = device) 
     return exp(λ/2)
 end
 
@@ -21,8 +21,8 @@ end
 """
     Normalize a CMPS, i.e. ⟨ψ|ψ⟩ = 1
 """
-function normalize(s::CMPS, β::Real)
-    λ = log_overlap(s, s, β)/β
+function normalize(s::CMPS, β::Real; device=:cpu)
+    λ = log_overlap(s, s, β, device=device)/β
     eye = λ/2 * Matrix{Float64}(I,size(s.Q))
     Q = s.Q - eye
     return CMPS(Q, s.R)

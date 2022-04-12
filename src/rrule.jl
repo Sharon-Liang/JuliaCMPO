@@ -1,6 +1,6 @@
-import ChainRules
-import OMEinsum:einsum_grad, _insertat, DynamicEinCode
-
+#import ChainRules
+#import OMEinsum:einsum_grad, _insertat, DynamicEinCode
+"""
 function ChainRules.rrule(::typeof(GenericLinearAlgebra.eigvals), A; kwargs...)
     F, eigen_back = ChainRules.rrule(GenericLinearAlgebra.eigen, A; kwargs...)
     λ = F.values
@@ -39,3 +39,30 @@ function einsum_grad(ixs, @nospecialize(xs), iy, size_dict, cdy, i)
     #xs[i] isa Array{<:Real} && return convert(typeof(xs[i]), real(y))
     #convert(typeof(xs[i]), y)
 end
+"""
+
+function ChainRules.rrule(::typeof(logtrexp), 
+            M::AbstractArray; 
+            device::Symbol)
+    e, v = symeigen(M, device = device)
+    y = logsumexp(e)
+    function logtrexp_pullback(ȳ)
+        ∂y_∂M = v * diagm(exp.(e .- y)) * v'
+        M̄ = ∂y_∂M' * ȳ
+        return ChainRules.NoTangent(), M̄, ChainRules.ZeroTangent()
+    end
+    return y, logtrexp_pullback
+end
+
+function ChainRules.rrule(::typeof(logtrexp), M::AbstractArray)
+    e, v = symeigen(M)
+    y = logsumexp(e)
+    function logtrexp_pullback(ȳ)
+    ∂y_∂M = v * diagm(exp.(e .- y)) * v'
+    M̄ = ∂y_∂M' * ȳ
+    return ChainRules.NoTangent(), M̄
+    end
+    return y, logtrexp_pullback
+end
+
+

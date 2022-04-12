@@ -7,16 +7,16 @@ prog = env * "/jobs/CMPO_$(phys_model).jl"
 logtag = Dates.format(now(), "yyyy-mm-dd")
 
 Wait = nothing
-cpu_per_task = 16
+cpu_per_task = 4
 
 tag = logtag
-βlist = [16.0]
+βlist = [1.0]
 Jzlist = [1.0]
 Jxylist = [1.0]
-bondDlist = [8]
-widlist = [1]
+bondDlist = [32]
+widlist = [3]
 Continue = 0 #Continue > max_pow_step,  Continue = true
-max_pow_step = 100
+max_pow_step = 2
 
 #CREAT LOG FOLDER
 logdir = "/data/sliang/log/JuliaCMPO"
@@ -42,6 +42,8 @@ for bondD in bondDlist
         jobname = @sprintf "%s/beta_%.2f" jobname β
 
         jobid = submitJob(env, prog, args, jobname, 
+                            machine = "p100",
+                            usegpu = true,
                             cpu_per_task = cpu_per_task,
                             Run = true, 
                             Wait = Wait)

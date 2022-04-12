@@ -5,6 +5,8 @@ using Random; Random.seed!()
     submitJob: Prepare a jobfile
 """
 function submitJob(env, prog, args, jobname;
+                  machine::String = "p100",
+                  usegpu::Bool = false,
                   cpu_per_task::Integer = 4,
                   Run=false, 
                   Remove=true,
@@ -14,15 +16,21 @@ function submitJob(env, prog, args, jobname;
     log_file_path = jobname * ".log"
     job =@sprintf """
     #!/bin/bash -l 
-    #SBATCH --partition=a100 
+    #SBATCH --partition=%s 
     #SBATCH --nodes=1 
     #SBATCH --time=100:00:00 
     #SBATCH --cpus-per-task=%i
     #SBATCH --job-name=%s 
     #SBATCH --output=%s 
     #SBATCH --error=%s 
-    """ cpu_per_task jobname log_file_path log_file_path
+    """ machine cpu_per_task jobname log_file_path log_file_path
     
+    if usegpu
+        job *= """
+        #SBATCH --gres=gpu:1
+        """
+    end
+
     if Wait !== nothing
         dependency = @sprintf """
         #SBATCH --dependency=afterany:%d
@@ -41,6 +49,9 @@ function submitJob(env, prog, args, jobname;
     echo "Running on \$SLURM_JOB_NUM_NODES nodes:"
     echo \$SLURM_JOB_NODELIST
     echo "Using \$SLURM_CPUS_PER_TASK cpus-per-task"
+    echo "Using \$SLURM_NTASKS_PER_NODE tasks per node"
+    echo "A total of \$SLURM_NTASKS tasks is used"
+    echo "CUDA devices \$CUDA_VISIBLE_DEVICES"
     """
 
     job *= """
