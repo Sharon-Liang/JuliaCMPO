@@ -41,28 +41,21 @@ function einsum_grad(ixs, @nospecialize(xs), iy, size_dict, cdy, i)
 end
 """
 
+"""
+    rrule for logtrexp function, eltype(M) <: Real
+"""
 function ChainRules.rrule(::typeof(logtrexp), 
             M::AbstractArray; 
-            device::Symbol)
+            device::Symbol=:cpu)
     e, v = symeigen(M, device = device)
     y = logsumexp(e)
     function logtrexp_pullback(ȳ)
-        ∂y_∂M = v * diagm(exp.(e .- y)) * v'
-        M̄ = ∂y_∂M' * ȳ
+        ∂y_∂M = v * diagm(exp.(e .- y)) * v' |> transpose
+        M̄ = ȳ * ∂y_∂M
         return ChainRules.NoTangent(), M̄, ChainRules.ZeroTangent()
     end
     return y, logtrexp_pullback
 end
 
-function ChainRules.rrule(::typeof(logtrexp), M::AbstractArray)
-    e, v = symeigen(M)
-    y = logsumexp(e)
-    function logtrexp_pullback(ȳ)
-    ∂y_∂M = v * diagm(exp.(e .- y)) * v'
-    M̄ = ∂y_∂M' * ȳ
-    return ChainRules.NoTangent(), M̄
-    end
-    return y, logtrexp_pullback
-end
 
 
