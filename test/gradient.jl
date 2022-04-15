@@ -30,6 +30,13 @@ end
     end
 end
 
+
+
+
+
+
+
+
 @testset "logfidelity" begin
     β = 2.0
     χ = 6
