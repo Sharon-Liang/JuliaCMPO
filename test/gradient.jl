@@ -22,10 +22,10 @@ end
 @testset "logtrexp" begin
     D = rand(2:6)
     A = rand(D, D)
-
-    grad_ndiff = ngradient(logtrexp, A)
-    for device in [:cpu, :gpu]
-        grad_zygote = Zygote.gradient(M->logtrexp(M,device=device), A)
+    grad_ndiff = ngradient(logtrexp, A)[1]
+    for solver in [cpu_solver, gpu_solver]
+        grad_zygote = solver(M->Zygote.gradient(logtrexp, M), A)[1]
+        grad_zygote = convert(Array, grad_zygote)
         @test all(isapprox.(grad_zygote, grad_ndiff; rtol = 1e-5, atol = 1e-5))
     end
 end
@@ -37,11 +37,11 @@ end
     ψ0 = init_cmps(χ+2, vir_dim)
     ψ = init_cmps(χ, vir_dim)
 
-    for device in [:cpu, :gpu]
-        loss() = -logfidelity(CMPS(diag(ψ.Q)|> diagm, ψ.R), ψ0, β, device= device)
-        p0, f, g! = optim_functions(loss, Params([ψ.Q, ψ.R]))
+    loss() = -logfidelity(CMPS(diag(ψ.Q)|> diagm, ψ.R), ψ0, β)
+    p0, f, g! = optim_functions(loss, Zygote.Params([ψ.Q, ψ.R]))
+    grad_ndiff = ngradient(f, p0)[1]
 
-        grad_ndiff = ngradient(f, p0)[1]
+    for device in [:cpu, :gpu]
         grad_zygote = similar(p0); g!(grad_zygote, p0)
         @test all(isapprox.(grad_zygote, grad_ndiff; rtol = 1e-5, atol = 1e-5))
     end
