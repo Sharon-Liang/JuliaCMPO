@@ -1,3 +1,4 @@
+import Base: kron
 
 """
     multiplications of Arrays in CMPS and CMPO struct
@@ -50,35 +51,35 @@ end
 
 
 """multiplications of cmps and cmpo"""
-function *(sl::CMPS, sr::CMPS)
-    li = Matrix{eltype(sl.Q)}(I,size(sl.Q))
-    ri = Matrix{eltype(sr.Q)}(I,size(sr.Q))
+function *(sl::AbstractCMPS{T}, sr::AbstractCMPS{T}) where T
+    li = convert(typeof(sl.Q), Matrix{T}(I,size(sl.Q)))
+    ri = convert(typeof(sr.Q), Matrix{T}(I,size(sr.Q)))
     K = li ⊗ sr.Q + sl.Q ⊗ ri + sl.R ⊗ sr.R
     return -K
 end
 
-function *(o::CMPO, s::CMPS) 
-    oi = Matrix{eltype(o.Q)}(I,size(o.Q))
-    si = Matrix{eltype(s.Q)}(I,size(s.Q))
+function *(o::AbstractCMPO{T}, s::AbstractCMPS{T}) where T
+    oi = convert(typeof(o.Q), Matrix{T}(I,size(o.Q)))
+    si = convert(typeof(s.Q), Matrix{T}(I,size(s.Q)))
     Q = oi ⊗ s.Q + o.Q ⊗ si + o.L ⊗ s.R
     R = o.R ⊗ si + o.P ⊗ s.R
-    return CMPS(Q, R)
+    return CMPS_generate(Q, R)
 end
 
-function *(s::CMPS, o::CMPO) 
-    oi = Matrix{eltype(o.Q)}(I,size(o.Q))
-    si = Matrix{eltype(s.Q)}(I,size(s.Q))
+function *(s::AbstractCMPS{T}, o::AbstractCMPO{T}) where T 
+    oi = convert(typeof(o.Q), Matrix{T}(I,size(o.Q)))
+    si = convert(typeof(s.Q), Matrix{T}(I,size(s.Q)))
     Q = s.Q ⊗ oi + si ⊗ o.Q + s.R ⊗ o.R
     R = si ⊗ o.L + s.R ⊗ o.P
-    return CMPS(Q, R)
+    return CMPS_generate(Q, R)
 end
 
-function *(ol::CMPO, or::CMPO) 
-    li = Matrix{eltype(ol.Q)}(I,size(ol.Q))
-    ri = Matrix{eltype(or.Q)}(I,size(or.Q))
+function *(ol::AbstractCMPO{T}, or::AbstractCMPO{T}) where T
+    li = convert(typeof(ol.Q), Matrix{T}(I,size(ol.Q)))
+    ri = convert(typeof(or.Q), Matrix{T}(I,size(or.Q)))
     Q = ol.Q ⊗ ri + li ⊗ or.Q + ol.L ⊗ or.R
     L = li ⊗ or.L + ol.L ⊗ or.P
     R = ol.R ⊗ ri + ol.P ⊗ or.R
     P = ol.P ⊗ or.P
-    return CMPO(Q,R,L,P)
+    return CMPO_generate(Q,R,L,P)
 end
