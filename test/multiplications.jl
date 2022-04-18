@@ -2,6 +2,7 @@ using cMPO, Test
 using LinearAlgebra
 using Random; Random.seed!()
 
+
 function otimes(A::Matrix, B::Matrix)
     kron(A,B)
 end
@@ -69,9 +70,9 @@ end
 @testset "⊗" begin
     D1 = 4;  D2 = 2
     T = ComplexF64
-    a = [randn(D1,D1),randn(T,D1,D1),randn(D1,D1,D2),randn(T,D1,D1,D2),randn(D1,D1,D2,D2),randn(T,D1,D1,D2,D2)]
-    for i = 1:length(a), j = i+1 : min(2*(div(i+1,2)+1), length(a))
-        @test all(a[i]⊗a[j] .≈ otimes(a[i],a[j]))
+    a = [randn(D1,D1),randn(T,D1,D1),randn(D1,D1,D2), randn(T,D1,D1,D2),randn(D1,D1,D2,D2),randn(T,D1,D1,D2,D2)]
+    for i = 1:length(a), j = i+1 : min(2*(div(i+1,2)+1), length(a)), solver in [cpu_solver, gpu_solver]
+            @test Array(solver(⊗, a[i], a[j])) ≈ otimes(a[i],a[j])
     end
 end
 
@@ -80,20 +81,16 @@ end
     D = 4
     a = [randn(D,D), randn(T,D,D)]
     for i = 1:length(a), j=1:length(a)
-        x = a[i] |> symmetrize
-        z = a[j] |> symmetrize
-        s = CMPS(x, z)
-        o = CMPO(x, x, z, zeros(T,D,D))
-
-        s_arr = zeros(T,D,D,2)
-        s_arr[:,:,1] = x; s_arr[:,:,2] = z
-
+        x = symmetrize(a[i])
+        z = symmetrize(a[j])
+        p = zeros(T,D,D)
+        
         i2 = Matrix{T}(I,D,D)
         ss = -(i2 ⊗ x + x ⊗ i2 + z ⊗ z)
 
         osq = i2 ⊗ x + x ⊗ i2 + z ⊗ z
         osr = x ⊗ i2
-
+            
         soq = i2 ⊗ x + x ⊗ i2 + z ⊗ x
         sor = i2 ⊗ z
 
@@ -104,19 +101,21 @@ end
 
         sos = -(i2 ⊗ osq + x ⊗ i2 ⊗ i2 + z ⊗ osr)
         
-        #@test s_arr ≈ toarray(s)  
-        #@test s.Q ≈ tocmps(s_arr).Q 
-        #@test s.R ≈ tocmps(s_arr).R
-        @test s*s ≈ ss         
-        @test (o*s).Q ≈ osq 
-        @test (o*s).R ≈ osr 
-        @test (s*o).Q ≈ soq 
-        @test (s*o).R ≈ sor 
-        @test (o*o).Q ≈ ooq  
-        @test (o*o).R ≈ oor 
-        @test (o*o).L ≈ ool 
-        @test (o*o).P ≈ oop 
-        @test s*o*s ≈ sos
+        for solver in [cpu_solver, gpu_solver]
+            s = solver(CMPS_generate, x, z)
+            o = solver(CMPO_generate, x, x, z, p)
+
+            @test  s*s ≈ solver(A->A, ss)         
+            @test (o*s).Q ≈ solver(A->A, osq)
+            @test (o*s).R ≈ solver(A->A, osr)
+            @test (s*o).Q ≈ solver(A->A, soq) 
+            @test (s*o).R ≈ solver(A->A, sor) 
+            @test (o*o).Q ≈ solver(A->A, ooq)  
+            @test (o*o).R ≈ solver(A->A, oor) 
+            @test (o*o).L ≈ solver(A->A, ool) 
+            @test (o*o).P ≈ solver(A->A, oop) 
+            @test s*o*s ≈ solver(A->A, sos)
+        end
     end
 end
 
@@ -125,71 +124,50 @@ end
     D = 4
     a = [randn(D,D), randn(T,D,D)]
     for i = 1:length(a), j=1:length(a)
-        x = a[i] |> symmetrize
-        z = a[j] |> symmetrize
-        R = zeros(T,D,D,2); R[:,:,1] = x ; R[:,:,2] = x
-        L = zeros(T,D,D,2); L[:,:,1] = z ; L[:,:,2] = z    
-        s = CMPS(x, R)
-        o = CMPO(x, R, L, zeros(T,D,D,2,2))
-
-        s_arr = zeros(T,D,D,3)
-        s_arr[:,:,1] = x; s_arr[:,:,2] = x; s_arr[:,:,3] = x
-
+        x = symmetrize(a[i])
+        z = symmetrize(a[j])
+        p = zeros(T,D,D,2,2)
+        
         i2 = Matrix{T}(I,D,D)
         ss = -(i2 ⊗ x + x ⊗ i2 + x ⊗ x + x ⊗ x)
 
         osq = i2 ⊗ x + x ⊗ i2 + z ⊗ x + z ⊗ x
-        osr = zeros(T,D^2,D^2,2)
+        osr = zeros(T, D^2, D^2, 2)
         osr[:,:,1] = x ⊗ i2
         osr[:,:,2] = x ⊗ i2
 
         soq = i2 ⊗ x + x ⊗ i2 + x ⊗ x + x ⊗ x
-        sor = zeros(T,D^2,D^2,2)
+        sor = zeros(T, D^2, D^2, 2)
         sor[:,:,1] = i2 ⊗ z
         sor[:,:,2] = i2 ⊗ z
 
         ooq = i2 ⊗ x + x ⊗ i2 + z ⊗ x + z ⊗ x
-        ool = zeros(T,D^2,D^2,2)
+        ool = zeros(T, D^2, D^2, 2)
         ool[:,:,1] = i2 ⊗ z; ool[:,:,2] = i2 ⊗ z
-        oor = zeros(T,D^2,D^2,2)
+        oor = zeros(T, D^2, D^2, 2)
         oor[:,:,1] = x ⊗ i2; oor[:,:,2] = x ⊗ i2
-        oop = zeros(T,D^2,D^2,2,2)
+        oop = zeros(T, D^2, D^2, 2, 2)
 
         sos = -(i2 ⊗ osq + x ⊗ i2 ⊗ i2 + x ⊗ osr[:,:,1] + x ⊗ osr[:,:,2])
 
-        #@test s_arr ≈ toarray(s)  
-        #@test s.Q ≈ tocmps(s_arr).Q 
-        #@test s.R ≈ tocmps(s_arr).R
-        @test s*s ≈ ss         
-        @test (o*s).Q ≈ osq 
-        @test (o*s).R ≈ osr 
-        @test (s*o).Q ≈ soq 
-        @test (s*o).R ≈ sor 
-        @test (o*o).Q ≈ ooq  
-        @test (o*o).R ≈ oor 
-        @test (o*o).L ≈ ool 
-        @test (o*o).P ≈ oop 
-        @test s*o*s ≈ sos
+        R = zeros(T,D,D,2); R[:,:,1] = x ; R[:,:,2] = x
+        L = zeros(T,D,D,2); L[:,:,1] = z ; L[:,:,2] = z
+        P = zeros(T,D,D,2,2)
+        for solver in [cpu_solver, gpu_solver]
+            s = solver(CMPS_generate, x, R)
+            o = solver(CMPO_generate, x, R, L, P)
+
+            @test  s*s ≈ solver(A->A, ss)         
+            @test (o*s).Q ≈ solver(A->A, osq)
+            @test (o*s).R ≈ solver(A->A, osr)
+            @test (s*o).Q ≈ solver(A->A, soq) 
+            @test (s*o).R ≈ solver(A->A, sor) 
+            @test (o*o).Q ≈ solver(A->A, ooq)  
+            @test (o*o).R ≈ solver(A->A, oor) 
+            @test (o*o).L ≈ solver(A->A, ool) 
+            @test (o*o).P ≈ solver(A->A, oop) 
+            @test s*o*s ≈ solver(A->A, sos)
+        end
     end
 end
 
-@testset "T^2 * ψ" begin
-    β = 2.0
-    for m in [TFIsing(1.0,1.0), XXZmodel(1.0), XXZmodel_2D_helical(1.0,2)]
-        ψ = init_cmps(4, m.Tmatrix, β)
-        ψ1 =  m.Tmatrix * (m.Tmatrix * ψ)
-        ψ2 =  (m.Tmatrix * m.Tmatrix) * ψ
-        @test isequal(ψ1, ψ2)
-    end
-end
-
-@testset "transpose(T^2) = transpose(T) * transpose(T)" begin
-    #one should compare transfer matrix instead of cMPO local tensor
-    β = rand(1)[1]*10
-    for m in [TFIsing(1.0,1.0), XXZmodel_2D_helical(1.0,2)]
-        ψ = init_cmps(2, m.vir_dim)
-        T1 =  transpose(m.Tmatrix * m.Tmatrix)
-        T2 =  transpose(m.Tmatrix) * transpose(m.Tmatrix)
-        @test free_energy(ψ, T1, β) ≈ free_energy(ψ, T2, β)
-    end
-end
