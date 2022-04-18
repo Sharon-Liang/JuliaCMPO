@@ -1,11 +1,12 @@
 using Test, cMPO
+using Random; Random.seed!()
 
 @testset "normalize CMPS" begin
     β = rand(1:5)
     ψ = init_cmps(rand(2:5), rand(1:2))
-    for device in [:cpu, :gpu]
-        ψ = normalize(ψ, β, device=device)
-        @test norm(ψ, β, device = device) ≈ 1.
+    for solver in [cpu_solver, gpu_solver]
+        ψ = solver(x->normalize(x, β), ψ)
+        @test solver(x->norm(x, β),ψ) ≈ 1.
     end
 end
 
@@ -72,8 +73,29 @@ end
     for m in [TFIsing(1.0,1.0), XYmodel(), XYmodel_2D_helical(1, expand=true), XXZmodel_2D_helical(2.0, wid,expand=true)]
         T = m.Tmatrix
         Ut = m.Ut
-        @test isequal(Ut' * T * Ut, transpose(T))
+        for solver in [cpu_solver, gpu_solver]
+            @test solver(x -> isequal(Ut' * x * Ut, transpose(x)), T)
+        end
     end
 end
 
+@testset "T^2 * ψ = T*(T*ψ)" begin
+    β = 2.0
+    for m in [TFIsing(1.0,1.0), XXZmodel(1.0), XXZmodel_2D_helical(1.0,2)]
+        ψ = init_cmps(4, m.Tmatrix, β)
+        ψ1 =  m.Tmatrix * (m.Tmatrix * ψ)
+        ψ2 =  (m.Tmatrix * m.Tmatrix) * ψ
+        @test isequal(ψ1, ψ2)
+    end
+end
 
+@testset "transpose(T^2) = transpose(T) * transpose(T)" begin
+    #one should compare transfer matrix instead of cMPO local tensor
+    β = rand(1)[1]*10
+    for m in [TFIsing(1.0,1.0), XXZmodel_2D_helical(1.0,2)]
+        ψ = init_cmps(2, m.vir_dim)
+        T1 =  transpose(m.Tmatrix * m.Tmatrix)
+        T2 =  transpose(m.Tmatrix) * transpose(m.Tmatrix)
+        @test free_energy(ψ, T1, β) ≈ free_energy(ψ, T2, β)
+    end
+end
