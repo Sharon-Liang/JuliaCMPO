@@ -1,7 +1,4 @@
 #module cMPSOperations
-import Base: isequal, transpose, adjoint, cat
-import LinearAlgebra: ishermitian, norm, normalize
-
 """
     Logarithm of the overlap of two CMPS:
         log_overlap = ln(⟨ψl|ψr⟩)
@@ -58,20 +55,32 @@ end
 
 
 """
-    isequal(a::CMPO, b::CMPO)
+    ==(a::T, b::T) where T<:AbstractCTensor
 """
-function isequal(a::T, b::T) where T<:AbstractCMPO
-    return isequal(a.Q, b.Q) && 
-            isequal(a.R, b.R) &&
-            isequal(a.L, b.L) &&
-            isequal(a.P, b.P) 
+function ==(a::T, b::T) where T<:AbstractCMPO
+    return ==(a.Q, b.Q) && 
+            ==(a.R, b.R) &&
+            ==(a.L, b.L) &&
+            ==(a.P, b.P) 
 end
 
-function isequal(a::T, b::T) where T<:AbstractCMPS
-    return isequal(a.Q, b.Q) && 
-            isequal(a.R, b.R)
+function ==(a::T, b::T) where T<:AbstractCMPS
+    return ==(a.Q, b.Q) && ==(a.R, b.R)
 end
 
+"""
+    ≈(a::T, b::T) where T<:AbstractCTensor
+"""
+function ≈(a::T, b::T; kwargs...) where T<:AbstractCMPO
+    return ≈(a.Q, b.Q; kwargs...) && 
+            ≈(a.R, b.R; kwargs...) &&
+            ≈(a.L, b.L; kwargs...) &&
+            ≈(a.P, b.P; kwargs...) 
+end
+
+function ≈(a::T, b::T; kwargs...) where T<:AbstractCMPS
+    return ≈(a.Q, b.Q; kwargs...) && ≈(a.R, b.R)
+end
 
 """
     Determine if a CMPO is hermitian
@@ -84,29 +93,31 @@ ishermitian(o::AbstractCMPO) = isequal(o, adjoint(o))
     (i.e. On the physical bond of cMPO and virtual bond of cMPS)
     if `U` is a square matrix, this is a guage transformation
 """
-function project(s::AbstractCMPS, u::AbstractMatrix) 
+function project(s::T, u::AbstractMatrix) where T<:AbstractCMPS
     u = convert(typeof(s.Q), u)
-    Q = u' * s.Q * u
+    au = convert(typeof(s.Q), u')
+    Q = au * s.Q * u
     if length(size(s.R)) == 2
-        R = u' * s.R * u
+        R = au * s.R * u
     else
-        R = ein"(ip,pql),qj -> ijl"(u', s.R, u)
+        R = ein"(ip,pql),qj -> ijl"(au, s.R, u)
     end
     return CMPS_generate(Q, R)
 end
 
 
-function project(o::AbstractCMPO, u::AbstractMatrix)
+function project(o::AbstractCMPO, u::AbstractMatrix) where T<:AbstractCMPO
     u = convert(typeof(o.Q), u)
-    Q = u' * o.Q * u
+    au = convert(typeof(o.Q), u')
+    Q = au * o.Q * u
     if length(size(o.R)) == 2
-        R = u' * o.R * u
-        L = u' * o.R * u
-        P = u' * o.P * u
+        R = au * o.R * u
+        L = au * o.R * u
+        P = au * o.P * u
     else
-        R = ein"(ip,pql),qj -> ijl"(u', o.R, u)
-        L = ein"(ip,pql),qj -> ijl"(u', o.L, u)
-        P = ein"(ip,pqlm),qj -> ijlm"(u', o.P, u)
+        R = ein"(ip,pql),qj -> ijl"(au, o.R, u)
+        L = ein"(ip,pql),qj -> ijl"(au, o.L, u)
+        P = ein"(ip,pqlm),qj -> ijlm"(au, o.P, u)
     end
     return CMPO_generate(Q,R,L,P)
 end
@@ -124,7 +135,7 @@ end
 function *(Ut::AbstractMatrix, s::AbstractCMPS)
     Ut = convert(typeof(s.Q), Ut)
     if length(size(s.R)) == 2 
-        CUDA.@allowscalar R = Ut[1,1] * s.R
+        R = CUDA.@allowscalar Ut[1,1] * s.R
     else
         R = ein"mn, ijn -> ijm"(Ut, s.R)
     end
@@ -134,8 +145,8 @@ end
 function *(Ut::AbstractMatrix, o::AbstractCMPO)
     Ut = convert(typeof(o.Q), Ut)
     if length(size(o.R)) == 2
-        CUDA.@allowscalar R = Ut[1,1] * o.R
-        CUDA.@allowscalar P = Ut[1,1] * o.P
+        R = CUDA.@allowscalar Ut[1,1] * o.R
+        P = CUDA.@allowscalar Ut[1,1] * o.P
     else
         R = ein"mk, ijk -> ijm"(Ut, o.R)
         P = ein"mk, ijkn -> ijmn"(Ut, o.P)
@@ -146,8 +157,8 @@ end
 function *(o::AbstractCMPO, Ut::AbstractMatrix)
     Ut = convert(typeof(o.Q), Ut)
     if length(size(o.L)) == 2
-        CUDA.@allowscalar L = Ut[1,1] * o.L
-        CUDA.@allowscalar P = Ut[1,1] * o.P
+        L = CUDA.@allowscalar Ut[1,1] * o.L
+        P = CUDA.@allowscalar Ut[1,1] * o.P
     else
         L = ein"ijk, km -> ijm"(o.L, Ut)
         P = ein"ijnk, km -> ijnm"(o.P, Ut) 
