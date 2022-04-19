@@ -12,13 +12,13 @@ Wait = nothing
 cpu_per_task = 4
 
 tag = logtag
-βlist = [1.0, 2.0, 3.0, 4.0, 5.0]
+βlist = [1.0]
 Jzlist = [1.0]
 Jxylist = [1.0]
-bondDlist = [16]
-widlist = [5]
-#Continue = 0 #Continue > max_pow_step,  Continue = true
-max_pow_step = 100
+bondDlist = [8]
+widlist = [3]
+Continue = 0 #Continue > max_pow_step,  Continue = true
+max_pow_step = 3
 device == "gpu" ? usegpu = true : usegpu = false
 
 
@@ -29,7 +29,6 @@ isdir(logdir) || mkdir(logdir)
 
 for bondD in bondDlist
     for Jxy in Jxylist, Jz in Jzlist, width in widlist, β in βlist
-        β == 1.0 ? Continue = 999 : Continue = 0
         args = Dict("Jz"=>Jz,
                     "Jxy"=>Jxy,
                     "bondD"=>bondD,
@@ -49,7 +48,7 @@ for bondD in bondDlist
         jobname = @sprintf "%s/beta_%.2f" jobname β
 
         jobid = submitJob(env, prog, args, jobname, 
-                            machine = "p100",
+                            machine = "v100",
                             usegpu = usegpu,
                             cpu_per_task = cpu_per_task,
                             Run = true, 
