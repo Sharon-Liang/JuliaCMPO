@@ -22,35 +22,31 @@ end
 @testset "logtrexp" begin
     D = rand(2:6)
     A = rand(D, D)
-    grad_ndiff = ngradient(logtrexp, A)[1]
+    grad_ndiff = ngradient(logtrexp, A)[1] 
     for solver in [cpu_solver, gpu_solver]
-        grad_zygote = solver(M->Zygote.gradient(logtrexp, M), A)[1]
-        grad_zygote = convert(Array, grad_zygote)
-        @test all(isapprox.(grad_zygote, grad_ndiff; rtol = 1e-5, atol = 1e-5))
+        grad_zygote = solver(x->Zygote.gradient(logtrexp, x), A)[1] |> Array
+        @test ≈(grad_zygote, grad_ndiff; rtol = 1e-5, atol = 1e-5)
     end
 end
 
-
-
-
-
-
-
-
 @testset "logfidelity" begin
     β = 2.0
-    χ = 6
+    χ = 4
     vir_dim = rand(1:2)
-    ψ0 = init_cmps(χ+2, vir_dim)
-    ψ = init_cmps(χ, vir_dim)
+    ψ0 = init_cmps(χ+2, vir_dim) 
+    ψ = init_cmps(χ, vir_dim) |> diagQ
 
-    loss() = -logfidelity(CMPS(diag(ψ.Q)|> diagm, ψ.R), ψ0, β)
-    p0, f, g! = optim_functions(loss, Zygote.Params([ψ.Q, ψ.R]))
-    grad_ndiff = ngradient(f, p0)[1]
+    dQ = convert(Vector, diag(ψ.Q))
+    R = convert(Array, ψ.R)
+    for solver in [cpu_solver, gpu_solver]
+        ψ0 = solver(x->x, ψ0)
+        loss() = -logfidelity(solver(CMPS_generate, consist_diagm(dQ), R), ψ0, β)
+        pars = Zygote.Params([dQ, R])
+        p0, f, g! = optim_functions(loss, pars)
 
-    for device in [:cpu, :gpu]
+        grad_ndiff = ngradient(f, p0)[1]
         grad_zygote = similar(p0); g!(grad_zygote, p0)
-        @test all(isapprox.(grad_zygote, grad_ndiff; rtol = 1e-5, atol = 1e-5))
+        @test ≈(grad_zygote, grad_ndiff; rtol = 1e-5, atol = 1e-5)
     end
 end
 
@@ -59,13 +55,18 @@ end
     g = rand(1)[1]
     m = TFIsing(1.,g)
     ψ = init_cmps(χ) |> diagQ
-    for device in [:cpu, :gpu]
-        loss() = free_energy(CMPS(diag(ψ.Q)|> diagm, ψ.R), m.Tmatrix, β)
-        p0, f, g! = optim_functions(loss, Params([ψ.Q, ψ.R]))
+
+    dQ = convert(Vector, diag(ψ.Q))
+    R = convert(Array, ψ.R)
+    for solver in [cpu_solver, gpu_solver]  
+        Tm = solver(x->x, m.Tmatrix)
+        loss() = free_energy(solver(CMPS_generate, consist_diagm(dQ), R), Tm, β)
+        pars = Zygote.Params([dQ, R])
+        p0, f, g! = optim_functions(loss, pars)
         
         grad_ndiff = ngradient(f, p0)[1]
         grad_zygote = similar(p0); g!(grad_zygote, p0)
-        @test all(isapprox.(grad_zygote, grad_ndiff; rtol = 1e-5, atol = 1e-5))
+        @test ≈(grad_zygote, grad_ndiff; rtol = 1e-5, atol = 1e-5)
     end
 end
 

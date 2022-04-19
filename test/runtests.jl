@@ -1,4 +1,6 @@
 using cMPO, Test
+using CUDA; CUDA.allowscalar(false)
+
 
 @testset "utilities.jl" begin
     include("utilities.jl")
@@ -20,6 +22,4 @@ end
     include("gradient.jl")
 end
 
-#@testset "hessian" begin
-#    include("hessian.jl")
-#end
+

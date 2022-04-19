@@ -1,11 +1,13 @@
 using Test, cMPO
+using LinearAlgebra
 using Random; Random.seed!()
+
 
 @testset "normalize CMPS" begin
     β = rand(1:5)
     ψ = init_cmps(rand(2:5), rand(1:2))
     for solver in [cpu_solver, gpu_solver]
-        ψ = solver(x->normalize(x, β), ψ)
+        ψ = solver(x::AbstractCMPS->normalize(x, β), ψ)
         @test solver(x->norm(x, β),ψ) ≈ 1.
     end
 end
@@ -13,20 +15,20 @@ end
 @testset "adjoint and ishermitian" begin
     for m in [TFIsing(1.0,1.0), XYmodel(), XXZmodel(1.0)]
         T = m.Tmatrix
-        @test isequal(T, T')
+        @test ==(T, T')
         @test ishermitian(T)
     end
 
     wid = 3
     for m in [TFIsing_2D_helical(1.0,1.0, wid), XYmodel_2D_helical(wid), XXZmodel_2D_helical(1.0, wid)]
         T = m.Tmatrix
-        @test isequal(T, T') == false
+        @test ==(T, T') == false
         @test ishermitian(T) == false
     end
 end
 
-@testset "cat two cmpos" begin
-    pz = pauli(:z); px = pauli(:x)
+@testset "cat two CMPOs" begin
+    pz = pauli(PZ); px = pauli(PX)
     for w1 in [1,2,3], w2 in [1,2,3]
         o1 = Ising_CMPO(1.0, pz, pz, w1)
         o2 = Ising_CMPO(1.0, px, px, w2)
@@ -55,8 +57,8 @@ end
     end   
 end
 
-@testset "expand a cmpo" begin
-    pz = pauli(:z); px = pauli(:x)
+@testset "expand a CMPO" begin
+    pz = pauli(PZ); px = pauli(PX)
     for w1 in [1, 3]
         o1 = Ising_CMPO(1.0, pz, pz, w1)
         o2 = Ising_CMPO(0.5, pz, pz, w1)
@@ -64,7 +66,7 @@ end
         O1 = expand_cmpo(o1)
         O2 = cat(o2, transpose(o2))
 
-        @test isequal(O1, O2)
+        @test ==(O1, O2)
     end
 end
 
@@ -74,7 +76,7 @@ end
         T = m.Tmatrix
         Ut = m.Ut
         for solver in [cpu_solver, gpu_solver]
-            @test solver(x -> isequal(Ut' * x * Ut, transpose(x)), T)
+            @test solver(x::AbstractCTensor -> ==(Ut' * x * Ut, transpose(x)), T)
         end
     end
 end
@@ -85,7 +87,7 @@ end
         ψ = init_cmps(4, m.Tmatrix, β)
         ψ1 =  m.Tmatrix * (m.Tmatrix * ψ)
         ψ2 =  (m.Tmatrix * m.Tmatrix) * ψ
-        @test isequal(ψ1, ψ2)
+        @test ==(ψ1, ψ2)
     end
 end
 
