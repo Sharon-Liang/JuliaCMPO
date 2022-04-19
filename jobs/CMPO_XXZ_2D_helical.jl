@@ -86,6 +86,7 @@ isdir(ModelResultFolder) || mkdir(ModelResultFolder)
 model = XXZmodel_2D_helical(Jz/Jxy, width, expand = expand)
 
 if Continue ≥ max_pow_step Continue = true end
+device == :cpu ? solver = cpu_solver : solver = gpu_solver
 @timeit to "evaluate" begin
     res = evaluate(model, bondD, β, ModelResultFolder, 
                         hermitian = false, 
@@ -93,7 +94,7 @@ if Continue ≥ max_pow_step Continue = true end
                         group = group,
                         Continue = Continue,
                         tag = tag,
-                        device=device)
+                        solver = solver)
 end
 
 const End_Time = Dates.format(now(), "yyyy-mm-dd HH:MM:SS")
