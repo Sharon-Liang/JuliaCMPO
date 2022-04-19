@@ -4,62 +4,65 @@ __precompile__()
 using Random; Random.seed!()
 using HDF5, DelimitedFiles, Printf
 using StatsFuns
-using OMEinsum, LinearAlgebra #, GenericLinearAlgebra
+using OMEinsum, LinearAlgebra
 using Zygote, Optim, ChainRules
 using FiniteDifferences
 using Dates
-using CUDA
+using CUDA; CUDA.allowscalar(false)
 
-import Base: *, isequal, transpose, adjoint, cat
+import Base: kron, *
+import Base: ==, ≈,  transpose, adjoint, cat
 import LinearAlgebra: ishermitian, norm, normalize
 
+# structs
+export AbstractCTensor, AbstractCMPS, AbstractCMPO,
+       CMPS, CMPO, CuCMPS, CuCMPO,
+       CMPS_generate, CMPO_generate,
+       CTensor, CuCTensor
+       
 # utilities
-export pauli,
+export PauliMatrixName, PX, PY, iPY, PZ, PPlus, PMinus,
+       pauli,
        delta,
+       OperatorType, Fermi, Bose,
        Masubara_freq,
        symmetrize, symeigen, 
-       logtrexp
+       logtrexp,
+       consist_diagm
+
+# solver
+export cpu_solver, gpu_solver
 
 # OptimFunctions
-export veclength, optim_functions,
-       optim_functions_py
+export veclength, optim_functions
 
-# structs
-export CMPS, CMPO, PhysModel, 
-       MeraUpdateStep, MeraUpdateTrace,
-       MeraUpdateResult, MeraUpdateOptions,
-       CompressResult
-
-# SaveAndLoad
-export saveCMPS, readCMPS
-
-# cMPSOperations
-export toarray, tovector, tocmps,
-       norm, normalize, 
-       log_overlap,
-       transpose, adjoint, ishermitian,
-       project,
-       diagQ
 
 # multiplications
 export ⊗
 
+# cMPSOperations
+export log_overlap,
+       norm, normalize, 
+       ishermitian,
+       project,
+       diagQ
+
+
+# PhysicalModels
+export PhysModel, Ising_CMPO, generalUt, expand_cmpo
+export TFIsing, TFIsing_2D_helical,
+       XYmodel, XYmodel_2D_helical, 
+       XXZmodel,  XXZmodel_2D_helical
+
 # cMPSInitiate
 export init_cmps, 
        logfidelity, fidelity, 
-       interpolate_isometry, adaptive_mera_update,
-       compress_cmps
-       #init_cmps_py,
-       #compress_cmps_py
+       interpolate_isometry, 
+       MeraUpdateStep, MeraUpdateTrace,
+       MeraUpdateResult, MeraUpdateOptions,
+       adaptive_mera_update,
+       CompressResult, compress_cmps
 
-# PhysicalModels
-export Ising_CMPO, generalUt, expand_cmpo
-export TFIsing, 
-       XYmodel, 
-       XXZmodel, 
-       TFIsing_2D_helical,
-       XYmodel_2D_helical, 
-       XXZmodel_2D_helical
 
 # ThermaldynamicQuanties
 export make_operator,
@@ -75,23 +78,32 @@ export correlation_2time,
        Lehmann_spectral_function, Lehmann_A, 
        Lehmann_structure_factor, Lehmann_S
 
+
+# SaveAndLoad
+export saveCMPS, readCMPS
+
 # evaluate
 export evaluate, evaluate_py, 
-       hermitian_evaluate, #hermitian_evaluate_py,
-       non_hermitian_evaluate#, non_hermitian_evaluate_py
+       hermitian_evaluate, 
+       non_hermitian_evaluate
 
-include("utilities.jl")
-include("OptimFunctions.jl")
 include("structs.jl")
-include("SaveAndLoad.jl")
+include("utilities.jl")
+include("solver.jl")
+include("OptimFunctions.jl")
+
 include("multiplications.jl")
 include("cMPSOperations.jl")
-include("cMPSInitiate.jl")
+
 include("PhysicalModels.jl")
+include("cMPSInitiate.jl")
+
 include("ThermaldynamicQuanties.jl")
 include("Correlations.jl")
-include("evaluate.jl")
 
+include("SaveAndLoad.jl")
+include("evaluate.jl")
 include("rrule.jl")
+
 
 end # module
