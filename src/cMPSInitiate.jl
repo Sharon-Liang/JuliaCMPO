@@ -17,27 +17,29 @@ function init_cmps(χ::Int64, vD::Int64 = 1;
             R[:,:,d] = R[:,:,d] |> symmetrize
         end
     end
-    return CMPS(Q,R)
+    return CMPS_generate(Q,R)
 end
+
 
 """
     Fidelity between the target cMPS |ψ⟩ and the origional cMPS T|r⟩:
         fidelity = ⟨ψ|T|r⟩/√(⟨ψ|ψ⟩)
         logfidelity(ψ, ψ0) = ln(Fd)
 """
-logfidelity(ψ::CMPS, ψ0::CMPS, β::Real; device=:cpu) = log_overlap(ψ, ψ0, β, device=device) - 0.5*log_overlap(ψ, ψ, β, device=device)
+logfidelity(ψ::T, ψ0::T, β::Real) where T<:AbstractCMPS = log_overlap(ψ, ψ0, β) - 0.5*log_overlap(ψ, ψ, β)
 
-function fidelity(ψ::CMPS, ψ0::CMPS, β::Real; Normalize::Bool = false, device=:cpu)
+function fidelity(ψ::T, ψ0::T, β::Real; Normalize::Bool = false) where T<:AbstractCMPS
     if Normalize
-        ψ = normalize(ψ, β, device=device)
-        ψ0 = normalize(ψ0, β, device=device)
+        ψ = normalize(ψ, β)
+        ψ0 = normalize(ψ0, β)
     end
-    return logfidelity(ψ, ψ0, β, device=device) |> exp
+    return logfidelity(ψ, ψ0, β) |> exp
 end
 
 
 """
-    adaptive_mera_update: update the isometry using iterative SVD update with line search
+    adaptive_mera_update: update the isometry using iterative SVD update with line search.
+    `interpolate_isometry(p1,p2,θ)`: interpolate between two isometries
 """
 function interpolate_isometry(p1::AbstractMatrix, p2::AbstractMatrix, θ::Real)
     """ interpolate two isometries
@@ -49,14 +51,58 @@ function interpolate_isometry(p1::AbstractMatrix, p2::AbstractMatrix, θ::Real)
     return F.U * F.Vt 
 end
 
-function adaptive_mera_update(ψ0::CMPS, χ::Integer, β::Real; 
-    options::MeraUpdateOptions = MeraUpdateOptions(),
-    device=:cpu)
-    step = 1
-    logfidelity0 = logfidelity(ψ0, ψ0, β, device=device)
-    loss(p_matrix) = logfidelity(project(ψ0, p_matrix), ψ0, β, device=device)
+"""
+    Data structure of MERA update steps
+    `id` : Step ID
+    `θ`  : interpolate angle
+    `loss_diff`: loss function difference to last step
+    `fidelity` : fidelity between `ψ` and the origional `ψ0`
+"""
+struct MeraUpdateStep{Ti<:Integer, T<:Real, Tf<:Real}
+    id::Ti
+    θ::T
+    loss_diff::Tf
+    fidelity::Tf
+end
+MeraUpdateTrace = Vector{MeraUpdateStep}
 
-    _, v = symeigen(ψ0.Q, device=device)
+struct MeraUpdateResult{T<:AbstractCMPS}
+    ψ::T
+    trace::MeraUpdateTrace
+end
+
+
+"""
+atol: tolerance of absolute difference of fidelity(ψ, ψ0, β, Normalize = true) and 1.0
+ldiff_tol: tolerance of absolute difference of the value of loss function between two MERA update steps
+"""
+struct MeraUpdateOptions{T<:Number}
+    atol::T
+    ldiff_tol::T
+    maxiter::Int64
+    interpolate::Bool
+    store_trace::Bool
+    show_trace::Bool
+end
+
+function MeraUpdateOptions(;
+    atol = 1.e-5,
+    ldiff_tol = 1.e-12,
+    maxiter = 100,
+    interpolate = true,
+    store_trace = false,
+    show_trace = false)
+    MeraUpdateOptions(atol, ldiff_tol, maxiter, interpolate,
+        store_trace, show_trace)
+end
+
+function adaptive_mera_update(ψ0::AbstractCMPS, χ::Integer, β::Real; 
+    options::MeraUpdateOptions = MeraUpdateOptions())
+    step = 1
+    logfidelity0 = logfidelity(ψ0, ψ0, β)
+    loss(p_matrix) = logfidelity(project(ψ0, p_matrix), ψ0, β)
+
+    _, v = symeigen(ψ0.Q)
     p_current = v[:, end-χ+1:end]
     
     loss_previous = 9.9e9
@@ -92,7 +138,7 @@ function adaptive_mera_update(ψ0::CMPS, χ::Integer, β::Real;
                 proceed = false
             else
                 p_interpolate = interpolate_isometry(p_next, p_current, θ)
-                loss_interpolate = logfidelity(project(ψ0, p_interpolate), ψ0, β, device=device)
+                loss_interpolate = logfidelity(project(ψ0, p_interpolate), ψ0, β)
                 if loss_interpolate > loss_current
                     p_next = p_interpolate
                     proceed = false
@@ -121,11 +167,17 @@ end
 """
     compress a CMPS(ψ0) to a target dimension(χ)
 """
-function compress_cmps(ψ0::CMPS, χ::Integer, β::Real; 
-    init::Union{CMPS, Nothing} = nothing,
+struct CompressResult{T<:AbstractCMPS, Tf<:Real}
+    ψ::T
+    fidelity_initial::Tf
+    fidelity_final::Tf
+    optim_result
+end
+
+function compress_cmps(ψ0::T, χ::Integer, β::Real; 
+    init::Union{AbstractCMPS, Nothing} = nothing,
     show_trace::Bool = false,
-    mera_update_options::MeraUpdateOptions = MeraUpdateOptions(show_trace=show_trace),
-    device=:cpu)
+    mera_update_options::MeraUpdateOptions = MeraUpdateOptions(show_trace=show_trace)) where T<:AbstractCMPS
     if show_trace 
         println("----------------------------Compress CMPS-----------------------------") 
     end
@@ -141,7 +193,7 @@ function compress_cmps(ψ0::CMPS, χ::Integer, β::Real;
         @warn "The bond dimension of the initial CMPS ≤ target bond dimension."
     else
         init === nothing ? 
-            ψ = adaptive_mera_update(ψ0, χ, β, options = mera_update_options, device=device).ψ : 
+            ψ = adaptive_mera_update(ψ0, χ, β, options = mera_update_options).ψ : 
             ψ = init
         if size(ψ.Q) != (χ, χ) 
             msg = "χ of init cmps should be $(χ) instead of $(size(ψ.Q)[1])"
@@ -150,8 +202,12 @@ function compress_cmps(ψ0::CMPS, χ::Integer, β::Real;
             fidelity_initial = fidelity(ψ, ψ0, β, Normalize = true)
 
             ψ = ψ |> diagQ
-            loss() = -logfidelity(CMPS(diag(ψ.Q)|> diagm, ψ.R), ψ0, β, device=device)
-            p0, f, g! = optim_functions(loss, Params([ψ.Q, ψ.R]))
+            dQ = convert(Vector, diag(ψ.Q))
+            R =  convert(Array, ψ.R)
+
+            T <: CuCMPS ? solver = gpu_solver : solver = cpu_solver
+            loss() = -logfidelity(solver(CMPS_generate, consist_diagm(dQ), R), ψ0, β)
+            p0, f, g! = optim_functions(loss, Params([dQ, R]))
 
             # The same as scipy L-BFGS-B
             optim_options = Optim.Options(f_tol = 2.220446049250313e-9, g_tol = 1.e-5,
@@ -159,7 +215,8 @@ function compress_cmps(ψ0::CMPS, χ::Integer, β::Real;
                                 store_trace = true,
                                 show_trace = show_trace, show_every = 10)
             optim_result = Optim.optimize(f, g!, p0, LBFGS(), optim_options)
-
+            
+            ψ = solver(CMPS_generate, consist_diagm(dQ), R)
             fidelity_final = fidelity(ψ, ψ0, β, Normalize = true)
         end
     end 
@@ -170,23 +227,21 @@ end
 """
     Initiate via boundary cMPS
 """
-function init_cmps(bondD::Int64, Tm::CMPO, β::Real; 
-                    show_trace::Bool = false,
-                    device = :cpu)
+function init_cmps(bondD::Integer, Tm::AbstractCMPO, β::Real; 
+                    show_trace::Bool = false)
     if show_trace 
         println("----------------------------Initiate CMPS-----------------------------") 
     end
-    ψ = CMPS(Tm.Q, Tm.R)
+    ψ = CMPS_generate(Tm.Q, Tm.R)
     while size(ψ.Q)[1] < bondD
         ψ = Tm * ψ 
     end
 
     if size(ψ.Q)[1] > bondD 
-        res = compress_cmps(ψ, bondD, β, show_trace=show_trace, device=device)
+        res = compress_cmps(ψ, bondD, β, show_trace=show_trace)
         ψ = res.ψ
     end
     return ψ
 end
-
 
 #end    # module cMPSCompress

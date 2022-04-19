@@ -1,12 +1,13 @@
 #module rrule
 """
     rrule for logtrexp function, eltype(M) <: Real
-"""
+"""    
 function ChainRules.rrule(::typeof(logtrexp), M::AbstractArray{T}) where T<:Real
     e, v = symeigen(M)
     y = logsumexp(e)
     function logtrexp_pullback(ȳ)
-        ∂y_∂M = v * diagm(exp.(e .- y)) * v' |> transpose
+        Λ = map(x->exp(x-y), e) 
+        ∂y_∂M = v * consist_diagm(Λ) * v' |> transpose
         M̄ = ȳ * ∂y_∂M
         return ChainRules.NoTangent(), M̄
     end
@@ -14,4 +15,3 @@ function ChainRules.rrule(::typeof(logtrexp), M::AbstractArray{T}) where T<:Real
 end
 
 #end #module rrule
-

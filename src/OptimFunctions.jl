@@ -2,6 +2,7 @@
 #Reference: https://github.com/baggepinnen/FluxOptTools.jl/blob/master/src/FluxOptTools.jl
 veclength(grads::Zygote.Grads) = sum(length(grads[p]) for p in grads.params)
 veclength(params::Zygote.Params) = sum(length, params.params)
+veclength(x) = length(x)
 
 Base.zeros(grads::Zygote.Grads) = zeros(veclength(grads))
 Base.zeros(pars::Zygote.Params) = zeros(veclength(pars))
@@ -27,7 +28,6 @@ function optim_functions(loss, pars::Zygote.Params)
     end
     return p0, loss_function, gradient_function
 end
-
 
 #end #module OptimFunctions
 

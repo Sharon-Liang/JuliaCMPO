@@ -101,13 +101,13 @@ function Base.write(io::IO, tr::MeraUpdateTrace)
     @printf io "step          θ            loss_diff           fidelity    \n"
     @printf io "----  ----------------  ----------------   ----------------\n"
     for state in tr
-        writedlm(io, [state.SN state.θ state.loss_diff state.fidelity])
+        writedlm(io, [state.id state.θ state.loss_diff state.fidelity])
     end
     return
 end
 
 function Base.println(step::MeraUpdateStep)
-    str = @sprintf "%03i   %.16f   %.16e   %.16f \n" step.SN step.θ step.loss_diff step.fidelity
+    str = @sprintf "%03i   %.16f   %.16e   %.16f \n" step.id step.θ step.loss_diff step.fidelity
     println(str)
     return
 end

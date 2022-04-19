@@ -3,10 +3,9 @@
     The local two-time correlation functions: C(τ) = -G(τ) = ⟨A(τ)B(0)⟩
 """
 function correlation_2time(τ::Number, A::AbstractMatrix,B::AbstractMatrix,
-                            ψl::CMPS, ψr::CMPS, W::CMPO, β::Real;
-                            device=:cpu)
+                            ψl::AbstractCMPS, ψr::AbstractCMPS, W::AbstractCMPO, β::Real)
     K = ψl * W * ψr 
-    e, v = symeigen(K, device=device)
+    e, v = symeigen(K)
     min = minimum(e); e = e .- min
     A = v' * A * v
     B = v' * B * v
@@ -17,24 +16,17 @@ function correlation_2time(τ::Number, A::AbstractMatrix,B::AbstractMatrix,
     end
     return num/den
 end
-correlation_2time(τ::Number, A::AbstractMatrix, B::AbstractMatrix, ψ::CMPS, W::CMPO, β::Real; device=:cpu) = 
-    correlation_2time(τ, A, B, ψ, ψ, W, β, device=device)
+correlation_2time(τ::Number, A::AbstractMatrix, B::AbstractMatrix, ψ::AbstractCMPS, W::AbstractCMPO, β::Real) = 
+    correlation_2time(τ, A, B, ψ, ψ, W, β)
 
 
 """
     Masubara frequency Green's functions: defalt type = :b
     G(iωn) = 1/Z ∑ Anm Bmn (exp(-βEn) - λexp(-βEm)) / (iωn - Em + En)
 """
-function LehmannGFKernel(z::Number, En::Real, Em::Real, β::Real; type::Symbol=:b)
-    if type == :b
-        λ = 1.0
-    elseif type == :f 
-        λ = -1.0
-    else
-        @error "type should be :b for bosons and :f for fermions"
-    end
-
-    if type ==:b && z==0 && abs(En - Em) < 1.e-10
+function LehmannGFKernel(z::Number, En::Real, Em::Real, β::Real; type::OperatorType = Bose)
+    type == Bose ? λ = 1.0 : λ = -1.0
+    if type == Bose && z==0 && abs(En - Em) < 1.e-10
         return -β*exp(-β*Em)
     else
         num = exp(-β*En) - λ*exp(-β*Em)
@@ -44,11 +36,10 @@ function LehmannGFKernel(z::Number, En::Real, Em::Real, β::Real; type::Symbol=:
 end
 
 function Masubara_freq_GF(n::Integer, A::AbstractMatrix,B::AbstractMatrix,
-                        ψl::CMPS, ψr::CMPS, W::CMPO, β::Real; 
-                        type::Symbol = :b, 
-                        device=:cpu)
+                        ψl::AbstractCMPS, ψr::AbstractCMPS, W::AbstractCMPO, β::Real; 
+                        type::OperatorType = Bose)
     K = ψl * W * ψr
-    e, v = symeigen(K, device=device)
+    e, v = symeigen(K)
     min = minimum(e); e = e .- min
     A = v' * A * v
     B = v' * B * v
@@ -61,27 +52,20 @@ function Masubara_freq_GF(n::Integer, A::AbstractMatrix,B::AbstractMatrix,
     return num/den
 end
 Masubara_freq_GF(n::Integer, A::AbstractMatrix,B::AbstractMatrix, 
-    ψ::CMPS, W::CMPO, β::Real; type::Symbol = :b, device=:cpu) =
-    Masubara_freq_GF(n, A, B, ψ, ψ, W, β, type = type, device=device)
+    ψ::AbstractCMPS, W::AbstractCMPO, β::Real; type::OperatorType = Bose) =
+    Masubara_freq_GF(n, A, B, ψ, ψ, W, β, type = type)
 
 
 """
     Lehmann representation of spectral function
 """
 function Lehmann_spectral_function(ω::Real, A::AbstractMatrix,B::AbstractMatrix,
-                                ψl::CMPS, ψr::CMPS, W::CMPO, β::Real; 
+                                ψl::AbstractCMPS, ψr::AbstractCMPS, W::AbstractCMPO, β::Real; 
                                 η::Real=0.01, 
-                                type::Symbol = :b,
-                                device=:cpu)
-    if type == :b
-        λ = 1.0
-    elseif type == :f 
-        λ = -1.0
-    else
-        @error "type should be :b for bosons and :f for fermions"
-    end
+                                type::OperatorType = Bose)
+    type == Bose ? λ = 1.0 : λ = -1.0
     K = ψl * W * ψr
-    e, v = symeigen(K, device=device)
+    e, v = symeigen(K)
     min = minimum(e); e = e .- min
     A = v' * A * v
     B = v' * B * v
@@ -95,8 +79,8 @@ function Lehmann_spectral_function(ω::Real, A::AbstractMatrix,B::AbstractMatrix
     return 2π*num/den
 end
 Lehmann_spectral_function(ω::Real, A::AbstractMatrix,B::AbstractMatrix, 
-    ψ::CMPS, W::CMPO, β::Real; η::Real=0.01, type::Symbol = :b, device=:cpu) =
-    Lehmann_spectral_function(ω, A, B, ψ, ψ, W, β, η=η, type = type, device=device)
+    ψ::AbstractCMPS, W::AbstractCMPO, β::Real; η::Real=0.01, type::OperatorType = Bose) =
+    Lehmann_spectral_function(ω, A, B, ψ, ψ, W, β, η=η, type = type)
 Lehmann_A = Lehmann_spectral_function
 
 
@@ -104,19 +88,12 @@ Lehmann_A = Lehmann_spectral_function
     Lehmann representation of the structure factor
 """
 function Lehmann_structure_factor(ω::Real, A::AbstractMatrix,B::AbstractMatrix,
-        ψl::CMPS, ψr::CMPS, W::CMPO, β::Real; 
+        ψl::AbstractCMPS, ψr::AbstractCMPS, W::AbstractCMPO, β::Real; 
         η::Real=0.01, 
-        type::Symbol = :b,
-        device=:cpu)
-    if type == :b
-        λ = 1.0
-    elseif type == :f 
-        λ = -1.0
-    else
-        @error "type should be :b for bosons and :f for fermions"
-    end
+        type::OperatorType = Bose)
+    type == Bose ? λ = 1.0 : λ = -1.0
     K = ψl * W * ψr
-    e, v = symeigen(K, device=device)
+    e, v = symeigen(K)
     min = minimum(e); e = e .- min
     A = v' * A * v
     B = v' * B * v
@@ -128,8 +105,8 @@ function Lehmann_structure_factor(ω::Real, A::AbstractMatrix,B::AbstractMatrix,
     return 2π*num/den
 end
 Lehmann_structure_factor(ω::Real, A::AbstractMatrix,B::AbstractMatrix, 
-        ψ::CMPS, W::CMPO, β::Real; η::Real=0.01, type::Symbol = :b, device=:cpu) =
-    Lehmann_structure_factor(ω, A, B, ψ, ψ, W, β, η=η, type = type, device=device)
+        ψ::AbstractCMPS, W::AbstractCMPO, β::Real; η::Real=0.01, type::OperatorType = Bose) =
+    Lehmann_structure_factor(ω, A, B, ψ, ψ, W, β, η=η, type = type)
 Lehmann_S = Lehmann_structure_factor
 
 #end  # module Correlations

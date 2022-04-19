@@ -1,4 +1,3 @@
-import Base: kron, *
 
 """
     multiplications of Arrays in CMPS and CMPO struct
