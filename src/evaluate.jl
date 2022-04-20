@@ -99,7 +99,7 @@ end
     Evaluate PhysModel m when its transfer matrix is non-hermitian, 
     or force to do power projection 
 """
-function cMPO.non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder::String; 
+function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder::String; 
                                 init = nothing, 
                                 group::Integer = 1,
                                 max_pow_step::Integer = 100,
