@@ -22,22 +22,6 @@ end
 
 
 """
-    Fidelity between the target cMPS |ψ⟩ and the origional cMPS T|r⟩:
-        fidelity = ⟨ψ|T|r⟩/√(⟨ψ|ψ⟩)
-        logfidelity(ψ, ψ0) = ln(Fd)
-"""
-logfidelity(ψ::T, ψ0::T, β::Real) where T<:AbstractCMPS = log_overlap(ψ, ψ0, β) - 0.5*log_overlap(ψ, ψ, β)
-
-function fidelity(ψ::T, ψ0::T, β::Real; Normalize::Bool = false) where T<:AbstractCMPS
-    if Normalize
-        ψ = normalize(ψ, β)
-        ψ0 = normalize(ψ0, β)
-    end
-    return logfidelity(ψ, ψ0, β) |> exp
-end
-
-
-"""
     adaptive_mera_update: update the isometry using iterative SVD update with line search.
     `interpolate_isometry(p1,p2,θ)`: interpolate between two isometries
 """

@@ -1,5 +1,4 @@
 #module utilities
-
 """
     Pauli matrices
 """

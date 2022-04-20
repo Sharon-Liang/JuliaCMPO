@@ -43,10 +43,10 @@ export ⊗
 # cMPSOperations
 export log_overlap,
        norm, normalize, 
+       logfidelity, fidelity, 
        ishermitian,
        project,
        diagQ
-
 
 # PhysicalModels
 export PhysModel, Ising_CMPO, generalUt, expand_cmpo
@@ -56,12 +56,12 @@ export TFIsing, TFIsing_2D_helical,
 
 # cMPSInitiate
 export init_cmps, 
-       logfidelity, fidelity, 
        interpolate_isometry, 
        MeraUpdateStep, MeraUpdateTrace,
        MeraUpdateResult, MeraUpdateOptions,
        adaptive_mera_update,
-       CompressResult, compress_cmps
+       CompressResult, 
+       compress_cmps
 
 
 # ThermaldynamicQuanties

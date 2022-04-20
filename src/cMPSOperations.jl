@@ -30,6 +30,22 @@ end
 
 
 """
+    Fidelity between the target cMPS |ψ⟩ and the origional cMPS T|r⟩:
+        fidelity = ⟨ψ|T|r⟩/√(⟨ψ|ψ⟩)
+        logfidelity(ψ, ψ0) = ln(Fd)
+"""
+logfidelity(ψ::T, ψ0::T, β::Real) where T<:AbstractCMPS = log_overlap(ψ, ψ0, β) - 0.5*log_overlap(ψ, ψ, β)
+
+function fidelity(ψ::T, ψ0::T, β::Real; Normalize::Bool = false) where T<:AbstractCMPS
+    if Normalize
+        ψ = normalize(ψ, β)
+        ψ0 = normalize(ψ0, β)
+    end
+    return logfidelity(ψ, ψ0, β) |> exp
+end
+
+
+"""
     transpose of a CMPO
 """
 function transpose(o::AbstractCMPO)
@@ -68,6 +84,7 @@ function ==(a::T, b::T) where T<:AbstractCMPS
     return ==(a.Q, b.Q) && ==(a.R, b.R)
 end
 
+
 """
     ≈(a::T, b::T) where T<:AbstractCTensor
 """
@@ -81,6 +98,7 @@ end
 function ≈(a::T, b::T; kwargs...) where T<:AbstractCMPS
     return ≈(a.Q, b.Q; kwargs...) && ≈(a.R, b.R)
 end
+
 
 """
     Determine if a CMPO is hermitian
@@ -103,8 +121,7 @@ function project(s::T, u::AbstractMatrix) where T<:AbstractCMPS
     return CMPS_generate(Q, R)
 end
 
-
-function project(o::AbstractCMPO, u::AbstractMatrix) where T<:AbstractCMPO
+function project(o::T, u::AbstractMatrix) where T<:AbstractCMPO
     Q = u' * o.Q * u
     if length(size(o.R)) == 2
         R = u' * o.R * u
@@ -119,7 +136,7 @@ function project(o::AbstractCMPO, u::AbstractMatrix) where T<:AbstractCMPO
 end
 
 
-""" multiply a matrix to the left/right of the cMPS/cMPO
+""" multiply a matrix to the left/right of the cMPS
     --        --   --      --
     | 1 0 ... 0|   | I + ϵQ |
     | 0        |   |        |
@@ -128,21 +145,19 @@ end
     | 0        |   |   |    |
     --        --   --      --
 """
-function *(Ut::AbstractMatrix, s::AbstractCMPS)
+function *(Ut::AbstractMatrix, s::T) where T<:AbstractCMPS
     if length(size(s.R)) == 2 
-        U = CUDA.@allowscalar Ut[1,1]
-        R = U * s.R
+        R = sum(Ut) * s.R
     else
         R = ein"mn, ijn -> ijm"(Ut, s.R)
     end
     return CMPS_generate(s.Q, R)
 end
 
-function *(Ut::AbstractMatrix, o::AbstractCMPO)
+function *(Ut::AbstractMatrix, o::T) where T<:AbstractCMPO
     if length(size(o.R)) == 2
-        U = CUDA.@allowscalar Ut[1,1]
-        R = U * o.R
-        P = U * o.P
+        R = sum(Ut) * o.R
+        P = sum(Ut) * o.P
     else
         R = ein"mk, ijk -> ijm"(Ut, o.R)
         P = ein"mk, ijkn -> ijmn"(Ut, o.P)
@@ -150,18 +165,16 @@ function *(Ut::AbstractMatrix, o::AbstractCMPO)
     return CMPO_generate(o.Q, R, o.L, P)
 end
 
-function *(o::AbstractCMPO, Ut::AbstractMatrix)
+function *(o::T, Ut::AbstractMatrix) where T<:AbstractCMPO
     if length(size(o.L)) == 2
-        U = CUDA.@allowscalar Ut[1,1]
-        L = U * o.L
-        P = U * o.P
+        L = sum(Ut) * o.L
+        P = sum(Ut) * o.P
     else
         L = ein"ijk, km -> ijm"(o.L, Ut)
         P = ein"ijnk, km -> ijnm"(o.P, Ut) 
     end
     return CMPO_generate(o.Q, o.R, L, P)
 end
-
 
 """ 
     transform the CMPS to the gauge where Q is a diagonalized matrix
