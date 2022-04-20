@@ -94,30 +94,26 @@ ishermitian(o::AbstractCMPO) = isequal(o, adjoint(o))
     if `U` is a square matrix, this is a guage transformation
 """
 function project(s::T, u::AbstractMatrix) where T<:AbstractCMPS
-    u = convert(typeof(s.Q), u)
-    au = convert(typeof(s.Q), u')
-    Q = au * s.Q * u
+    Q = u' * s.Q * u
     if length(size(s.R)) == 2
-        R = au * s.R * u
+        R = u' * s.R * u
     else
-        R = ein"(ip,pql),qj -> ijl"(au, s.R, u)
+        R = ein"(ip,pql),qj -> ijl"(u', s.R, u)
     end
     return CMPS_generate(Q, R)
 end
 
 
 function project(o::AbstractCMPO, u::AbstractMatrix) where T<:AbstractCMPO
-    u = convert(typeof(o.Q), u)
-    au = convert(typeof(o.Q), u')
-    Q = au * o.Q * u
+    Q = u' * o.Q * u
     if length(size(o.R)) == 2
-        R = au * o.R * u
-        L = au * o.R * u
-        P = au * o.P * u
+        R = u' * o.R * u
+        L = u' * o.R * u
+        P = u' * o.P * u
     else
-        R = ein"(ip,pql),qj -> ijl"(au, o.R, u)
-        L = ein"(ip,pql),qj -> ijl"(au, o.L, u)
-        P = ein"(ip,pqlm),qj -> ijlm"(au, o.P, u)
+        R = ein"(ip,pql),qj -> ijl"(u', o.R, u)
+        L = ein"(ip,pql),qj -> ijl"(u', o.L, u)
+        P = ein"(ip,pqlm),qj -> ijlm"(u', o.P, u)
     end
     return CMPO_generate(Q,R,L,P)
 end
@@ -133,9 +129,9 @@ end
     --        --   --      --
 """
 function *(Ut::AbstractMatrix, s::AbstractCMPS)
-    Ut = convert(typeof(s.Q), Ut)
     if length(size(s.R)) == 2 
-        R = CUDA.@allowscalar Ut[1,1] * s.R
+        U = CUDA.@allowscalar Ut[1,1]
+        R = U * s.R
     else
         R = ein"mn, ijn -> ijm"(Ut, s.R)
     end
@@ -143,10 +139,10 @@ function *(Ut::AbstractMatrix, s::AbstractCMPS)
 end
 
 function *(Ut::AbstractMatrix, o::AbstractCMPO)
-    Ut = convert(typeof(o.Q), Ut)
     if length(size(o.R)) == 2
-        R = CUDA.@allowscalar Ut[1,1] * o.R
-        P = CUDA.@allowscalar Ut[1,1] * o.P
+        U = CUDA.@allowscalar Ut[1,1]
+        R = U * o.R
+        P = U * o.P
     else
         R = ein"mk, ijk -> ijm"(Ut, o.R)
         P = ein"mk, ijkn -> ijmn"(Ut, o.P)
@@ -155,10 +151,10 @@ function *(Ut::AbstractMatrix, o::AbstractCMPO)
 end
 
 function *(o::AbstractCMPO, Ut::AbstractMatrix)
-    Ut = convert(typeof(o.Q), Ut)
     if length(size(o.L)) == 2
-        L = CUDA.@allowscalar Ut[1,1] * o.L
-        P = CUDA.@allowscalar Ut[1,1] * o.P
+        U = CUDA.@allowscalar Ut[1,1]
+        L = U * o.L
+        P = U * o.P
     else
         L = ein"ijk, km -> ijm"(o.L, Ut)
         P = ein"ijnk, km -> ijnm"(o.P, Ut) 
