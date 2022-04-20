@@ -1,29 +1,47 @@
 using Test, cMPO
+using LinearAlgebra
+using Random; Random.seed!()
 
-@testset "normalize CMPS" begin
-    β = rand(1:5)
-    ψ = init_cmps(rand(2:5), rand(1:2))
-    ψ = normalize(ψ, β)
-    @test norm(ψ, β) ≈ 1.
+
+for solver in [cpu_solver, gpu_solver] 
+    @testset "$(solver)" begin
+        @testset "normalize CMPS" begin
+            β = rand(1:5)
+            ψ = init_cmps(rand(2:5), rand(1:2))
+
+            ψ = solver(x->normalize(x, β), ψ)
+            @test solver(x->norm(x, β),ψ) ≈ 1.
+        end
+
+        @testset "Ut' * T * Ut = transpose(T)" begin
+            wid = 3
+            for m in [TFIsing(1.0,1.0), XYmodel(), XYmodel_2D_helical(1, expand=true), XXZmodel_2D_helical(2.0, wid, expand=true)]
+                Tm = solver(x->x, m.Tmatrix)
+                Ut = solver(x->x, m.Ut)
+                @test  Ut' * Tm * Ut == transpose(Tm)
+            end
+        end
+    end
 end
+
 
 @testset "adjoint and ishermitian" begin
     for m in [TFIsing(1.0,1.0), XYmodel(), XXZmodel(1.0)]
         T = m.Tmatrix
-        @test isequal(T, T')
+        @test ==(T, T')
         @test ishermitian(T)
     end
 
     wid = 3
     for m in [TFIsing_2D_helical(1.0,1.0, wid), XYmodel_2D_helical(wid), XXZmodel_2D_helical(1.0, wid)]
         T = m.Tmatrix
-        @test isequal(T, T') == false
+        @test ==(T, T') == false
         @test ishermitian(T) == false
     end
 end
 
-@testset "cat two cmpos" begin
-    pz = pauli(:z); px = pauli(:x)
+@testset "cat two CMPOs" begin
+    pz = pauli(PZ); px = pauli(PX)
     for w1 in [1,2,3], w2 in [1,2,3]
         o1 = Ising_CMPO(1.0, pz, pz, w1)
         o2 = Ising_CMPO(1.0, px, px, w2)
@@ -52,8 +70,8 @@ end
     end   
 end
 
-@testset "expand a cmpo" begin
-    pz = pauli(:z); px = pauli(:x)
+@testset "expand a CMPO" begin
+    pz = pauli(PZ); px = pauli(PX)
     for w1 in [1, 3]
         o1 = Ising_CMPO(1.0, pz, pz, w1)
         o2 = Ising_CMPO(0.5, pz, pz, w1)
@@ -61,17 +79,17 @@ end
         O1 = expand_cmpo(o1)
         O2 = cat(o2, transpose(o2))
 
-        @test isequal(O1, O2)
+        @test ==(O1, O2)
     end
 end
 
-@testset "Ut' * T * Ut = transpose(T)" begin
-    wid = 3
-    for m in [TFIsing(1.0,1.0), XYmodel(), XYmodel_2D_helical(1, expand=true), XXZmodel_2D_helical(2.0, wid,expand=true)]
-        T = m.Tmatrix
-        Ut = m.Ut
-        @test isequal(Ut' * T * Ut, transpose(T))
+@testset "transpose(T^2) = transpose(T) * transpose(T)" begin
+    #one should compare transfer matrix instead of cMPO local tensor
+    β = 2.0
+    for m in [TFIsing(1.0,1.0), XXZmodel_2D_helical(1.0, 2)]
+        ψ = init_cmps(2, m.vir_dim)
+        T1 =  transpose(m.Tmatrix * m.Tmatrix)
+        T2 =  transpose(m.Tmatrix) * transpose(m.Tmatrix)
+        @test free_energy(ψ, T1, β) ≈ free_energy(ψ, T2, β)
     end
 end
-
-

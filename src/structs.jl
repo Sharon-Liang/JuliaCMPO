@@ -1,72 +1,82 @@
 #module structs
+""" `CMPS`: the struct for cMPS
+    `vir_dim::Int64` : vir_dim+1 is the virtual bond dimension of the horizontal legs
+    `χ::Int64` : bond dimension along imaginary time direction
+the structure of cMPO 
+    --       --
+    | I + ϵQ  |
+    |         |
+    |   |     |
+    | √ϵR     |
+    |   |     |
+    --       --
 """
-χ::Int64       # χ: bond dimension along imaginary time direction
-vir_dim::Int64 # vir_dim+1: virtual bond dimension of the horizontal legs
-phy_dim::Int64 # phy_dim: bond dimension of physical legs
-"""
-struct CMPS{T<:Number}
+abstract type AbstractCTensor end
+abstract type AbstractCMPS{T} <: AbstractCTensor end
+abstract type AbstractCMPO{T} <: AbstractCTensor end
+struct CMPS{T<:Number} <: AbstractCMPS{T}
     Q::Matrix{T} # Dimension: χ × χ 
-    R::Array{T}  # Dimension: χ × χ × vir_dim
+    R::Array{T} # Dimension: χ × χ × vir_dim
 end
 
-struct CMPO{T<:Number}
+struct CuCMPS{T<:Number} <: AbstractCMPS{T}
+    Q::CuMatrix{T} # Dimension: χ × χ 
+    R::CuArray{T} # Dimension: χ × χ × vir_dim
+end
+
+
+""" `CMPO`: the struct for cMPO
+    `vir_dim::Int64` : vir_dim+1 is the virtual bond dimension of the horizontal legs
+    `phy_dim::Int64` : bond dimension of physical legs
+the structure of cMPO 
+    --                 --
+    | I + ϵQ  -- √ϵL -- |
+    |                   |
+    |   |               |
+    | √ϵR        P      |
+    |   |               |
+    --                 --
+"""
+struct CMPO{T<:Number} <: AbstractCMPO{T}
     Q::Matrix{T} # Dimension: phy_dim × phy_dim
-    R::Array{T}  # Column : phy_dim × phy_dim × vir_dim
+    R::Array{T} # Column : phy_dim × phy_dim × vir_dim
     L::Array{T}  # Row: phy_dim × phy_dim × vir_dim
     P::Array{T}  # long-range interaction: phy_dim × phy_dim × vir_dim × vir_dim
 end
 
-struct PhysModel{T}
-    Tmatrix::CMPO # local Transfer matrix
-    phy_dim::Int64  # phy_dim: bond dimension of physical legs
-    vir_dim::Int64  # vir_dim: virtual bond dimension of the horizontal legs
-    Ut::T # unitrary transformation: Ut^+ Tm Ut = transpose(Tm)
-end
-
-struct MeraUpdateStep{Ti<:Integer, T<:Real, Tf<:Real}
-    SN::Ti
-    θ::T
-    loss_diff::Tf
-    fidelity::Tf
-end
-
-MeraUpdateTrace = Vector{MeraUpdateStep}
-
-struct MeraUpdateResult
-    ψ::CMPS
-    trace::MeraUpdateTrace
+struct CuCMPO{T<:Number} <: AbstractCMPO{T}
+    Q::CuMatrix{T} # Dimension: phy_dim × phy_dim
+    R::CuArray{T} # Column : phy_dim × phy_dim × vir_dim
+    L::CuArray{T}  # Row: phy_dim × phy_dim × vir_dim
+    P::CuArray{T}  # long-range interaction: phy_dim × phy_dim × vir_dim × vir_dim
 end
 
 
 """
-atol: tolerance of absolute difference of fidelity(ψ, ψ0, β, Normalize = true) and 1.0
-ldiff_tol: tolerance of absolute difference of the value of loss function between two MERA update steps
+    CMPS/CMPO generation function
 """
-struct MeraUpdateOptions{T<:Number}
-    atol::T
-    ldiff_tol::T
-    maxiter::Int64
-    interpolate::Bool
-    store_trace::Bool
-    show_trace::Bool
+CMPS_generate(QR::Array{T}...) where T<:Number = CMPS(QR...)
+CMPS_generate(QR::CuArray{T}...) where T<:Number = CuCMPS(QR...)
+
+CMPO_generate(QRLP::Array{T}...) where T<:Number = CMPO(QRLP...)
+CMPO_generate(QRLP::CuArray{T}...) where T<:Number = CuCMPO(QRLP...)
+
+"""
+    `CTensor(x)`: convert CTensors to CMPS/CMPO
+    `CuCTensor(x)` : convert CTensors to CuCMPS/CuCMPO
+"""
+CTensor(x::Union{CMPS, CMPO}) = x
+function CTensor(x::T) where T<:AbstractCTensor
+    fields = fieldnames(T)
+    args =  Tuple(convert(Array, getfield(x, field)) for field in fields)
+    length(fields) == 2 ? CMPS(args...) : CMPO(args...)
 end
 
-function MeraUpdateOptions(;
-    atol = 1.e-5,
-    ldiff_tol = 1.e-12,
-    maxiter = 100,
-    interpolate = true,
-    store_trace = false,
-    show_trace = false)
-    MeraUpdateOptions(atol, ldiff_tol, maxiter, interpolate,
-        store_trace, show_trace)
+CuCTensor(x::Union{CuCMPS, CuCMPO}) = x
+function CuCTensor(x::T) where T<:AbstractCTensor
+    fields = fieldnames(T)
+    args =  Tuple(convert(CuArray, getfield(x, field)) for field in fields)
+    length(fields) == 2 ? CuCMPS(args...) : CuCMPO(args...)
 end
 
-struct CompressResult{T<:Number, Tf}
-    ψ::CMPS
-    fidelity_initial::T
-    fidelity_final::T
-    optim_result::Tf
-end
-
-#end module structs
+#end #module structs

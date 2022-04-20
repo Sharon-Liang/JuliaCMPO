@@ -55,6 +55,10 @@ settings = ArgParseSettings(prog="CMPO code for XXZ model"
         arg_type = String
         default = Dates.format(now(), "yyyy-mm-dd")
         help = "date tag"
+    "--device"
+        arg_type = Symbol
+        default = :cpu
+        help = "device used"
 end
 parsed_args = parse_args(settings; as_symbols=true)
 print(parsed_args,"\n")
@@ -68,6 +72,7 @@ const β = parsed_args[:beta]
 const bondD = parsed_args[:bondD]
 const max_pow_step = parsed_args[:max_pow_step]
 const tag = parsed_args[:tag]
+const device = parsed_args[:device]
 
 Continue = parsed_args[:Continue]
 #Creat ResultFolders if there is none
@@ -81,13 +86,15 @@ isdir(ModelResultFolder) || mkdir(ModelResultFolder)
 model = XXZmodel_2D_helical(Jz/Jxy, width, expand = expand)
 
 if Continue ≥ max_pow_step Continue = true end
+device == :cpu ? solver = cpu_solver : solver = gpu_solver
 @timeit to "evaluate" begin
     res = evaluate(model, bondD, β, ModelResultFolder, 
                         hermitian = false, 
                         max_pow_step = max_pow_step, 
                         group = group,
                         Continue = Continue,
-                        tag = tag)
+                        tag = tag,
+                        solver = solver)
 end
 
 const End_Time = Dates.format(now(), "yyyy-mm-dd HH:MM:SS")

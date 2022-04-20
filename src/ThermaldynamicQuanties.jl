@@ -7,7 +7,7 @@ function make_operator(Op::AbstractMatrix{T}, dim::Int64) where T
     return eye ⊗ Op ⊗ eye
 end
 
-function make_operator(Op::AbstractMatrix{T}, ψ::CMPS) where T
+function make_operator(Op::AbstractMatrix{T}, ψ::AbstractCMPS) where T
     eye = Matrix{T}(I, size(ψ.Q))
     return eye ⊗ Op ⊗ eye
 end
@@ -16,7 +16,7 @@ end
 """
     The thermal average of local opeartors ⊢o⊣ with respect to K = ψl * W * ψr
 """
-function thermal_average(Op::AbstractMatrix, ψl::CMPS, ψr::CMPS, W::CMPO, β::Real)
+function thermal_average(Op::AbstractMatrix, ψl::AbstractCMPS, ψr::AbstractCMPS, W::AbstractCMPO, β::Real)
     K = ψl * W * ψr 
     e, v = symeigen(-β*K)
     m = maximum(e); e = e .- m
@@ -25,14 +25,14 @@ function thermal_average(Op::AbstractMatrix, ψl::CMPS, ψr::CMPS, W::CMPO, β::
     num = exp.(e) .* diag(Op) |> sum
     return num/den   
 end
-thermal_average(Op::AbstractMatrix, ψ::CMPS, W::CMPO, β::Real) = thermal_average(Op, ψ, ψ, W, β)
+thermal_average(Op::AbstractMatrix, ψ::AbstractCMPS, W::AbstractCMPO, β::Real) = thermal_average(Op, ψ, ψ, W, β)
 
 
 
 """
     The thermal average of local opeartors ⊢o⊣ with respect to K = ψ * ψ
 """
-function thermal_average(Op::AbstractMatrix, ψl::CMPS, ψr::CMPS, β::Real)
+function thermal_average(Op::AbstractMatrix, ψl::AbstractCMPS, ψr::AbstractCMPS, β::Real)
     K = ψl * ψr 
     e, v = symeigen(-β*K)
     m = maximum(e) ; e = e .- m
@@ -41,35 +41,36 @@ function thermal_average(Op::AbstractMatrix, ψl::CMPS, ψr::CMPS, β::Real)
     num = exp.(e) .* diag(Op) |> sum
     return num/den
 end
-thermal_average(Op::AbstractMatrix, ψ::CMPS, β::Real) =thermal_average(Op, ψ, ψ, β)
+thermal_average(Op::AbstractMatrix, ψ::AbstractCMPS, β::Real) =thermal_average(Op, ψ, ψ, β)
 
 
 """
     Free energy: F = -1/(βL) lnZ
 """
-function free_energy(ψl::CMPS, ψr::CMPS, W::CMPO, β::Real)
+function free_energy(ψl::AbstractCMPS, ψr::AbstractCMPS, W::AbstractCMPO, β::Real)
     res = log_overlap(ψl, W * ψr, β) - log_overlap(ψl, ψr, β)
     return -res/β
 end
-free_energy(ψ::CMPS, W::CMPO, β::Real) = free_energy(ψ, ψ, W, β)
+free_energy(ψ::AbstractCMPS, W::AbstractCMPO, β::Real) = free_energy(ψ, ψ, W, β)
 
 
 """
     Energy density: E = -∂lnZ/∂β
 """
-function energy(ψl::CMPS, ψr::CMPS, W::CMPO, β::Real)
+function energy(ψl::AbstractCMPS, ψr::AbstractCMPS, W::AbstractCMPO, β::Real)
     K = ψl * W * ψr 
     H = ψl * ψr 
     res = thermal_average(K, ψl, ψr, W, β) - thermal_average(H, ψl, ψr, β)
     return res
 end
-energy(ψ::CMPS, W::CMPO, β::Real) = energy(ψ, ψ, W, β)
+energy(ψ::AbstractCMPS, W::AbstractCMPO, β::Real) = energy(ψ, ψ, W, β)
 
 
 """
     Specific heat: Cv = -β^2 ∂E/∂β
 """
-function specific_heat(ψl::CMPS, ψr::CMPS, W::CMPO, β::Real; method::Symbol = :adiff)
+function specific_heat(ψl::AbstractCMPS, ψr::AbstractCMPS, W::AbstractCMPO, β::Real; 
+                        method::Symbol = :adiff)
     if method == :adiff
         K = ψl * W * ψr 
         H = ψl * ψr 
@@ -84,16 +85,17 @@ function specific_heat(ψl::CMPS, ψr::CMPS, W::CMPO, β::Real; method::Symbol =
     end
     return β^2 * c
 end
-specific_heat(ψ::CMPS, W::CMPO, β::Real; method::Symbol = :adiff) = specific_heat(ψ, ψ, W, β, method = method)
+specific_heat(ψ::AbstractCMPS, W::AbstractCMPO, β::Real; 
+                method::Symbol = :adiff) = specific_heat(ψ, ψ, W, β, method = method)
 
 
 """
     Entropy: S = β×(E - F)
 """
-function entropy(ψl::CMPS, ψr::CMPS, W::CMPO, β::Real)
+function entropy(ψl::AbstractCMPS, ψr::AbstractCMPS, W::AbstractCMPO, β::Real)
     s = energy(ψl, ψr, W, β) - free_energy(ψl, ψr, W, β)
     return β*s
 end
-entropy(ψ::CMPS, W::CMPO, β::Real) = entropy(ψ, ψ, W, β)
+entropy(ψ::AbstractCMPS, W::AbstractCMPO, β::Real) = entropy(ψ, ψ, W, β)
 
 #end  # module ThermaldynamicQuanties

@@ -4,19 +4,24 @@ include("/home/sliang/JuliaCode/JuliaCMPO/jobs/bright90.jl")
 phys_model = "XXZ_2D_helical"
 env = "/home/sliang/JuliaCode/JuliaCMPO"
 prog = env * "/jobs/CMPO_$(phys_model).jl"
-logtag = Dates.format(now(), "yyyy-mm-dd")
+
+device = "gpu"
+logtag = Dates.format(now(), "yyyy-mm-dd")*"-"*device
 
 Wait = nothing
-cpu_per_task = 16
+cpu_per_task = 4
 
 tag = logtag
-βlist = [16.0]
+βlist = [1.0]
 Jzlist = [1.0]
 Jxylist = [1.0]
 bondDlist = [8]
-widlist = [1]
+widlist = [3]
 Continue = 0 #Continue > max_pow_step,  Continue = true
-max_pow_step = 100
+max_pow_step = 3
+device == "gpu" ? usegpu = true : usegpu = false
+
+
 
 #CREAT LOG FOLDER
 logdir = "/data/sliang/log/JuliaCMPO"
@@ -31,7 +36,8 @@ for bondD in bondDlist
                     "beta"=>β,
                     "max_pow_step"=>max_pow_step,
                     "Continue"=>Continue,
-                    "tag"=>tag
+                    "tag"=>tag,
+                    "device"=> device
                     )
         jobname = logdir * "/" * phys_model
         isdir(jobname) || mkdir(jobname)
@@ -42,6 +48,8 @@ for bondD in bondDlist
         jobname = @sprintf "%s/beta_%.2f" jobname β
 
         jobid = submitJob(env, prog, args, jobname, 
+                            machine = "v100",
+                            usegpu = usegpu,
                             cpu_per_task = cpu_per_task,
                             Run = true, 
                             Wait = Wait)

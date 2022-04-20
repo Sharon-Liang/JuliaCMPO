@@ -1,5 +1,21 @@
 #module PhysicalModels
-#include("Setup.jl")
+"""
+    Data structure of a physical model
+    PhysModel:
+        `Tmatrix`: local transfer matrix
+        `phy_dim`: bond dimension of physical legs
+        `vir_dim`: virtual bond dimension of the horizontal legs
+        `Ut`: unitary transformation that makes: `Ut^† Tmatrix Ut = transpose(Tmatrix)`
+              Note that in general, `Ut` not necessarily be unitary, but be invertible, 
+              however, in the limiting cases we know right now, they are unitary.
+"""
+struct PhysModel{T<:AbstractCMPO}
+    Tmatrix::T 
+    phy_dim::Int64  
+    vir_dim::Int64  
+    Ut::Union{AbstractMatrix, Nothing} 
+end
+
 
 """
     Ising type CMPO: H = -J ôl ôr block
@@ -31,7 +47,7 @@ end
 
 
 """
-    General form of W matrix: W = [0 I; I 0]
+    General form of `Ut` matrix: `Ut = [0 I; I 0]`.
 """
 function generalUt(vir_dim::Integer)
     zero_block = zeros(vir_dim, vir_dim)
@@ -40,6 +56,7 @@ function generalUt(vir_dim::Integer)
     col2 = cat(eye_block, zero_block, dims = 1)
     return cat(col1, col2, dims = 2), 2*vir_dim
 end
+
 
 """
     Expand cmpo
@@ -86,13 +103,11 @@ end
 NN Transvers field Ising model
     H = -∑ J Zi Zj - ∑ Γ Xi
 """
-function TFIsing(J::Real, Γ::Real; field::Symbol=:N, η::Float64 = 1.e-2)
-    if field == :N
-        h = zeros(2,2)
-    else
-        h = η .* pauli(field)
-    end
-    Tmatrix = CMPO(Γ*pauli(:x)+h, √J*pauli(:z), √J*pauli(:z), zeros(2,2))
+function TFIsing(J::Real, Γ::Real; 
+            testfield::Union{PauliMatrixName,Nothing} = nothing, 
+            η::Float64 = 1.e-2)
+    testfield === nothing ? h = zeros(2,2) : h = η .* pauli(testfield)
+    Tmatrix = CMPO(Γ*pauli(PX)+h, √J*pauli(PZ), √J*pauli(PZ), zeros(2,2))
     Ut = Matrix{Float64}(I, 1, 1)
     return PhysModel(Tmatrix, 2, 1, Ut)
 end
@@ -105,7 +120,7 @@ after unitary transformation : U=exp(iπSy) on odd sites:
     H = -0.5 ∑ (S+ S+ + S-S-)
 """
 function XYmodel()
-    sp = pauli(:+); sm = pauli(:-);
+    sp = pauli(PPlus); sm = pauli(PMinus);
     L = zeros(2, 2, 2)
     L[:,:,1] = 1/√2 * sp ; L[:,:,2] = 1/√2 * sm
     R = zeros(2, 2, 2)
@@ -130,7 +145,7 @@ function XXZmodel_tw(Δ::Real)
     if Δ == 0
         return XYmodel()
     else
-        sp = pauli(:+); sm = pauli(:-); sz = 0.5 * pauli(:z)
+        sp = pauli(PPlus); sm = pauli(PMinus); sz = 0.5 * pauli(PZ)
         L = zeros(2, 2, 3)
         L[:,:,1] = 1/√2 * sp ; L[:,:,2] = 1/√2 * sm; L[:,:,3] = √Δ * sz
         R = zeros(2, 2, 3)
@@ -148,7 +163,7 @@ function XXZmodel(Δ::Real)
     if Δ == 0
         return XYmodel()
     else
-        sp = pauli(:+); sm = pauli(:-); sz = 0.5 * pauli(:z)
+        sp = pauli(PPlus); sm = pauli(PMinus); sz = 0.5 * pauli(PZ)
         L = zeros(2, 2, 3)
         L[:,:,1] = 1/√2 * sp ; L[:,:,2] = 1/√2 * sm; L[:,:,3] = √Δ * sz
         R = zeros(2, 2, 3)
@@ -167,15 +182,13 @@ end
     H = -∑ J [Zi Z_(i+1) +Zi Z_(i+W)]  - ∑ Γ Xi
 """
 function TFIsing_2D_helical(J::Real, Γ::Real, wid::Integer = 1; 
-            field::Symbol=:N, η::Float64 = 1.e-2, expand::Bool = false)
-    if field == :N
-        h = zeros(2,2)
-    else
-        h = η .* pauli(field)
-    end
+                            testfield::Union{PauliMatrixName,Nothing} = nothing, 
+                            η::Float64 = 1.e-2, 
+                            expand::Bool = false)
+    testfield === nothing ? h = zeros(2,2) : h = η .* pauli(field)
     phy_dim = 2; vir_dim = wid
-    Q = Γ*pauli(:x)+h
-    T = Ising_CMPO(J, pauli(:z), pauli(:z), wid)
+    Q = Γ*pauli(PX)+h
+    T = Ising_CMPO(J, pauli(PZ), pauli(PZ), wid)
     Tmatrix = CMPO(Q, T.R, T.L, T.P)
     Ut = nothing
     if expand
@@ -194,7 +207,7 @@ after unitary transformation : U=exp(iπSy) on odd sites:
 """
 function XYmodel_2D_helical(wid::Integer = 1; expand::Bool = false)
     phy_dim = 2; vir_dim = 2*wid
-    sp = pauli(:+); sm = pauli(:-);
+    sp = pauli(PPlus); sm = pauli(PMinus);
     Tp = Ising_CMPO(0.5, sp, sp, wid)
     Tm = Ising_CMPO(0.5, sm, sm, wid)
     Tmatrix = cat(Tp, Tm)
@@ -215,7 +228,7 @@ after unitary transformation : U=exp(iπSy) on odd sites:
 """
 function XXZmodel_2D_helical(Δ::Real, wid::Integer = 1; expand::Bool=false)
     phy_dim = 2; vir_dim = 3*wid
-    sp = pauli(:+); sm = pauli(:-); sz = 0.5 * pauli(:z)
+    sp = pauli(PPlus); sm = pauli(PMinus); sz = 0.5 * pauli(PZ)
     Tp = Ising_CMPO(0.5, sp, sp, wid)
     Tm = Ising_CMPO(0.5, sm, sm, wid)
     Tz = Ising_CMPO(Δ, sz, sz, wid)
@@ -237,7 +250,7 @@ after unitary transformation : U=exp(iπSy) on odd sites:
 """
 function XXZmodel_2D_helical(Jxy::Real, Jz::Real, wid::Integer = 1; expand::Bool=false)
     phy_dim = 2; vir_dim = 3*wid
-    sp = pauli(:+); sm = pauli(:-); sz = 0.5 * pauli(:z)
+    sp = pauli(PPlus); sm = pauli(PMinus); sz = 0.5 * pauli(PZ)
     Tp = Ising_CMPO(-0.5*Jxy, sp, sm, wid)
     Tm = Ising_CMPO(-0.5*Jxy, sm, sp, wid)
     Tz = Ising_CMPO(-Jz, sz, sz, wid)
