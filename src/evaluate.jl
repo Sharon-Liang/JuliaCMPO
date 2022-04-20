@@ -99,7 +99,7 @@ end
     Evaluate PhysModel m when its transfer matrix is non-hermitian, 
     or force to do power projection 
 """
-function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder::String; 
+function cMPO.non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder::String; 
                                 init = nothing, 
                                 group::Integer = 1,
                                 max_pow_step::Integer = 100,
@@ -165,9 +165,9 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
         saveCMPS(ChkpLpsiFile, CTensor(ψl))
 
         open(ChkpEngFile,"w") do cfile
-            F = solver((ψl, ψr, Tm) -> free_energy(ψl, ψr, Tm, β)/group, ψl, ψr, Tm)
-            E = solver((ψl, ψr, Tm) -> energy(ψl, ψr, Tm, β)/group, ψl, ψr, Tm)
-            Cv = solver((ψl, ψr, Tm) -> specific_heat(ψl, ψr, Tm, β)/group, ψl, ψr, Tm)
+            F = free_energy(ψl, ψr, Tm, β)/group
+            E = energy(ψl, ψr, Tm, β)/group
+            Cv = specific_heat(ψl, ψr, Tm, β)/group
             S = β * (E - F)    
             write(cfile, "step    free_energy/site        energy/site       specific_heat/site      entropy/site    \n")
             write(cfile, "----  -------------------  --------------------   -------------------  -------------------\n")
@@ -226,9 +226,9 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
         end
 
         open(ChkpEngFile,"a") do cfile
-            F = solver((ψl, ψr, Tm) -> free_energy(ψl, ψr, Tm, β)/group, ψl, ψr, Tm)
-            E = solver((ψl, ψr, Tm) -> energy(ψl, ψr, Tm, β)/group, ψl, ψr, Tm)
-            Cv = solver((ψl, ψr, Tm) -> specific_heat(ψl, ψr, Tm, β)/group, ψl, ψr, Tm)
+            F = free_energy(ψl, ψr, Tm, β)/group
+            E = energy(ψl, ψr, Tm, β)/group
+            Cv = specific_heat(ψl, ψr, Tm, β)/group
             S = β * (E - F)
             EngString = @sprintf "%3i   %.16f   %.16f   %.16f   %.16f \n" pow_step F E Cv S
             write(cfile, EngString)

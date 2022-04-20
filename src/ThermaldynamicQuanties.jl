@@ -32,7 +32,7 @@ thermal_average(Op::AbstractMatrix, ψ::AbstractCMPS, W::AbstractCMPO, β::Real)
 """
     The thermal average of local opeartors ⊢o⊣ with respect to K = ψ * ψ
 """
-function thermal_average(Op::AbstractMatrix, ψl::CMPS, ψr::CMPS, β::Real)
+function thermal_average(Op::AbstractMatrix, ψl::AbstractCMPS, ψr::AbstractCMPS, β::Real)
     K = ψl * ψr 
     e, v = symeigen(-β*K)
     m = maximum(e) ; e = e .- m

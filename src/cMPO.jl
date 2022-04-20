@@ -12,7 +12,7 @@ using CUDA; CUDA.allowscalar(false)
 
 import Base: kron, *
 import Base: ==, ≈,  transpose, adjoint, cat
-import LinearAlgebra: ishermitian, norm, normalize
+import LinearAlgebra: ishermitian, norm, normalize, diag
 
 # structs
 export AbstractCTensor, AbstractCMPS, AbstractCMPO,
