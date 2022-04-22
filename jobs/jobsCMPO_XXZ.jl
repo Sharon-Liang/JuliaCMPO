@@ -15,6 +15,7 @@ Jzlist = [1.0]
 Jxylist = [1.0]
 
 bondDlist = [16]
+Wait = 9890 
 
 #CREAT LOG FOLDER
 logdir = "/data/sliang/log/JuliaCMPO"
