@@ -9,16 +9,21 @@ device = "gpu"
 logtag = Dates.format(now(), "yyyy-mm-dd")*"-"*device
 
 Wait = nothing
-cpu_per_task = 4
+cpu_per_task = 8
 
-tag = logtag
-βlist = [1.0]
+tag = "2022-04-20"*"-"*device
+beta1 = [0.1, 0.5]
+beta2 = [i for i in range(1.0, 10.0, step=1.0)]
+beta3 = [i for i in range(1.1, 1.9, step=0.1)]
+
+#βlist = [0.1, 0.5]
+βlist = vcat(beta1, beta2, beta3)
 Jzlist = [1.0]
 Jxylist = [1.0]
-bondDlist = [8]
-widlist = [3]
-Continue = 0 #Continue > max_pow_step,  Continue = true
-max_pow_step = 3
+bondDlist = [32]
+widlist = [3, 5]
+Continue = 999 #Continue > max_pow_step,  Continue = true
+max_pow_step = 100
 device == "gpu" ? usegpu = true : usegpu = false
 
 
@@ -48,7 +53,7 @@ for bondD in bondDlist
         jobname = @sprintf "%s/beta_%.2f" jobname β
 
         jobid = submitJob(env, prog, args, jobname, 
-                            machine = "v100",
+                            machine = "a100",
                             usegpu = usegpu,
                             cpu_per_task = cpu_per_task,
                             Run = true, 
