@@ -57,7 +57,7 @@ settings = ArgParseSettings(prog="CMPO code for XXZ model"
         help = "date tag"
     "--device"
         arg_type = Symbol
-        default = :cpu
+        default = :CPU
         help = "device used"
 end
 parsed_args = parse_args(settings; as_symbols=true)
@@ -86,7 +86,7 @@ isdir(ModelResultFolder) || mkdir(ModelResultFolder)
 model = XXZmodel_2D_helical(Jz/Jxy, width, expand = expand)
 
 if Continue ≥ max_pow_step Continue = true end
-device == :cpu ? solver = cpu_solver : solver = gpu_solver
+device == :CPU ? solver = cpu_solver : solver = gpu_solver
 @timeit to "evaluate" begin
     res = evaluate(model, bondD, β, ModelResultFolder, 
                         hermitian = false, 
