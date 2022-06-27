@@ -55,6 +55,10 @@ settings = ArgParseSettings(prog="CMPO code for XXZ model"
         arg_type = String
         default = Dates.format(now(), "yyyy-mm-dd")
         help = "date tag"
+    "--device"
+        arg_type = Symbol
+        default = :cpu
+        help = "device used"
 end
 parsed_args = parse_args(settings; as_symbols=true)
 print(parsed_args,"\n")
@@ -68,11 +72,11 @@ const β0 = parsed_args[:init]
 const bondD = parsed_args[:bondD]
 const init = parsed_args[:init]
 const Continue = parsed_args[:Continue]
-const ResultFolder = parsed_args[:ResultFolder]
 const tag = parsed_args[:tag]
+const device = parsed_args[:device]
 
 const wid = 1
-
+const ResultFolder = parsed_args[:ResultFolder]
 isdir(ResultFolder) || mkdir(ResultFolder)
 ModelResultFolder = @sprintf "%s/Jz_%.2f_Jxy_%.2f_wid_%02i" ResultFolder Jz Jxy wid
 isdir(ModelResultFolder) || mkdir(ModelResultFolder)
@@ -80,7 +84,7 @@ isdir(ModelResultFolder) || mkdir(ModelResultFolder)
 
 #CMPO
 model = XXZmodel(Jz/Jxy)
-group = 2  #AFM XXZ
+#group = 2  #AFM XXZ
 
 if β0 == 0
     ψ0 = nothing
@@ -98,10 +102,15 @@ if Continue == false
 end
 
 βlist = [i for i in range(bi, bf, step=bstep)]
+device == :cpu ? solver = cpu_solver : solver = gpu_solver
 for b = 1:length(βlist)
     β = βlist[b]
     @timeit to "evaluate" begin
-        res = evaluate(model, bondD, β, ModelResultFolder, init = ψ0, group = group, tag=tag)
+        res = evaluate(model, bondD, β, ModelResultFolder, 
+                            init = ψ0, 
+                            group = group, 
+                            tag=tag,
+                            solver = solver)
     end
 
     open(EngFile,"a") do file  

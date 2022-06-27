@@ -83,7 +83,8 @@ end
 function adaptive_mera_update(ψ0::AbstractCMPS, χ::Integer, β::Real; 
     options::MeraUpdateOptions = MeraUpdateOptions())
     step = 1
-    logfidelity0 = logfidelity(ψ0, ψ0, β)
+    #logfidelity0 = logfidelity(ψ0, ψ0, β)
+    logfidelity0 = 9.9e9
     loss(p_matrix) = logfidelity(project(ψ0, p_matrix), ψ0, β)
 
     _, v = symeigen(ψ0.Q)

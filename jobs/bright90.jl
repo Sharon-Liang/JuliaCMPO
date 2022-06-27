@@ -1,34 +1,45 @@
 using Printf, DelimitedFiles
 using Random; Random.seed!()
 
+@enum Partitian a100 p100 v100 titanv
+@enum Device CPU GPU
+
 """
     submitJob: Prepare a jobfile
 """
 function submitJob(env, prog, args, jobname;
-                  machine::String = "p100",
-                  usegpu::Bool = false,
+                  partitian::Partitian = a100,
+                  device::Device = CPU,
+                  gpu_memory::Int = 0,
                   cpu_per_task::Integer = 4,
                   Run=false, 
                   Remove=true,
                   Wait=nothing, 
                   return_id = false,
-                  proglang="julia")
+                  proglang="julia",
+                  runtime::String = "99-99:99:99")
     log_file_path = jobname * ".log"
     job =@sprintf """
     #!/bin/bash -l 
     #SBATCH --partition=%s 
     #SBATCH --nodes=1 
-    #SBATCH --time=100:00:00 
+    #SBATCH --time=%s 
     #SBATCH --cpus-per-task=%i
     #SBATCH --job-name=%s 
     #SBATCH --output=%s 
     #SBATCH --error=%s 
-    """ machine cpu_per_task jobname log_file_path log_file_path
+    """ partitian runtime cpu_per_task jobname log_file_path log_file_path
     
-    if usegpu
-        job *= """
-        #SBATCH --gres=gpu:1
-        """
+    if device == GPU
+        if partitian == a100 && gpu_memory != 0
+            job *= """
+            #SBATCH --gres=gpu:A100_$(gpu_memory)G:1
+            """
+        else 
+            job *= """
+            #SBATCH --gres=gpu:1
+            """
+        end
     end
 
     if Wait !== nothing
