@@ -3,7 +3,7 @@ __precompile__()
 
 using Random; Random.seed!()
 using HDF5, DelimitedFiles, Printf
-using StatsFuns
+using LogExpFunctions
 using OMEinsum, LinearAlgebra
 using Zygote, Optim, ChainRules
 using FiniteDifferences
@@ -12,7 +12,7 @@ using CUDA; CUDA.allowscalar(false)
 
 import Base: kron, *
 import Base: ==, ≈,  transpose, adjoint, cat
-import LinearAlgebra: ishermitian, norm, normalize, diag
+import LinearAlgebra: ishermitian, norm, normalize, diag, diagm
 
 # structs
 export AbstractCTensor, AbstractCMPS, AbstractCMPO,
@@ -28,7 +28,7 @@ export PauliMatrixName, PX, PY, iPY, PZ, PPlus, PMinus,
        Masubara_freq,
        symmetrize, symeigen, 
        logtrexp,
-       consist_diagm
+       diagm
 
 # solver
 export cpu_solver, gpu_solver

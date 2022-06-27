@@ -39,7 +39,7 @@ for solver in [cpu_solver, gpu_solver]
                 dQ = convert(Vector, diag(ψ.Q))
                 R = convert(Array, ψ.R)
 
-                loss() = -logfidelity(solver(CMPS_generate, consist_diagm(dQ), R), ψ0, β)
+                loss() = -logfidelity(solver(CMPS_generate, diagm(dQ), R), ψ0, β)
                 pars = Zygote.Params([dQ, R])
                 p0, f, g! = optim_functions(loss, pars)
 
@@ -73,7 +73,7 @@ for solver in [cpu_solver, gpu_solver]
             R = convert(Array, ψ.R)
             
             Tm = solver(x->x, m.Tmatrix)
-            loss() = free_energy(solver(CMPS_generate, consist_diagm(dQ), R), Tm, β)
+            loss() = free_energy(solver(CMPS_generate, diagm(dQ), R), Tm, β)
             pars = Zygote.Params([dQ, R])
             p0, f, g! = optim_functions(loss, pars)
                 

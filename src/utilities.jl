@@ -82,8 +82,7 @@ function logtrexp(A::AbstractMatrix)
 end
 
 """
-    `consist_diagm`: diagm(v) function that returns the same type of Matrix as input `v`
+    diagm(v) function for CuVector
 """
-consist_diagm(v::AbstractVector) = diagm(v)
-consist_diagm(v::CuVector) = CuMatrix(CUDA.@allowscalar CUDA.diagm(v))
+diagm(v::CuVector) = ein"i->ii"(v)
 #end  # module utilities

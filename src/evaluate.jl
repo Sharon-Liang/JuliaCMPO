@@ -60,7 +60,7 @@ function hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder
     dQ = convert(Vector, diag(ψ.Q))
     R  = convert(Array, ψ.R)
 
-    loss() = free_energy(solver(CMPS_generate, consist_diagm(dQ), R), Tm, β)
+    loss() = free_energy(solver(CMPS_generate, diagm(dQ), R), Tm, β)
     F_initial = loss()
 
     p0, f, g! = optim_functions(loss, Params([dQ, R]))
@@ -71,7 +71,7 @@ function hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder
     optim_result = Optim.optimize(f, g!, p0, LBFGS(), optim_options)
     F_final = minimum(optim_result)
 
-    ψ = solver(CMPS_generate, consist_diagm(dQ), R)
+    ψ = solver(CMPS_generate, diagm(dQ), R)
     #save optimize result
     OptResultFile = @sprintf "%s/beta_%.2f.txt" OptResultFolder β
     open(OptResultFile, "w") do file

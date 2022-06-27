@@ -191,7 +191,7 @@ function compress_cmps(ψ0::T, χ::Integer, β::Real;
             R =  convert(Array, ψ.R)
 
             T <: CuCMPS ? solver = gpu_solver : solver = cpu_solver
-            loss() = -logfidelity(solver(CMPS_generate, consist_diagm(dQ), R), ψ0, β)
+            loss() = -logfidelity(solver(CMPS_generate, diagm(dQ), R), ψ0, β)
             p0, f, g! = optim_functions(loss, Params([dQ, R]))
 
             # The same as scipy L-BFGS-B
@@ -201,7 +201,7 @@ function compress_cmps(ψ0::T, χ::Integer, β::Real;
                                 show_trace = show_trace, show_every = 10)
             optim_result = Optim.optimize(f, g!, p0, LBFGS(), optim_options)
             
-            ψ = solver(CMPS_generate, consist_diagm(dQ), R)
+            ψ = solver(CMPS_generate, diagm(dQ), R)
             fidelity_final = fidelity(ψ, ψ0, β, Normalize = true)
         end
     end 
