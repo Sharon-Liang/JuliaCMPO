@@ -14,12 +14,12 @@ the structure of cMPO
 abstract type AbstractCTensor end
 abstract type AbstractCMPS{T} <: AbstractCTensor end
 abstract type AbstractCMPO{T} <: AbstractCTensor end
-struct CMPS{T<:Number} <: AbstractCMPS{T}
+@with_kw struct CMPS{T<:Number} <: AbstractCMPS{T}
     Q::Matrix{T} # Dimension: χ × χ 
     R::Array{T} # Dimension: χ × χ × vir_dim
 end
 
-struct CuCMPS{T<:Number} <: AbstractCMPS{T}
+@with_kw struct CuCMPS{T<:Number} <: AbstractCMPS{T}
     Q::CuMatrix{T} # Dimension: χ × χ 
     R::CuArray{T} # Dimension: χ × χ × vir_dim
 end
@@ -37,14 +37,14 @@ the structure of cMPO
     |   |               |
     --                 --
 """
-struct CMPO{T<:Number} <: AbstractCMPO{T}
+@with_kw struct CMPO{T<:Number} <: AbstractCMPO{T}
     Q::Matrix{T} # Dimension: phy_dim × phy_dim
     R::Array{T} # Column : phy_dim × phy_dim × vir_dim
     L::Array{T}  # Row: phy_dim × phy_dim × vir_dim
     P::Array{T}  # long-range interaction: phy_dim × phy_dim × vir_dim × vir_dim
 end
 
-struct CuCMPO{T<:Number} <: AbstractCMPO{T}
+@with_kw struct CuCMPO{T<:Number} <: AbstractCMPO{T}
     Q::CuMatrix{T} # Dimension: phy_dim × phy_dim
     R::CuArray{T} # Column : phy_dim × phy_dim × vir_dim
     L::CuArray{T}  # Row: phy_dim × phy_dim × vir_dim
@@ -57,13 +57,16 @@ end
 """
 CMPS_generate(QR::Array{T}...) where T<:Number = CMPS(QR...)
 CMPS_generate(QR::CuArray{T}...) where T<:Number = CuCMPS(QR...)
+CMPS_generate(;Q, R) = CMPS_generate(Q, R)
 
 CMPO_generate(QRLP::Array{T}...) where T<:Number = CMPO(QRLP...)
 CMPO_generate(QRLP::CuArray{T}...) where T<:Number = CuCMPO(QRLP...)
+CMPO_generate(;Q, R, L, P) = CMPS_generate(Q, R, L, P)
+
 
 """
     `CTensor(x)`: convert CTensors to CMPS/CMPO
-    `CuCTensor(x)` : convert CTensors to CuCMPS/CuCMPO
+    `CuCTensor(x)` : convert CTensors to CuCMPS/CuCMPOs
 """
 CTensor(x::Union{CMPS, CMPO}) = x
 function CTensor(x::T) where T<:AbstractCTensor
@@ -79,4 +82,6 @@ function CuCTensor(x::T) where T<:AbstractCTensor
     length(fields) == 2 ? CuCMPS(args...) : CuCMPO(args...)
 end
 
+bond_dimension(x::AbstractCTensor) = size(x.Q)[1]
+virtual_dimension(x::AbstractCTensor) = Integer(length(x.R)/length(x.Q)) + 1
 #end #module structs

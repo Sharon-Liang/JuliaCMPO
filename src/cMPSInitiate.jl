@@ -42,7 +42,7 @@ end
     `loss_diff`: loss function difference to last step
     `fidelity` : fidelity between `ψ` and the origional `ψ0`
 """
-struct MeraUpdateStep{Ti<:Integer, T<:Real, Tf<:Real}
+@with_kw struct MeraUpdateStep{Ti<:Integer, T<:Real, Tf<:Real}
     id::Ti
     θ::T
     loss_diff::Tf
@@ -50,7 +50,7 @@ struct MeraUpdateStep{Ti<:Integer, T<:Real, Tf<:Real}
 end
 MeraUpdateTrace = Vector{MeraUpdateStep}
 
-struct MeraUpdateResult{T<:AbstractCMPS}
+@with_kw struct MeraUpdateResult{T<:AbstractCMPS}
     ψ::T
     trace::MeraUpdateTrace
 end
@@ -60,24 +60,13 @@ end
 atol: tolerance of absolute difference of fidelity(ψ, ψ0, β, Normalize = true) and 1.0
 ldiff_tol: tolerance of absolute difference of the value of loss function between two MERA update steps
 """
-struct MeraUpdateOptions{T<:Number}
-    atol::T
-    ldiff_tol::T
-    maxiter::Int64
-    interpolate::Bool
-    store_trace::Bool
-    show_trace::Bool
-end
-
-function MeraUpdateOptions(;
-    atol = 1.e-5,
-    ldiff_tol = 1.e-12,
-    maxiter = 100,
-    interpolate = true,
-    store_trace = false,
-    show_trace = false)
-    MeraUpdateOptions(atol, ldiff_tol, maxiter, interpolate,
-        store_trace, show_trace)
+@with_kw struct MeraUpdateOptions{T1<:Number, T2<:Bool}
+    atol::T1 = 1.e-5
+    ldiff_tol::T1 = 1.e-12
+    maxiter::Int64 = 100
+    interpolate::T2 = true
+    store_trace::T2 = false
+    show_trace::T2 = false
 end
 
 function adaptive_mera_update(ψ0::AbstractCMPS, χ::Integer, β::Real; 
@@ -152,7 +141,7 @@ end
 """
     compress a CMPS(ψ0) to a target dimension(χ)
 """
-struct CompressResult{T<:AbstractCMPS, Tf<:Real}
+@with_kw struct CompressResult{T<:AbstractCMPS, Tf<:Real}
     ψ::T
     fidelity_initial::Tf
     fidelity_final::Tf
@@ -162,7 +151,8 @@ end
 function compress_cmps(ψ0::T, χ::Integer, β::Real; 
     init::Union{AbstractCMPS, Nothing} = nothing,
     show_trace::Bool = false,
-    mera_update_options::MeraUpdateOptions = MeraUpdateOptions(show_trace=show_trace)) where T<:AbstractCMPS
+    mera_update_options::MeraUpdateOptions = MeraUpdateOptions()) where T<:AbstractCMPS
+    mera_update_options = MeraUpdateOptions(mera_update_options, show_trace=show_trace)
     if show_trace 
         println("----------------------------Compress CMPS-----------------------------") 
     end

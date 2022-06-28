@@ -84,5 +84,5 @@ end
 """
     diagm(v) function for CuVector
 """
-diagm(v::CuVector) = ein"i->ii"(v)
+LinearAlgebra.diagm(v::CuVector) = ein"i->ii"(v)
 #end  # module utilities

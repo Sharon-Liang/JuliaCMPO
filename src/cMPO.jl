@@ -7,7 +7,7 @@ using LogExpFunctions
 using OMEinsum, LinearAlgebra
 using Zygote, Optim, ChainRules
 using FiniteDifferences
-using Dates
+using Dates, Parameters
 using CUDA; CUDA.allowscalar(false)
 
 import Base: kron, *
@@ -18,7 +18,9 @@ import LinearAlgebra: ishermitian, norm, normalize, diag, diagm
 export AbstractCTensor, AbstractCMPS, AbstractCMPO,
        CMPS, CMPO, CuCMPS, CuCMPO,
        CMPS_generate, CMPO_generate,
-       CTensor, CuCTensor
+       CTensor, CuCTensor,
+       bond_dimension,
+       virtual_dimension
        
 # utilities
 export PauliMatrixName, PX, PY, iPY, PZ, PPlus, PMinus,
