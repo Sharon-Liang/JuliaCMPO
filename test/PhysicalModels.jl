@@ -3,7 +3,7 @@ using LinearAlgebra
 
 @testset "Ising_CMPO" begin
     J = 1.0
-    pz = pauli(:z); px = pauli(:x)
+    pz = pauli(PZ); px = pauli(PX)
     # H = -J px pz
     @testset "width = 1" begin
         o = Ising_CMPO(J, px, pz)
