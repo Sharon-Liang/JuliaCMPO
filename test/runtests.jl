@@ -21,6 +21,9 @@ end
     include("cMPSInitiate.jl")
 end
 
+@testset "PhysicalModels.jl" begin
+    include("PhysicalModels.jl")
+end
 
 
 
