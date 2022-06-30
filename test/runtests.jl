@@ -9,6 +9,10 @@ end
     include("multiplications.jl")
 end
 
+@testset "cMPSMatrix.jl" begin
+    include("cMPSMatrix.jl")
+end
+
 @testset "cMPSOperations.jl" begin
     include("cMPSOperations.jl")
 end

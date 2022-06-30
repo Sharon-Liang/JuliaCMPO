@@ -4,24 +4,40 @@ __precompile__()
 using Random; Random.seed!()
 using HDF5, DelimitedFiles, Printf
 using LogExpFunctions
-using OMEinsum, LinearAlgebra
+using OMEinsum, LinearAlgebra, KrylovKit
 using Zygote, Optim, ChainRules
-using FiniteDifferences
 using Dates, Parameters
 using CUDA; CUDA.allowscalar(false)
 
-import Base: kron, *
+import Base: kron, *, eltype, size, length, getindex, iterate
 import Base: ==, ≈,  transpose, adjoint, cat
 import LinearAlgebra: ishermitian, norm, normalize, diag, diagm
+import KrylovKit.eigsolve
 
-# structs
+using FiniteTLanczos
+import FiniteTLanczos: eigensolver,
+                       partitian,
+                       free_energy,
+                       energy,
+                       specific_heat,
+                       entropy,
+                       thermal_average
+
+#eigensolver.jl
+export eigensolver
+
+# structs/CMPSandCMPO
 export AbstractCTensor, AbstractCMPS, AbstractCMPO,
        CMPS, CMPO, CuCMPS, CuCMPO,
        CMPS_generate, CMPO_generate,
        CTensor, CuCTensor,
        bond_dimension,
        virtual_dimension
-       
+
+#structs/CMPSMatrix
+export CMPSMatrix
+
+
 # utilities
 export PauliMatrixName, PX, PY, iPY, PZ, PPlus, PMinus,
        pauli,
@@ -41,6 +57,12 @@ export veclength, optim_functions
 
 # multiplications
 export ⊗
+
+# TraceEstimator/cMPSMatrix.jl
+
+
+# TraceEstimator/trexpsolver.jl
+export eigsolve
 
 # cMPSOperations
 export log_overlap,
@@ -89,13 +111,22 @@ export evaluate, evaluate_py,
        hermitian_evaluate, 
        non_hermitian_evaluate
 
-include("structs.jl")
+include("./structs/CMPSandCMPO.jl")
+include("./structs/CMPSMatrix.jl")
+
 include("utilities.jl")
+
+include("eigensolver.jl")
+
+
 include("solver.jl")
 include("OptimFunctions.jl")
 
 include("multiplications.jl")
 include("cMPSOperations.jl")
+
+
+
 
 include("PhysicalModels.jl")
 include("cMPSInitiate.jl")

@@ -12,17 +12,21 @@ the structure of cMPO
     --       --
 """
 abstract type AbstractCTensor end
-abstract type AbstractCMPS{T} <: AbstractCTensor end
-abstract type AbstractCMPO{T} <: AbstractCTensor end
-@with_kw struct CMPS{T<:Number} <: AbstractCMPS{T}
-    Q::Matrix{T} # Dimension: χ × χ 
-    R::Array{T} # Dimension: χ × χ × vir_dim
+abstract type AbstractCMPS{T, S, U} <: AbstractCTensor end
+abstract type AbstractCMPO{T, S, U, V} <: AbstractCTensor end
+@with_kw struct CMPS{T<:Number, S<:Matrix, U<:Array} <: AbstractCMPS{T, S, U}
+    Q::S # Dimension: χ × χ 
+    R::U # Dimension: χ × χ × vir_dim
+    CMPS{T,S,U}(Q::Matrix{T}, R::Array{T}) where {T,S,U} = new(Q,R)
 end
+CMPS(Q::Matrix{T}, R::Array{T}) where {T} = CMPS{T,typeof(Q), typeof(R)}(Q,R)
 
-@with_kw struct CuCMPS{T<:Number} <: AbstractCMPS{T}
-    Q::CuMatrix{T} # Dimension: χ × χ 
-    R::CuArray{T} # Dimension: χ × χ × vir_dim
+@with_kw struct CuCMPS{T<:Number, S<:CuMatrix, U<:CuArray} <: AbstractCMPS{T, S, U}
+    Q::S # Dimension: χ × χ 
+    R::U# Dimension: χ × χ × vir_dim
+    CuCMPS{T,S,U}(Q::CuMatrix{T}, R::CuArray{T}) where {T,S,U} = new(Q,R)
 end
+CuCMPS(Q::CuMatrix{T}, R::CuArray{T}) where {T} = CuCMPS{T, typeof(Q), typeof(R)}(Q,R)
 
 
 """ `CMPO`: the struct for cMPO
@@ -37,19 +41,26 @@ the structure of cMPO
     |   |               |
     --                 --
 """
-@with_kw struct CMPO{T<:Number} <: AbstractCMPO{T}
-    Q::Matrix{T} # Dimension: phy_dim × phy_dim
-    R::Array{T} # Column : phy_dim × phy_dim × vir_dim
-    L::Array{T}  # Row: phy_dim × phy_dim × vir_dim
-    P::Array{T}  # long-range interaction: phy_dim × phy_dim × vir_dim × vir_dim
+@with_kw struct CMPO{T<:Number, S<:Matrix, U<:Array, V<:Array} <: AbstractCMPO{T, S, U, V}
+    Q::S # Dimension: phy_dim × phy_dim
+    R::U # Column : phy_dim × phy_dim × vir_dim
+    L::U  # Row: phy_dim × phy_dim × vir_dim
+    P::V  # long-range interaction: phy_dim × phy_dim × vir_dim × vir_dim
+    CMPO{T,S,U,V}(Q::Matrix{T}, R::Array{T}, L::Array{T}, P::Array{T}) where {T,S,U,V} = new(Q,R,L,P)
 end
+CMPO(Q::Matrix{T}, R::Array{T}, L::Array{T}, P::Array{T}) where {T} = 
+    CMPO{T, typeof(Q), typeof(R), typeof(P)}(Q,R,L,P)
 
-@with_kw struct CuCMPO{T<:Number} <: AbstractCMPO{T}
-    Q::CuMatrix{T} # Dimension: phy_dim × phy_dim
-    R::CuArray{T} # Column : phy_dim × phy_dim × vir_dim
-    L::CuArray{T}  # Row: phy_dim × phy_dim × vir_dim
-    P::CuArray{T}  # long-range interaction: phy_dim × phy_dim × vir_dim × vir_dim
+@with_kw struct CuCMPO{T<:Number, S<:CuMatrix, U<:CuArray, V<:CuArray} <: AbstractCMPO{T, S, U, V}
+    Q::S # Dimension: phy_dim × phy_dim
+    R::U # Column : phy_dim × phy_dim × vir_dim
+    L::U  # Row: phy_dim × phy_dim × vir_dim
+    P::V  # long-range interaction: phy_dim × phy_dim × vir_dim × vir_dim
+    CuCMPO{T,S,U,V}(Q::CuMatrix{T}, R::CuArray{T}, L::CuArray{T}, P::CuArray{T}) where {T,S,U,V} = 
+        new(Q,R,L,P)
 end
+CuCMPO(Q::CuMatrix{T}, R::CuArray{T}, L::CuArray{T}, P::CuArray{T}) where {T} = 
+        CuCMPO{T, typeof(Q), typeof(R), typeof(P)}(Q,R,L,P)
 
 
 """
@@ -85,3 +96,4 @@ end
 bond_dimension(x::AbstractCTensor) = size(x.Q)[1]
 virtual_dimension(x::AbstractCTensor) = Integer(length(x.R)/length(x.Q)) + 1
 #end #module structs
+

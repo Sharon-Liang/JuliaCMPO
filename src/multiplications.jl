@@ -50,32 +50,32 @@ end
 
 
 """multiplications of cmps and cmpo"""
-function *(sl::AbstractCMPS{T}, sr::AbstractCMPS{T}) where T
-    li = convert(typeof(sl.Q), Matrix{T}(I,size(sl.Q)))
-    ri = convert(typeof(sr.Q), Matrix{T}(I,size(sr.Q)))
+function *(sl::AbstractCMPS{T, S, U}, sr::AbstractCMPS{T, S, U}) where {T, S, U}
+    li = convert(S, Matrix{T}(I,size(sl.Q)))
+    ri = convert(S, Matrix{T}(I,size(sr.Q)))
     K = li ⊗ sr.Q + sl.Q ⊗ ri + sl.R ⊗ sr.R
     return -K
 end
 
-function *(o::AbstractCMPO{T}, s::AbstractCMPS{T}) where T
-    oi = convert(typeof(o.Q), Matrix{T}(I,size(o.Q)))
-    si = convert(typeof(s.Q), Matrix{T}(I,size(s.Q)))
+function *(o::AbstractCMPO{T, S, U, V}, s::AbstractCMPS{T, S, U}) where {T, S, U, V}
+    oi = convert(S, Matrix{T}(I,size(o.Q)))
+    si = convert(S, Matrix{T}(I,size(s.Q)))
     Q = oi ⊗ s.Q + o.Q ⊗ si + o.L ⊗ s.R
     R = o.R ⊗ si + o.P ⊗ s.R
     return CMPS_generate(Q, R)
 end
 
-function *(s::AbstractCMPS{T}, o::AbstractCMPO{T}) where T 
-    oi = convert(typeof(o.Q), Matrix{T}(I,size(o.Q)))
-    si = convert(typeof(s.Q), Matrix{T}(I,size(s.Q)))
+function *(s::AbstractCMPS{T, S, U}, o::AbstractCMPO{T, S, U, V}) where {T, S, U, V} 
+    oi = convert(S, Matrix{T}(I,size(o.Q)))
+    si = convert(S, Matrix{T}(I,size(s.Q)))
     Q = s.Q ⊗ oi + si ⊗ o.Q + s.R ⊗ o.R
     R = si ⊗ o.L + s.R ⊗ o.P
     return CMPS_generate(Q, R)
 end
 
-function *(ol::AbstractCMPO{T}, or::AbstractCMPO{T}) where T
-    li = convert(typeof(ol.Q), Matrix{T}(I,size(ol.Q)))
-    ri = convert(typeof(or.Q), Matrix{T}(I,size(or.Q)))
+function *(ol::AbstractCMPO{T, S, U, V}, or::AbstractCMPO{T, S, U, V}) where {T, S, U, V}
+    li = convert(S, Matrix{T}(I,size(ol.Q)))
+    ri = convert(S, Matrix{T}(I,size(or.Q)))
     Q = ol.Q ⊗ ri + li ⊗ or.Q + ol.L ⊗ or.R
     L = li ⊗ or.L + ol.L ⊗ or.P
     R = ol.R ⊗ ri + ol.P ⊗ or.R

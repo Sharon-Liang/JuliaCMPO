@@ -38,50 +38,6 @@ end
 
 
 """
-    Symmetrize a matrix `M`
-"""
-function symmetrize(M::AbstractMatrix)
-   return (M + M')/2 #|> Hermitian
-end
-
-
-""" `symeigen` : manually symmetrize M before the eigen decomposition
-    For CUDA dense matrix eigen solver `CUSOLVER.syevd!` and `CUSOLVER.heevd!`:
-        'N'/'V': return eigenvalues/both eigenvalues and eigenvectors 
-        'U'/'L': Upper/Lower triangle of `M` is stored.
-"""
-function symeigen(M::AbstractMatrix)
-    e, v = M |> symmetrize |> eigen
-    return e, v
-end
-
-for elty in (:Float32, :Float64)
-    @eval begin
-        function symeigen(M::CuMatrix{$elty})
-            e, v = CUSOLVER.syevd!('V', 'U', symmetrize(M))
-            return e, v
-        end
-    end
-end
-
-for elty in (:ComplexF32, :ComplexF64)
-    @eval begin
-        function symeigen(M::CuArray{$elty})
-            e, v = CUSOLVER.heevd!('V', 'U', symmetrize(M))
-            return e, v
-        end
-    end
-end
-
-"""
-    `ln(Tr[exp(A)])` function
-"""
-function logtrexp(A::AbstractMatrix)
-    val, _ = symeigen(A)
-    return logsumexp(val)
-end
-
-"""
     diagm(v) function for CuVector
 """
 LinearAlgebra.diagm(v::CuVector) = ein"i->ii"(v)
