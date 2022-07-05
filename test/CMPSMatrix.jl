@@ -6,9 +6,8 @@ Nlist = [10, 20]
 Nl, Nr = rand(Nlist), rand(Nlist)
 
 ψl, ψr = init_cmps(Nl), init_cmps(Nr)
-Cmatrix = CMPSMatrix(ψl, ψr)
-
-P0 = ψl * ψr
+Cmatrix = ψl * ψr
+P0 = Cmatrix |> Matrix
 
 @testset "size" begin
     @test size(P0) == size(Cmatrix)
@@ -22,7 +21,7 @@ end
 @testset "Full Rank itFOLM generate eigenvalues and eigenvectors" begin
     evals, evecs = eigen(P0)
     N = size(Cmatrix)[1]
-    for dist in [FiniteTLanczos.Gaussian, FiniteTLanczos.Rademacher, rand]
+    for dist in [Gaussian, Rademacher, rand]
         v0 = random_unit_vector(N, dist)
         res = itFOLM(Cmatrix, init_vector = v0, ncv = N) |> eigensolver
         @unpack values, vectors = res
@@ -32,9 +31,10 @@ end
 end
 
 @testset "logtrexp function" begin
-    res0 = logtrexp(P0)
-    for method in [FiniteTLanczos.Full_ED, FiniteTLanczos.FullSampling_FTLM]
-        @test logtrexp(Cmatrix, method) ≈ res0
+    t = rand()
+    res0 = logtrexp(t,P0)
+    for method in [Full_ED, FullSampling_FTLM]
+        @test logtrexp(t, Cmatrix, method) ≈ res0
     end
 end
 

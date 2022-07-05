@@ -2,82 +2,8 @@ using JuliaCMPO, Test
 using LinearAlgebra
 using Random; Random.seed!()
 
-function otimes(A::Matrix, B::Matrix)
-    kron(A,B)
-end
-
-function otimes(A::Matrix, B::Array{T,3} where T)
-    χ1 = size(A)[1]; χ2 = size(B)[1]; D = size(B)[3]
-    eltype(A) == eltype(B) ? dtype = eltype(A) : dtype = ComplexF64
-    res = zeros(dtype, χ1*χ2, χ1*χ2, D)
-    for d = 1:D
-        res[:,:,d] = otimes(A, B[:,:,d])
-    end
-    return res
-end
-
-function otimes(A::Array{T,3} where T, B::Matrix)
-    χ1 = size(A)[1]; χ2 = size(B)[1]; D = size(A)[3]
-    eltype(A) == eltype(B) ? dtype = eltype(A) : dtype = ComplexF64
-    res = zeros(dtype, χ1*χ2, χ1*χ2, D)
-    for d = 1:D
-        res[:,:,d] = otimes(A[:,:,d], B)
-    end
-    return res
-end
-
-function otimes(A::Array{T,3} where T, B::Array{T,3} where T)
-    χ1 = size(A)[1]; χ2 = size(B)[1]; D = size(A)[3]
-    eltype(A) == eltype(B) ? dtype = eltype(A) : dtype = ComplexF64
-    res = zeros(dtype, χ1*χ2, χ1*χ2)
-    for d = 1:D
-        res += otimes(A[:,:,d], B[:,:,d])
-    end
-    return res
-end
-
-function otimes(A::Array{T,4} where T, B::Array{T,3} where T)
-    χ1 = size(A)[1]; χ2 = size(B)[1]; D = size(B)[3]
-    eltype(A) == eltype(B) ? dtype = eltype(A) : dtype = ComplexF64c
-    res = zeros(dtype, χ1*χ2, χ1*χ2,D)
-    for d = 1:D
-        res[:,:,d] = otimes(A[:,:,d,:], B)
-    end
-    return res
-end
-
-function otimes(A::Array{T,3} where T, B::Array{T,4} where T)
-    χ1 = size(A)[1]; χ2 = size(B)[1]; D = size(A)[3]
-    eltype(A) == eltype(B) ? dtype = eltype(A) : dtype = ComplexF64
-    res = zeros(dtype,χ1*χ2, χ1*χ2, D)
-    for d = 1:D
-        res[:,:,d] = otimes(A, B[:,:,:,d])
-    end
-    return res
-end
-
-function otimes(A::Array{T,4} where T, B::Array{T,4} where T)
-    χ1 = size(A)[1]; χ2 = size(B)[1]; D = size(A)[3]
-    eltype(A) == eltype(B) ? dtype = eltype(A) : dtype = ComplexF64
-    res = zeros(dtype, χ1*χ2, χ1*χ2, D, D)
-    for d1 = 1:D, d2 = 1:D
-        res[:,:,d1, d2] = otimes(A[:,:,d1,:], B[:,:,:,d2])
-    end
-    return res
-end
-
-
 for solver in [cpu_solver, gpu_solver] 
     @testset "$(solver)" begin
-        @testset "⊗" begin
-            D1 = 4;  D2 = 2
-            T = ComplexF64
-            a = [randn(D1,D1),randn(T,D1,D1),randn(D1,D1,D2), randn(T,D1,D1,D2),randn(D1,D1,D2,D2),randn(T,D1,D1,D2,D2)]
-            for i = 1:length(a), j = i+1 : min(2*(div(i+1,2)+1), length(a))
-                @test Array(solver(⊗, a[i], a[j])) ≈ otimes(a[i],a[j])
-            end
-        end
-
         @testset "multiplications of cmps and cmpo: D-1 = 1" begin
             T = ComplexF64
             D = 4
@@ -106,7 +32,7 @@ for solver in [cpu_solver, gpu_solver]
                 s = solver(CMPS_generate, x, z)
                 o = solver(CMPO_generate, x, x, z, p)
 
-                @test  s*s ≈ solver(A->A, ss)         
+                @test  Matrix(s*s) ≈ solver(A->A, ss)         
                 @test (o*s).Q ≈ solver(A->A, osq)
                 @test (o*s).R ≈ solver(A->A, osr)
                 @test (s*o).Q ≈ solver(A->A, soq) 
@@ -115,7 +41,7 @@ for solver in [cpu_solver, gpu_solver]
                 @test (o*o).R ≈ solver(A->A, oor) 
                 @test (o*o).L ≈ solver(A->A, ool) 
                 @test (o*o).P ≈ solver(A->A, oop) 
-                @test s*o*s ≈ solver(A->A, sos)
+                @test Matrix(s*o*s) ≈ solver(A->A, sos)
             end
         end
 
@@ -157,7 +83,7 @@ for solver in [cpu_solver, gpu_solver]
                 s = solver(CMPS_generate, x, R)
                 o = solver(CMPO_generate, x, R, L, P)
 
-                @test  s*s ≈ solver(A->A, ss)         
+                @test  Matrix(s*s) ≈ solver(A->A, ss)         
                 @test (o*s).Q ≈ solver(A->A, osq)
                 @test (o*s).R ≈ solver(A->A, osr)
                 @test (s*o).Q ≈ solver(A->A, soq) 
@@ -166,7 +92,7 @@ for solver in [cpu_solver, gpu_solver]
                 @test (o*o).R ≈ solver(A->A, oor) 
                 @test (o*o).L ≈ solver(A->A, ool) 
                 @test (o*o).P ≈ solver(A->A, oop) 
-                @test s*o*s ≈ solver(A->A, sos)
+                @test Matrix(s*o*s) ≈ solver(A->A, sos)
             end
         end
     end

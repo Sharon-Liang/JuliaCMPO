@@ -1,27 +1,25 @@
 import Base: eltype, size, length, getindex, iterate
 
-@with_kw struct CMPSMatrix{T<:Number}
-    ψl::AbstractCMPS{T}
-    ψr::AbstractCMPS{T}
+@with_kw struct CMPSMatrix{T, S, U}
+    ψl::AbstractCMPS{T, S, U}
+    ψr::AbstractCMPS{T, S, U}
 end
 
-Matrix(A::CMPSMatrix) = A.ψl * A.ψr
-
-eltype(A::CMPSMatrix{T}) where T = T
+eltype(A::CMPSMatrix{T, S, U}) where {T,S,U} = T
 
 size(A::CMPSMatrix) = map(*, size(A.ψl.Q), size(A.ψr.Q))
 size(A::CMPSMatrix, n) = size(A)[n]
 length(A::CMPSMatrix) = size(A,1) * size(A,2)
 
 
-function getindex(A::CMPSMatrix{T} ,Id::Vararg{Int, 2}) where T
+function getindex(A::CMPSMatrix{T, S, U} ,Id::Vararg{Int, 2}) where {T, S, U}
     Nr = size(A.ψr.Q)[1]
     rl, rr = divrem(Id[1]-1, Nr); rl += 1; rr += 1
     cl, cr = divrem(Id[2]-1, Nr); cl += 1; cr += 1
     
     @unpack ψl, ψr = A
-    li = convert(typeof(ψl.Q), Matrix{T}(I,size(ψl.Q)))
-    ri = convert(typeof(ψr.Q), Matrix{T}(I,size(ψr.Q)))
+    li = convert(S, Matrix{T}(I,size(ψl.Q)))
+    ri = convert(S, Matrix{T}(I,size(ψr.Q)))
     L = cat(li, ψl.Q, ψl.R, dims = 3)
     R = cat(ψr.Q, ri, ψr.R, dims = 3)
     res = map(i->L[rl,cl,i]*R[rr,cr,i], 1:size(L)[3]) |> sum
@@ -34,13 +32,13 @@ function getindex(A::CMPSMatrix,i::Int)
     return getindex(A, c, r)
 end
 
-function *(A::CMPSMatrix{T}, v::AbstractVector{T}) where T
+function *(A::CMPSMatrix{T, S, U}, v::AbstractVector{T}) where {T, S, U}
     @unpack ψl, ψr = A
     V = reshape(v, size(ψr.Q)[2], size(ψl.Q)[2])
-    V = convert(typeof(ψl.Q), V)
+    V = convert(S, V)
 
-    li = convert(typeof(ψl.Q), Matrix{T}(I,size(ψl.Q)))
-    ri = convert(typeof(ψr.Q), Matrix{T}(I,size(ψr.Q)))
+    li = convert(S, Matrix{T}(I,size(ψl.Q)))
+    ri = convert(S, Matrix{T}(I,size(ψr.Q)))
     L = cat(li, ψl.Q, ψl.R, dims = 3)
     R = cat(ψr.Q, ri, ψr.R, dims = 3)
 
@@ -48,13 +46,13 @@ function *(A::CMPSMatrix{T}, v::AbstractVector{T}) where T
     return vec(-Kv)
 end
 
-function *(v::LinearAlgebra.Adjoint{T, Vector{T}}, A::CMPSMatrix{T}) where T
+function *(v::LinearAlgebra.Adjoint{T, Vector{T}}, A::CMPSMatrix{T, S, U}) where {T, S, U}
     @unpack ψl, ψr = A
     V = reshape(v, size(ψr.Q)[2], size(ψl.Q)[2])
-    V = convert(typeof(ψl.Q), V)
+    V = convert(S, V)
 
-    li = convert(typeof(ψl.Q), Matrix{T}(I,size(ψl.Q)))
-    ri = convert(typeof(ψr.Q), Matrix{T}(I,size(ψr.Q)))
+    li = convert(S, Matrix{T}(I,size(ψl.Q)))
+    ri = convert(S, Matrix{T}(I,size(ψr.Q)))
     L = cat(li, ψl.Q, ψl.R, dims = 3)
     R = cat(ψr.Q, ri, ψr.R, dims = 3)
 

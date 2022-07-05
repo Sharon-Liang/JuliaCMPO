@@ -18,7 +18,8 @@ end
 """
 function thermal_average(Op::AbstractMatrix, ψl::AbstractCMPS, ψr::AbstractCMPS, W::AbstractCMPO, β::Real)
     K = ψl * W * ψr 
-    e, v = symeigen(-β*K)
+    e, v = eigensolver(K)
+    e = -β*e
     m = maximum(e); e = e .- m
     Op = v' * Op * v
     den = exp.(e) |> sum
@@ -34,7 +35,8 @@ thermal_average(Op::AbstractMatrix, ψ::AbstractCMPS, W::AbstractCMPO, β::Real)
 """
 function thermal_average(Op::AbstractMatrix, ψl::AbstractCMPS, ψr::AbstractCMPS, β::Real)
     K = ψl * ψr 
-    e, v = symeigen(-β*K)
+    e, v = eigensolver(K)
+    e = -β*e
     m = maximum(e) ; e = e .- m
     Op = v' * Op * v
     den = exp.(e) |> sum

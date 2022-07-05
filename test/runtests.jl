@@ -5,29 +5,34 @@ using CUDA; CUDA.allowscalar(false)
     include("utilities.jl")
 end
 
-@testset "multiplication.jl" begin
-    include("multiplications.jl")
+@testset "otimes.jl" begin
+    include("otimes.jl")
 end
 
-@testset "cMPSMatrix.jl" begin
-    include("cMPSMatrix.jl")
+@testset "CTensorProducts.jl" begin
+    include("CTensorProducts.jl")
 end
 
-@testset "cMPSOperations.jl" begin
-    include("cMPSOperations.jl")
+@testset "CMPSMatrix.jl" begin
+    include("CMPSMatrix.jl")
 end
 
-@testset "gradient" begin
-    include("gradient.jl")
+@testset "CMPSOperations.jl" begin
+    include("CMPSOperations.jl")
 end
 
-@testset "cMPSInitiate.jl" begin
-    include("cMPSInitiate.jl")
+@testset "CMPSInitiate.jl" begin
+    include("CMPSInitiate.jl")
 end
 
 @testset "PhysicalModels.jl" begin
     include("PhysicalModels.jl")
 end
+
+@testset "gradient" begin
+    include("./gradient/gradient.jl")
+end
+
 
 
 

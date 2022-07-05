@@ -1,11 +1,23 @@
 #module cMPSOperations
 """
+    `Matrix(A::CMPSMatrix{T, S, U})`: return the matrix form of A
+"""
+function Matrix(A::CMPSMatrix{T, S, U}) where {T, S, U}
+    @unpack ψl, ψr = A
+    li = convert(S, Matrix{T}(I,size(ψl.Q)))
+    ri = convert(S, Matrix{T}(I,size(ψr.Q)))
+    K = li ⊗ ψr.Q + ψl.Q ⊗ ri + ψl.R ⊗ ψr.R
+    return -K
+end
+
+
+"""
     Logarithm of the overlap of two CMPS:
         log_overlap = ln(⟨ψl|ψr⟩)
 """
-function log_overlap(sl::T, sr::T, β::Real) where T<:AbstractCMPS
-    K = sl * sr
-    return logtrexp(-β * K)
+function log_overlap(ψl::T, ψr::T, β::Real) where T<:AbstractCMPS
+    K = ψl * ψr
+    return logtrexp(-β, K)
 end
 
 
@@ -21,10 +33,10 @@ end
 """
     Normalize a CMPS, i.e. ⟨ψ|ψ⟩ = 1
 """
-function normalize(s::AbstractCMPS, β::Real)
+function normalize(s::AbstractCMPS{T, S, U}, β::Real) where {T,S,U}
     λ = log_overlap(s, s, β)/β
     eye = λ/2 * Matrix{Float64}(I,size(s.Q))
-    Q = s.Q - convert(typeof(s.Q), eye)
+    Q = s.Q - convert(S, eye)
     return CMPS_generate(Q, s.R)
 end
 
@@ -48,11 +60,11 @@ end
 """
     transpose of a CMPO
 """
-function transpose(o::AbstractCMPO)
+function transpose(o::AbstractCMPO{T, S, U, V}) where {T,S,U,V}
     Q = o.Q
     R = o.L
     L = o.R
-    length(size(o.P)) == 2 ? P = ein"ij->ij"(o.P) : P = ein"ijkl->ijlk"(o.P)
+    U <: AbstractMatrix ? P = ein"ij->ij"(o.P) : P = ein"ijkl->ijlk"(o.P)
     return CMPO_generate(Q,R,L,P)
 end
 
@@ -111,9 +123,9 @@ ishermitian(o::AbstractCMPO) = isequal(o, adjoint(o))
     (i.e. On the physical bond of cMPO and virtual bond of cMPS)
     if `U` is a square matrix, this is a guage transformation
 """
-function project(s::T, u::AbstractMatrix) where T<:AbstractCMPS
+function project(s::AbstractCMPS{T,S,U}, u::AbstractMatrix) where {T,S,U}
     Q = u' * s.Q * u
-    if length(size(s.R)) == 2
+    if U <: AbstractMatrix
         R = u' * s.R * u
     else
         R = ein"(ip,pql),qj -> ijl"(u', s.R, u)
@@ -121,9 +133,9 @@ function project(s::T, u::AbstractMatrix) where T<:AbstractCMPS
     return CMPS_generate(Q, R)
 end
 
-function project(o::T, u::AbstractMatrix) where T<:AbstractCMPO
+function project(o::AbstractCMPO{T, S, U, V}, u::AbstractMatrix) where {T,S,U,V}
     Q = u' * o.Q * u
-    if length(size(o.R)) == 2
+    if U <: AbstractMatrix
         R = u' * o.R * u
         L = u' * o.R * u
         P = u' * o.P * u
@@ -145,8 +157,8 @@ end
     | 0        |   |   |    |
     --        --   --      --
 """
-function *(Ut::AbstractMatrix, s::T) where T<:AbstractCMPS
-    if length(size(s.R)) == 2 
+function *(Ut::AbstractMatrix, s::AbstractCMPS{T,S,U}) where {T,S,U}
+    if U <: AbstractMatrix
         R = sum(Ut) * s.R
     else
         R = ein"mn, ijn -> ijm"(Ut, s.R)
@@ -154,8 +166,8 @@ function *(Ut::AbstractMatrix, s::T) where T<:AbstractCMPS
     return CMPS_generate(s.Q, R)
 end
 
-function *(Ut::AbstractMatrix, o::T) where T<:AbstractCMPO
-    if length(size(o.R)) == 2
+function *(Ut::AbstractMatrix, o::AbstractCMPO{T, S, U, V}) where {T,S,U,V}
+    if U <: AbstractMatrix
         R = sum(Ut) * o.R
         P = sum(Ut) * o.P
     else
@@ -165,8 +177,8 @@ function *(Ut::AbstractMatrix, o::T) where T<:AbstractCMPO
     return CMPO_generate(o.Q, R, o.L, P)
 end
 
-function *(o::T, Ut::AbstractMatrix) where T<:AbstractCMPO
-    if length(size(o.L)) == 2
+function *(o::AbstractCMPO{T, S, U, V}, Ut::AbstractMatrix) where {T,S,U,V}
+    if U <: AbstractMatrix
         L = sum(Ut) * o.L
         P = sum(Ut) * o.P
     else
@@ -180,7 +192,8 @@ end
     transform the CMPS to the gauge where Q is a diagonalized matrix
 """
 function diagQ(s::AbstractCMPS)
-    _, u = symeigen(s.Q)
+    Q = symmetrize(s.Q)
+    _, u = eigensolver(Q)
     return project(s, u)
 end
 
