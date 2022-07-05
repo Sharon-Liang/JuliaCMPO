@@ -1,4 +1,4 @@
-using Test, cMPO 
+using Test, JuliaCMPO 
 using Random; Random.seed!()
 #solver = cpu_solver
 

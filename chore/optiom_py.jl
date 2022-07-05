@@ -1,4 +1,4 @@
-using cMPO
+using JuliaCMPO
 using Zygote, LinearAlgebra
 using PyCall, SciPy; so = SciPy.optimize
 

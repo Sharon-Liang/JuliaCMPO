@@ -1,4 +1,4 @@
-using Test, cMPO
+using Test, JuliaCMPO
 using LinearAlgebra, Parameters, FiniteTLanczos
 using Random; Random.seed!()
 

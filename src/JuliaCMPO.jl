@@ -1,12 +1,13 @@
-module cMPO
+module JuliaCMPO
 __precompile__()
 
+using Dates, Parameters, Reexport  
 using Random; Random.seed!()
 using HDF5, DelimitedFiles, Printf
 using LogExpFunctions
 using OMEinsum, LinearAlgebra, KrylovKit
 using Zygote, Optim, ChainRules
-using Dates, Parameters
+
 using CUDA; CUDA.allowscalar(false)
 
 import Base: kron, *, eltype, size, length, getindex, iterate

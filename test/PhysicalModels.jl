@@ -1,4 +1,4 @@
-using Test, cMPO
+using Test, JuliaCMPO
 using LinearAlgebra
 
 @testset "Ising_CMPO" begin

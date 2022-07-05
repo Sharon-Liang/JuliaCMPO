@@ -1,7 +1,7 @@
 using LinearAlgebra; BLAS.set_num_threads(Threads.nthreads())
 using TimerOutputs, Dates, ArgParse
 using DelimitedFiles, HDF5, Printf
-using cMPO
+using JuliaCMPO
 
 println("JULIA_NUM_THREADS = ", Threads.nthreads())
 println("OPENBLAS_NUM_THREADS = ", BLAS.get_num_threads())

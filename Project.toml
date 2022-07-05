@@ -1,4 +1,4 @@
-name = "cMPO"
+name = "JuliaCMPO"
 uuid = "2d91b1d6-dca2-4794-84f6-99a3d042c297"
 authors = ["Sharon-Liang <liangshuang228@gmail.com>"]
 version = "0.1.0"

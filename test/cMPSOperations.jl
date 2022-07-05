@@ -1,4 +1,4 @@
-using Test, cMPO
+using Test, JuliaCMPO
 using LinearAlgebra
 using Random; Random.seed!()
 
@@ -84,7 +84,7 @@ end
 end
 
 @testset "transpose(T^2) = transpose(T) * transpose(T)" begin
-    #one should compare transfer matrix instead of cMPO local tensor
+    #one should compare transfer matrix instead of JuliaCMPO local tensor
     β = 2.0
     for m in [TFIsing(1.0,1.0), XXZmodel_2D_helical(1.0, 2)]
         ψ = init_cmps(2, m.vir_dim)

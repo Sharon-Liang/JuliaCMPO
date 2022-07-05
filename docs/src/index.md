@@ -1,3 +1,3 @@
-# cMPO.jl
+# JuliaCMPO.jl
 
-Documentation for cMPO.jl
+Documentation for JuliaCMPO.jl

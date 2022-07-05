@@ -1,4 +1,4 @@
-using cMPO, Test
+using JuliaCMPO, Test
 using LinearAlgebra
 using Random; Random.seed!()
 

@@ -1,4 +1,4 @@
-using cMPO, Test
+using JuliaCMPO, Test
 using CUDA; CUDA.allowscalar(false)
 
 @testset "utilities.jl" begin

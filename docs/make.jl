@@ -1,10 +1,10 @@
 using Documenter
-using cMPO
+using JuliaCMPO
 
 makedocs(
-    sitename = "cMPO",
+    sitename = "JuliaCMPO",
     format = Documenter.HTML(),
-    modules = [cMPO]
+    modules = [JuliaCMPO]
 )
 
 # Documenter can also automatically deploy documentation to gh-pages.
