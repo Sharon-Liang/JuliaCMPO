@@ -93,7 +93,9 @@ function CuCTensor(x::T) where T<:AbstractCTensor
     length(fields) == 2 ? CuCMPS(args...) : CuCMPO(args...)
 end
 
-bond_dimension(x::AbstractCTensor) = size(x.Q)[1]
-virtual_dimension(x::AbstractCTensor) = Integer(length(x.R)/length(x.Q)) + 1
+
+bond_dimension(x::AbstractCTensor...) = size(x.Q, 1)
+virtual_bond_dimension(x::AbstractCTensor...) = Integer(length(x.R)/length(x.Q)) + 1
+
 #end #module structs
 

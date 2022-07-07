@@ -1,18 +1,22 @@
 function cpu_solver(f::Function, M::AbstractArray...)
+    M = map(x->convert(Array, x), M)
     return f(M...)
 end
 
 function gpu_solver(f::Function, M::AbstractArray...)
-    M = Tuple(convert(CuArray, x) for x in M)
-    eltype(M) <: CuArray ? (return f(M...)) : error("CuArray conversion fails")
+    M = map(x->convert(CuArray, x), M)
+    return f(M...)
 end
 
-function cpu_solver(f::Function, M::AbstractCTensor...)
-    M = Tuple(CTensor(x) for x in M)
-    eltype(M) <: Union{CMPS, CMPO} ? (return f(M...)) : error("CTensor conversion fails")
+TensorUnion = Union{AbstractCTensor, CMPSMatrix}
+function cpu_solver(f::Function, M::T...) where T<:TensorUnion
+    #M = Tuple(CTensor(x) for x in M)
+    M = map(x->CTensor(x), M)
+    return f(M...)
 end
 
-function gpu_solver(f::Function, M::AbstractCTensor...)
-    M = Tuple(CuCTensor(x) for x in M)
-    eltype(M) <: Union{CuCMPS, CuCMPO} ? (return f(M...)) : error("CuCTensor conversion fails")
+function gpu_solver(f::Function, M::T...) where T<:TensorUnion
+    #M = Tuple(CuCTensor(x) for x in M)
+    M = map(x->CuCTensor(x), M)
+    return f(M...)
 end

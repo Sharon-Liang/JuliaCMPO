@@ -2,7 +2,7 @@
 """
     `Matrix(A::CMPSMatrix{T, S, U})`: return the matrix form of A
 """
-function Matrix(A::CMPSMatrix{T, S, U}) where {T, S, U}
+function Matrix(A::CMPSMatrix{Ts,T,S,U}) where {Ts,T,S,U}
     @unpack ψl, ψr = A
     li = convert(S, Matrix{T}(I,size(ψl.Q)))
     ri = convert(S, Matrix{T}(I,size(ψr.Q)))

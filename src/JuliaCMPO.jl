@@ -29,7 +29,8 @@ export AbstractCTensor, AbstractCMPS, AbstractCMPO,
        CMPS_generate, CMPO_generate,
        CTensor, CuCTensor,
        bond_dimension,
-       virtual_dimension
+       virtual_bond_dimension
+
 #structs/CMPSMatrix
 export CMPSMatrix
 

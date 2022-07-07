@@ -1,7 +1,7 @@
 #project function
 for solver in [cpu_solver, gpu_solver] 
     @testset "$(solver)" begin
-        β = 2.0
+        β = rand()
         χ = 4
         D = 2
         loss(v, ψ) = logfidelity(project(ψ, v), ψ, β)

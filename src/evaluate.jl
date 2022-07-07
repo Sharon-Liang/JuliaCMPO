@@ -11,14 +11,16 @@ function evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder::String;
                     show_trace::Bool = false,
                     Continue::Union{Bool, Integer} = false,
                     tag = Dates.format(now(), "yyyy-mm-dd"),
-                    solver::Function = cpu_solver)
+                    solver::Function = cpu_solver,
+                    trace_estimator::Union{Function, Nothing} = nothing)
     hermitian === nothing ? hermitian = ishermitian(m.Tmatrix) : hermitian = hermitian
     if hermitian
         hermitian_evaluate(m, bondD, β, ResultFolder, 
             init = init, 
             show_trace = show_trace,
             tag = tag, 
-            solver = solver)
+            solver = solver,
+            trace_estimator = trace_estimator)
     else
         non_hermitian_evaluate(m, bondD, β, ResultFolder, 
             init = init, 
@@ -27,7 +29,8 @@ function evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder::String;
             Continue = Continue,
             group = group,
             tag = tag, 
-            solver = solver)
+            solver = solver,
+            trace_estimator = trace_estimator)
     end
 end
 
@@ -39,7 +42,8 @@ function hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder
             init::Union{CMPS, Nothing} = nothing,
             show_trace::Bool=false,
             tag = Dates.format(now(), "yyyy-mm-dd"),
-            solver::Function = cpu_solver)
+            solver::Function = cpu_solver,
+            trace_estimator::Union{Function, Nothing} = nothing)
     """
     ResultFolder: classified by Model parameters(interaction, width), store CMPS and Obsv files
     CMPSResultFolder: CMPS information, classified by bond dimension
@@ -106,7 +110,8 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
                                 show_trace::Bool = false,
                                 Continue::Union{Bool, Integer} = false,
                                 tag = Dates.format(now(), "yyyy-mm-dd"),
-                                solver::Function = cpu_solver)
+                                solver::Function = cpu_solver,
+                                trace_estimator::Union{Function, Nothing} = nothing)
     """
         ResultFolder: classified by Model parameters(interaction, width), store CMPS and Obsv files
         CMPSResultFolder: CMPS information, classified by bond dimension

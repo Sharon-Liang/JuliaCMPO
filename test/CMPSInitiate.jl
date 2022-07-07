@@ -18,7 +18,7 @@ end
 for solver in [cpu_solver, gpu_solver] 
     @testset "$(solver)" begin
         @testset "Initiate via boundary CMPS" begin
-            β = 2.0
+            β = rand()
             n = 3
             for m in [TFIsing(1.0,1.0), TFIsing_2D_helical(1.0,1.0,2)], χ in [2^n, 2^n-3]
                 solver == cpu_solver ? type = CMPS : type = CuCMPS

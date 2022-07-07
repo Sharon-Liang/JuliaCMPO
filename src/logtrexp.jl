@@ -8,14 +8,16 @@ function logtrexp(t::Real, M::AbstractMatrix)
     vals, _ = eigensolver(M)
     return logsumexp(t*vals)
 end
-
 logtrexp(t::Real, M::CMPSMatrix{T}) where T = logtrexp(t, Matrix(M))
 
-function logtrexp(t::Real, M::CMPSMatrix{T}, method::Function) where T
+logtrexp(t, M, esitmator::Nothing) = logtrexp(t, M)
+
+function logtrexp(t::Real, M::CMPSMatrix{T}, esitmator::Function; args...) where T
     sign(t) == 1 ? which = :LR : which=:SR
     e0, _, _ = eigsolve(M, size(M,1), 1, which, ishermitian = true)
     e0 = e0[1]
     expr = e -> exp(t * (e - e0))
-    res = method(M, expr)[1]
+    res = esitmator(M, expr; args...)[1]
     return log(res) + t*e0
 end
+
