@@ -2,7 +2,7 @@
 Zygote.@adjoint Array(x::CuArray) = Array(x), dy->(CuArray(dy),)
 
 """
-    rrule for logtrexp(tM) function
+    rrule for logtrexp(tM) function where `typeof(M) <: AbstractArray`
 """    
 function ChainRules.rrule(::typeof(logtrexp), t::Real, M::T) where {T<:AbstractArray}
     M = M |> symmetrize
@@ -21,7 +21,12 @@ function ChainRules.rrule(::typeof(logtrexp), t::Real, M::T) where {T<:AbstractA
 end
 
 
-function ChainRules.rrule(::typeof(logtrexp), t::Real, M::CMPSMatrix{T, S, U}) where {T,S,U}
+"""
+    rrule for logtrexp(tM) function where `typeof(M)=CMPSMatrix`, 
+    `∂y_∂M` also return a `CMPSMatrix`. `exp(tM)` is constructed 
+    explicitly if no `estimator` is assigned.
+"""
+function ChainRules.rrule(::typeof(logtrexp), t::Real, M::CMPSMatrix{Ts,T,S,U}) where {Ts,T,S,U}
     @unpack ψl, ψr = M
     χl, χr = size(ψl.Q, 1), size(ψr.Q, 1)
 
@@ -59,38 +64,48 @@ function ChainRules.rrule(::typeof(logtrexp), t::Real, M::CMPSMatrix{T, S, U}) w
 end
 
 
-#=
 """
     rrule for logtrexp(tM) function where `typeof(M)=CMPSMatrix`, 
-    `∂y_∂M` also return a `CMPSMatrix`.
+    `∂y_∂M` also return a `CMPSMatrix`. When `estimator = Full_ED`, 
+    `exp(tM)` is not explicitly constructed. 
+    (Note there is no memory saving in this case because one has to 
+    save all eigen vectors of the CMPSMatrix.)
 """
-function ChainRules.rrule(::typeof(logtrexp), t::Real, M::T, method::typeof(Full_ED)) where {T<:CMPSMatrix}
-    sign(t) == 1 ? which = :LR : which=:SR
-    e0, _, _ = eigsolve(M, size(M,1), 1, which, ishermitian = true)
-    e0 = e0[1]
-    expr = e -> exp(t * (e - e0))
-    res = method(M, expr)[1]
-    return log(res) + t*e0
-        e0, _, _ = eigsolve(M, size(M,1), 1, :SR, ishermitian = true)
-        e0 = e0[1]
-        exprZ = e -> exp(-β*(e - e0))
-        return method(M, exprZ)[1]
-    end
-    
-    
-    
+function ChainRules.rrule(::typeof(logtrexp), 
+                          t::Real, M::CMPSMatrix{Ts,T,S,U}, 
+                          estimator::typeof(Full_ED)) where {Ts,T,S,U}
+    @unpack ψl, ψr = M
+    χl, χr = size(ψl.Q, 1), size(ψr.Q, 1)
     vals, vecs = eigensolver(M)
+    dim = size(M, 1); mtype = typeof(vecs)
     y = logsumexp(t*vals)
     function logtrexp_pullback(ȳ)
         ∂y_∂t = map(e -> e * exp(t*e - y), vals) |> sum
         t̄ = ȳ * ∂y_∂t
-
         Λ = map(e -> exp(t*e - y), vals) 
-        ∂y_∂M = vecs * diagm(Λ) * vecs' |> transpose
-        M̄ = ȳ * t * ∂y_∂M
+        vecs = reshape(vecs, χr, χl, dim)
+        Onel = ones(χl, χl); Onel = convert(mtype, Onel)
+        Oner = ones(χr, χr); Oner = convert(mtype, Oner)
+        ∂y_∂Ql = -t * ein"n,kbn,kan,kk -> ab"(Λ, conj(vecs), vecs, Oner)
+        ∂y_∂Qr = -t * ein"n,bkn,akn,kk -> ab"(Λ, conj(vecs), vecs, Onel)
+        if U <: AbstractMatrix
+            ∂y_∂Rl = -t * ein"n,kl,lbn,kan,kl -> ab"(Λ, ψr.R, conj(vecs), vecs, Oner)
+            ∂y_∂Rr = -t * ein"n,kl,bln,akn,kl -> ab"(Λ, ψl.R, conj(vecs), vecs, Onel)
+        else
+            ∂y_∂Rl = -t * ein"n,klm,lbn,kan,kl -> ab"(Λ, ψr.R, conj(vecs), vecs, Oner)
+            ∂y_∂Rr = -t * ein"n,klm,bln,akn,kl -> ab"(Λ, ψl.R, conj(vecs), vecs, Onel)
+        end
+        Q̄l = ȳ * ∂y_∂Ql
+        R̄l = ȳ * ∂y_∂Rl
+        Q̄r = ȳ * ∂y_∂Qr
+        R̄r = ȳ * ∂y_∂Rr
+        ψ̄l = CMPS_generate(Q̄l, R̄l)
+        ψ̄r = CMPS_generate(Q̄r, R̄r)
+        M̄ = CMPSMatrix(ψ̄l, ψ̄r)
         return ChainRules.NoTangent(), t̄, M̄, ChainRules.NoTangent()
     end
     return y, logtrexp_pullback
 end
-=#
+
+
 #end #module rrule
