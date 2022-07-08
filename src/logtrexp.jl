@@ -9,14 +9,14 @@ function logtrexp(t::Real, M::AbstractMatrix)
     return logsumexp(t*vals)
 end
 logtrexp(t::Real, M::CMPSMatrix) = logtrexp(t, Matrix(M))
+logtrexp(t, M, esitmator::Nothing) = logtrexp(t, M)
 
-function logtrexp(t::Real, M::CMPSMatrix, esitmator::Function; args...)
+function logtrexp(t::Real, M::CMPSMatrix, esitmator::TraceEstimator)
     sign(t) == 1 ? which = :LR : which=:SR
     e0, _, _ = eigsolve(M, size(M,1), 1, which, ishermitian = true)
     e0 = e0[1]
     expr = e -> exp(t * (e - e0))
-    res = esitmator(M, expr; args...)[1]
+    res = FiniteTLanczos.evaluate(esitmator, M, expr)[1]
     return log(res) + t*e0
 end
 
-logtrexp(t, M, esitmator::Nothing) = logtrexp(t, M)

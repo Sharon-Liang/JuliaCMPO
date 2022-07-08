@@ -8,20 +8,14 @@ using HDF5, DelimitedFiles, Printf
 using LogExpFunctions
 using OMEinsum, LinearAlgebra, KrylovKit
 using Zygote, Optim, ChainRules
-@reexport using FiniteTLanczos
+using PhysMpdels, FiniteTLanczos
 
 @reexport import Base: kron, *, eltype, size, length, getindex, iterate
 @reexport import Base: ==, ≈,  transpose, adjoint, cat
 @reexport import LinearAlgebra: ishermitian, norm, normalize, diag, diagm
 @reexport import KrylovKit.eigsolve
 @reexport import FiniteTLanczos.eigensolver
-@reexport import FiniteTLanczos: partitian,
-                                 free_energy,
-                                 energy,
-                                 specific_heat,
-                                 entropy,
-                                 thermal_average, 
-                                 correlation_2time
+
 
 # structs/CMPSandCMPO
 export AbstractCTensor, AbstractCMPS, AbstractCMPO,
