@@ -75,23 +75,29 @@ function ChainRules.rrule(::typeof(logtrexp),
                           t::Real, M::CMPSMatrix{Ts,T,S,U}, 
                           estimator::typeof(Full_ED)) where {Ts,T,S,U}
     @unpack ψl, ψr = M
-    χl, χr = size(ψl.Q, 1), size(ψr.Q, 1)
     vals, vecs = eigensolver(M)
-    dim = size(M, 1); mtype = typeof(vecs)
     y = logsumexp(t*vals)
+
+    Ns = size(M, 1)
     function logtrexp_pullback(ȳ)
         ∂y_∂t = map(e -> e * exp(t*e - y), vals) |> sum
         t̄ = ȳ * ∂y_∂t
+        
         Λ = map(e -> exp(t*e - y), vals) 
-        vecs = reshape(vecs, χr, χl, dim)
-        Onel = ones(χl, χl); Onel = convert(mtype, Onel)
-        Oner = ones(χr, χr); Oner = convert(mtype, Oner)
+        vecs = reshape(vecs, χr, χl, Ns)
+
+        χl, χr = size(ψl.Q, 1), size(ψr.Q, 1)
+        Onel = ones(χl, χl); Onel = convert(S, Onel)
+        Oner = ones(χr, χr); Oner = convert(S, Oner)
+
         ∂y_∂Ql = -t * ein"n,kbn,kan,kk -> ab"(Λ, conj(vecs), vecs, Oner)
         ∂y_∂Qr = -t * ein"n,bkn,akn,kk -> ab"(Λ, conj(vecs), vecs, Onel)
         if U <: AbstractMatrix
             ∂y_∂Rl = -t * ein"n,kl,lbn,kan,kl -> ab"(Λ, ψr.R, conj(vecs), vecs, Oner)
             ∂y_∂Rr = -t * ein"n,kl,bln,akn,kl -> ab"(Λ, ψl.R, conj(vecs), vecs, Onel)
         else
+            Onel = ones(χl, χl, size(ψ.R,3)); Onel = convert(U, Onel)
+            Oner = ones(χr, χr, size(ψ.R,3)); Oner = convert(U, Oner)
             ∂y_∂Rl = -t * ein"n,klm,lbn,kan,kl -> ab"(Λ, ψr.R, conj(vecs), vecs, Oner)
             ∂y_∂Rr = -t * ein"n,klm,bln,akn,kl -> ab"(Λ, ψl.R, conj(vecs), vecs, Onel)
         end
