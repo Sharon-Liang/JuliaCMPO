@@ -24,64 +24,58 @@ export AbstractCTensor, AbstractCMPS, AbstractCMPO,
        CTensor, CuCTensor,
        bond_dimension,
        virtual_bond_dimension
-
 #structs/CMPSMatrix.jl
 export CMPSMatrix
-
 #structs/MeraUpdate.jl
 export MeraUpdateOptions,
        MeraUpdateStep,
        MeraUpdateTrace,
        MeraUpdateResult
-
 #structs/CMPSCompress.jl
 export CompressOptions, CompressResult
-
-#structs/EvaluateOptions.jl
-export EstimatorType, EvaluateOptions
 
 #utilities
 export ⊗, diagm
 
+
+#solver.jl
+export cpu_solver, gpu_solver
+# OptimFunctions.jl
+export veclength, optim_functions
+# SaveLoad.jl
+export saveCMPS, readCMPS
+
 # logtrexp.jl
 export logtrexp
-
-# solver
-export cpu_solver, gpu_solver
-# OptimFunctions
-export veclength, optim_functions
-
-
 # CMPSOperations
 export log_overlap,
        logfidelity, fidelity, 
        project,
        diagQ
-# CMPSInitiate
-export init_cmps, 
-       interpolate_isometry, 
-       adaptive_mera_update,
-       compress_cmps
 
-# PhysicalModels
+#MeraUpdate.jl
+export interpolate_isometry, adaptive_mera_update
+#CMPSCompress.jl 
+export compress_cmps
+# CMPSInitiate
+export init_cmps
+
+#PhysicalQuantities/PhysicalModels.jl
 export PhysModel, Ising_CMPO, generalUt, expand_cmpo
 export TFIsing, TFIsing_2D_helical,
        XYmodel, XYmodel_2D_helical, 
        XXZmodel,  XXZmodel_2D_helical
 
-       
-# SaveAndLoad
-export saveCMPS, readCMPS
-
-# ThermaldynamicQuanties
+#PhysicalQuantities/Thermaldynamic.jl
 export make_operator
 
-# evaluate
-export evaluate, evaluate_py, 
+#structs/EvaluateOptions.jl
+export EstimatorType, EvaluateOptions
+#evaluate.jl
+export evaluate,
        hermitian_evaluate, 
        non_hermitian_evaluate
 
-export PhysModel 
 
 include("./structs/CMPSandCMPO.jl")
 include("./structs/CMPSMatrix.jl")
@@ -96,11 +90,12 @@ include("solver.jl")
 include("OptimFunctions.jl")
 include("SaveLoad.jl")
 
+include("CTensorProducts.jl")
+
 include("eigensolver.jl")
 include("logtrexp.jl")
-
-include("CTensorProducts.jl")
 include("CMPSOperations.jl")
+
 include("MeraUpdate.jl")
 include("CMPSCompress.jl")
 include("CMPSInitiate.jl")
