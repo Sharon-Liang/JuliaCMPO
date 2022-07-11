@@ -8,3 +8,7 @@ end
 @testset "CTensorProducts.jl" begin
     include("CTensorProducts.jl")
 end
+
+@testset "CMPSMatrix.jl" begin
+    include("CMPSMatrix.jl")
+end

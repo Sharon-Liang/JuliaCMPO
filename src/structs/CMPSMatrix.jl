@@ -58,7 +58,7 @@ end
 """ 
 function *(A::CMPSMatrix{Ts,T,S,U}, v::AbstractVector{T}) where {Ts,T,S,U}
     @unpack ψl, ψr = A
-    V = reshape(v, size(ψr.Q)[2], size(ψl.Q)[2])
+    V = reshape(v, size(ψr.Q,2), size(ψl.Q,2))
     V = convert(S, V)
 
     li = convert(S, Matrix{T}(I,size(ψl.Q)))
@@ -72,7 +72,7 @@ end
 
 function *(v::LinearAlgebra.Adjoint{T, Vector{T}}, A::CMPSMatrix{Ts,T,S,U}) where {Ts,T,S,U}
     @unpack ψl, ψr = A
-    V = reshape(v, size(ψr.Q)[2], size(ψl.Q)[2])
+    V = reshape(v, size(ψr.Q,2), size(ψl.Q,2))
     V = convert(S, V)
 
     li = convert(S, Matrix{T}(I,size(ψl.Q)))
