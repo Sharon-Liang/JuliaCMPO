@@ -4,33 +4,13 @@
     Evaluate PhysModel `m` when the hermiticty of its transfer matrix is unknown or not specified
 """
 function evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder::String; 
-                    init = nothing, 
-                    max_pow_step::Integer = 100,
-                    hermitian::Union{Bool, Nothing} = nothing,
-                    group::Integer = 1,
-                    show_trace::Bool = false,
-                    Continue::Union{Bool, Integer} = false,
-                    tag = Dates.format(now(), "yyyy-mm-dd"),
-                    solver::Function = cpu_solver,
-                    trace_estimator::Union{Function, Nothing} = nothing)
+                    options::EvaluateOptions)
+    @unpack hermitian = options
     hermitian === nothing ? hermitian = ishermitian(m.Tmatrix) : hermitian = hermitian
     if hermitian
-        hermitian_evaluate(m, bondD, β, ResultFolder, 
-            init = init, 
-            show_trace = show_trace,
-            tag = tag, 
-            solver = solver,
-            trace_estimator = trace_estimator)
+        hermitian_evaluate(m, bondD, β, ResultFolder, options = options)
     else
-        non_hermitian_evaluate(m, bondD, β, ResultFolder, 
-            init = init, 
-            max_pow_step = max_pow_step,
-            show_trace = show_trace,
-            Continue = Continue,
-            group = group,
-            tag = tag, 
-            solver = solver,
-            trace_estimator = trace_estimator)
+        non_hermitian_evaluate(m, bondD, β, ResultFolder, options = options)
     end
 end
 
@@ -39,11 +19,9 @@ end
     Evaluate PhysModel m when its transfer matrix is hermitian
 """
 function hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder::String; 
-            init::Union{CMPS, Nothing} = nothing,
-            show_trace::Bool=false,
-            tag = Dates.format(now(), "yyyy-mm-dd"),
-            solver::Function = cpu_solver,
-            trace_estimator::Union{Function, Nothing} = nothing)
+            options::EvaluateOptions=EvaluateOptions())
+    @unpack (init, solver, trace_estimator, 
+            compress_options, optim_options, tag) = options
     """
     ResultFolder: classified by Model parameters(interaction, width), store CMPS and Obsv files
     CMPSResultFolder: CMPS information, classified by bond dimension
@@ -57,7 +35,7 @@ function hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder
     Tm = solver(x->x, m.Tmatrix)
     #initiate cmps
     init === nothing ? 
-        ψ = solver(x->init_cmps(bondD, x, β, show_trace = show_trace), Tm) : ψ = solver(x->x, init)
+        ψ = solver(x->init_cmps(bondD, x, β, options=compress_options), Tm) : ψ = solver(x->x, init)
 
     ψ = solver(diagQ, ψ)
 
@@ -68,10 +46,6 @@ function hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder
     F_initial = loss()
 
     p0, f, g! = optim_functions(loss, Params([dQ, R]))
-    optim_options = Optim.Options(f_tol = eps(), g_tol = 1.e-8,
-                            iterations = 10000,
-                            store_trace = true,
-                            show_trace = show_trace, show_every = 10)
     optim_result = Optim.optimize(f, g!, p0, LBFGS(), optim_options)
     F_final = minimum(optim_result)
 
@@ -104,14 +78,10 @@ end
     or force to do power projection 
 """
 function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder::String; 
-                                init = nothing, 
-                                group::Integer = 1,
-                                max_pow_step::Integer = 100,
-                                show_trace::Bool = false,
-                                Continue::Union{Bool, Integer} = false,
-                                tag = Dates.format(now(), "yyyy-mm-dd"),
-                                solver::Function = cpu_solver,
-                                trace_estimator::Union{Function, Nothing} = nothing)
+                                options::EvaluateOptions=EvaluateOptions())
+    @unpack (init, solver, trace_estimator, 
+            compress_options, optim_options, 
+            Continue, max_pow_step, group, tag) = options
     """
         ResultFolder: classified by Model parameters(interaction, width), store CMPS and Obsv files
         CMPSResultFolder: CMPS information, classified by bond dimension
@@ -154,9 +124,9 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
         #initiate cmps
         pow_step = 0
         if init === nothing 
-            ψr = solver(x->init_cmps(bondD, x, β, show_trace = show_trace), Tm)
+            ψr = solver(x->init_cmps(bondD, x, β, options=compress_options), Tm)
             m.Ut === nothing ? 
-                ψl = solver(x->init_cmps(bondD, x, β, show_trace = show_trace), transpose(Tm)) : 
+                ψl = solver(x->init_cmps(bondD, x, β, options=compress_options), transpose(Tm)) : 
                 ψl = solver(x -> x * ψr, m.Ut)
         else 
             ψr, ψl = solver(x->x, init)
@@ -221,10 +191,10 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
         pow_step += 1
         if show_trace println(@sprintf "Power Step = %03i" pow_step) end
 
-        res = solver(x ->compress_cmps(Tm * x, bondD, β, show_trace = show_trace), ψr)
+        res = solver(x ->compress_cmps(Tm * x, bondD, β, options=compress_options), ψr)
         ψr = solver(x->x, res.ψ)
         if m.Ut === nothing
-            res2 = solver(x->compress_cmps(transpose(Tm) * x, bondD, β, show_trace = show_trace), ψl)
+            res2 = solver(x->compress_cmps(transpose(Tm) * x, bondD, β, options=compress_options), ψl)
             ψl = solver(x->x, res2.ψ)
         else
             ψl = solver(x -> x * ψr, m.Ut)

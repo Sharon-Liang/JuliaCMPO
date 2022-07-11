@@ -10,35 +10,37 @@ function Matrix(A::CMPSMatrix{Ts,T,S,U}) where {Ts,T,S,U}
     return -K
 end
 
-
 """
     Logarithm of the overlap of two CMPS:
-        log_overlap = ln(⟨ψl|ψr⟩)
+        `log_overlap = ln(⟨ψl|ψr⟩)`
 """
-function log_overlap(ψl::T, ψr::T, β::Real) where T<:AbstractCMPS
-    K = ψl * ψr
-    return logtrexp(-β, K)
+function log_overlap(ψl::AbstractCMPS, ψr::AbstractCMPS, β::Real, estimator::EstimatorType)
+    K = CMPSMatrix(ψl, ψr)
+    return logtrexp(-β, K, estimator)
 end
+#log_overlap(ψl::AbstractCMPS, ψr::AbstractCMPS, β::Real) = log_overlap(ψl, ψr, β, nothing)
 
 
 """
     Norm of a CMPS
 """
-function norm(s::AbstractCMPS, β::Real)
-    λ = log_overlap(s, s, β) 
+function norm(s::AbstractCMPS, β::Real, estimator::EstimatorType)
+    λ = log_overlap(s, s, β, estimator) 
     return exp(λ/2)
 end
+#norm(s::AbstractCMPS, β::Real) = norm(s, β, nothing)
 
 
 """
     Normalize a CMPS, i.e. ⟨ψ|ψ⟩ = 1
 """
-function normalize(s::AbstractCMPS{T, S, U}, β::Real) where {T,S,U}
-    λ = log_overlap(s, s, β)/β
+function normalize(s::AbstractCMPS{T, S, U}, β::Real, estimator::EstimatorType) where {T,S,U}
+    λ = log_overlap(s, s, β, estimator)/β
     eye = λ/2 * Matrix{Float64}(I,size(s.Q))
     Q = s.Q - convert(S, eye)
     return CMPS_generate(Q, s.R)
 end
+#normalize(s::AbstractCMPS{T, S, U} where {T,S,U}, β::Real) = norm(s, β, nothing)
 
 
 """
@@ -46,16 +48,22 @@ end
         fidelity = ⟨ψ|T|r⟩/√(⟨ψ|ψ⟩)
         logfidelity(ψ, ψ0) = ln(Fd)
 """
-logfidelity(ψ::T, ψ0::T, β::Real) where T<:AbstractCMPS = log_overlap(ψ, ψ0, β) - 0.5*log_overlap(ψ, ψ, β)
-
-function fidelity(ψ::T, ψ0::T, β::Real; Normalize::Bool = false) where T<:AbstractCMPS
-    if Normalize
-        ψ = normalize(ψ, β)
-        ψ0 = normalize(ψ0, β)
-    end
-    return logfidelity(ψ, ψ0, β) |> exp
+function logfidelity(ψ::T, ψ0::T, β::Real, esitmator::EstimatorType) where T<:AbstractCMPS
+    return log_overlap(ψ, ψ0, β, estimator) - 0.5*log_overlap(ψ, ψ, β, estimator)
 end
+#logfidelity(ψ::T, ψ0::T, β::Real) where T<:AbstractCMPS = logfidelity(ψ, ψ0, β, nothing)
 
+
+function fidelity(ψ::T, ψ0::T, β::Real, estimator::EstimatorType; 
+                  Normalize::Bool = false) where T<:AbstractCMPS
+    if Normalize
+        ψ = normalize(ψ, β, estimator)
+        ψ0 = normalize(ψ0, β, estimator)
+    end
+    return logfidelity(ψ, ψ0, β, estimator) |> exp
+end
+#fidelity(ψ::T, ψ0::T, β::Real; Normalize::Bool = false) where T<:AbstractCMPS =
+#    fidelity(ψ, ψ0, β, nothing; Normalize = Normalize)
 
 """
     transpose of a CMPO
