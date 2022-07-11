@@ -1,4 +1,3 @@
-using JuliaCMPO, Test
 using LinearAlgebra
 using Random; Random.seed!()
 
@@ -66,14 +65,11 @@ function otimes(A::Array{T,4} where T, B::Array{T,4} where T)
     return res
 end
 
-
-for solver in [cpu_solver, gpu_solver] 
-    @testset "$(solver)" begin
-        D1 = 4;  D2 = 2
-        T = ComplexF64
-        a = [randn(D1,D1),randn(T,D1,D1),randn(D1,D1,D2), randn(T,D1,D1,D2),randn(D1,D1,D2,D2),randn(T,D1,D1,D2,D2)]
-        for i = 1:length(a), j = i+1 : min(2*(div(i+1,2)+1), length(a))
-            @test Array(solver(⊗, a[i], a[j])) ≈ otimes(a[i],a[j])
-        end
-    end
+       
+D1 = 4;  D2 = 2
+T = ComplexF64
+a = [randn(D1,D1),randn(T,D1,D1),randn(D1,D1,D2), randn(T,D1,D1,D2),randn(D1,D1,D2,D2),randn(T,D1,D1,D2,D2)]
+for i = 1:length(a), j = i+1 : min(2*(div(i+1,2)+1), length(a))
+    @test Array(solver(⊗, a[i], a[j])) ≈ otimes(a[i],a[j])
 end
+

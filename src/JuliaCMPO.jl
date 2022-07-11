@@ -14,7 +14,7 @@ using PhysModels, FiniteTLanczos
 @reexport import Base: ==, ≈,  transpose, adjoint, cat
 @reexport import LinearAlgebra: ishermitian, norm, normalize, diag, diagm
 @reexport import KrylovKit.eigsolve
-@reexport import FiniteTLanczos.eigensolver
+@reexport import FiniteTLanczos: eigensolver, symmetrize
 
 
 # structs/CMPSandCMPO.jl
