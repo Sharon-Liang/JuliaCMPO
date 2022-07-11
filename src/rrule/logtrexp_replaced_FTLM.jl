@@ -1,16 +1,18 @@
 """
     rrule for logtrexp(tM) function where `typeof(M)=CMPSMatrix`, 
-    `estimator = simple_FTLM`
+    `estimator = replaced_FTLM`
 """
 function ChainRules.rrule(::typeof(logtrexp), 
                           t::Real, M::CMPSMatrix{Ts,T,S,U}, 
                           estimator::TraceEstimator{Tf, To}
-                          ) where {Ts,T,S,U,Tf<:typeof(simple_FTLM),To}
+                          ) where {Ts,T,S,U,Tf<:typeof(replaced_FTLM),To}
     @unpack options = estimator
-    @unpack distr, Nr, Nk = options
+    @unpack distr, Nr, Nk, Ne = options
     @unpack ψl, ψr = M
     Ns = size(M, 1)
-
+    Ne = min(Ne, Ns-1)
+    χl, χr = size(ψl.Q, 1), size(ψr.Q, 1)
+    
     sign(t) == 1 ? which = :LR : which=:SR
     e0, _, _ = eigsolve(M, size(M,1), 1, which, ishermitian = true)
     e0 = e0[1]
@@ -18,12 +20,21 @@ function ChainRules.rrule(::typeof(logtrexp),
     expr_∂y_∂t = e -> e * exp(t*(e-e0))
     expr = (expr_Λ, expr_∂y_∂t)
 
+    evals, evecs, _ = eigsolve(M, Ns, Ne, :SR, ishermitian = true)
+    evals = evals[1:Ne]
+    evecs = hcat(evecs[1:Ne]...)
+
     res = zeros(2)
     ∂y_∂Ql, ∂y_∂Qr, ∂y_∂Rl, ∂y_∂Rr = zeros(4)
-
     for r = 1: Nr
         v0 = random_unit_vector(Ns, distr)
-        @unpack init_vector, weight, values, vectors = itFOLM(M, init_vector = v0, Nk = Nk) |> eigensolver
+        @unpack init_vector, weight, values, vectors = 
+                itFOLM(M, init_vector = v0, Nk = Nk) |> eigensolver
+
+        values = vcat(evals, values[Ne+1:end])
+        vectors = hcat(evecs, vectors[:, Ne+1:end])
+        eweight = map(i-> v0' * evecs[:,i], 1:Ne)
+        weight = vcat(eweight, weight[Ne+1:end])
 
         func = f -> map((e,w)->f(e)* w * w', values, weight) |> sum
         res = map(+, res, map(func, expr))

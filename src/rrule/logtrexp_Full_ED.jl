@@ -1,6 +1,4 @@
 #module rrule
-Zygote.@adjoint Array(x::CuArray) = Array(x), dy->(CuArray(dy),)
-
 """
     rrule for logtrexp(tM) function where `typeof(M) <: AbstractArray`
 """    
