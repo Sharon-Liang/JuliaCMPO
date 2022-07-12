@@ -16,7 +16,10 @@ function logtrexp(t::Real, M::CMPSMatrix, esitmator::TraceEstimator)
     e0, _, _ = eigsolve(M, size(M,1), 1, which, ishermitian = true)
     e0 = e0[1]
     expr = e -> exp(t * (e - e0))
-    res = FiniteTLanczos.evaluate(esitmator, M, expr)[1]
+
+    @unpack estimator, options = estimator
+    options = FTLMOptions(options, which = which)
+    res = FiniteTLanczos.evaluate(TraceEstimator(estimator, options), M, expr)[1]
     return log(res) + t*e0
 end
 
