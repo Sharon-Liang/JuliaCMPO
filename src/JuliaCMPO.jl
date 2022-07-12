@@ -15,6 +15,8 @@ using PhysModels, FiniteTLanczos
 @reexport import LinearAlgebra: ishermitian, norm, normalize, diag
 @reexport import KrylovKit.eigsolve
 @reexport import FiniteTLanczos: eigensolver, symmetrize, 
+                                 Device, CPU, GPU, 
+                                 solver_function,
                                  cpu_solver, gpu_solver
 
 

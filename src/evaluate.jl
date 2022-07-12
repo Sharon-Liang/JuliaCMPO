@@ -27,6 +27,7 @@ function hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder
         trace_estimator = TraceEstimator(trace_estimator.estimator, new_options)
         compress_options = CompressOptions(compress_options, trace_estimator = trace_estimator)
     end
+    solver = solver_function(device)
 
     """
     ResultFolder: classified by Model parameters(interaction, width), store CMPS and Obsv files
@@ -93,6 +94,8 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
         trace_estimator = TraceEstimator(trace_estimator.estimator, new_options)
         compress_options = CompressOptions(compress_options, trace_estimator = trace_estimator)
     end
+    solver = solver_function(device)
+    
     """
         ResultFolder: classified by Model parameters(interaction, width), store CMPS and Obsv files
         CMPSResultFolder: CMPS information, classified by bond dimension
