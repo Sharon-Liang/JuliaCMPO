@@ -12,9 +12,10 @@ using PhysModels, FiniteTLanczos
 
 @reexport import Base: kron, *, eltype, size, length, getindex, iterate
 @reexport import Base: ==, ≈,  transpose, adjoint, cat
-@reexport import LinearAlgebra: ishermitian, norm, normalize, diag, diagm
+@reexport import LinearAlgebra: ishermitian, norm, normalize, diag
 @reexport import KrylovKit.eigsolve
-@reexport import FiniteTLanczos: eigensolver, symmetrize
+@reexport import FiniteTLanczos: eigensolver, symmetrize, 
+                                 cpu_solver, gpu_solver
 
 
 # structs/CMPSandCMPO.jl
@@ -35,11 +36,9 @@ export MeraUpdateOptions,
 export CompressOptions, CompressResult
 
 #utilities
-export ⊗, diagm
+export ⊗
 
 
-#solver.jl
-export cpu_solver, gpu_solver
 # OptimFunctions.jl
 export veclength, optim_functions
 # SaveLoad.jl
@@ -84,7 +83,6 @@ include("./structs/CMPSCompress.jl")
 
 
 include("./utilities/otimes.jl")
-include("./utilities/diagm.jl")
 
 include("solver.jl")
 include("OptimFunctions.jl")

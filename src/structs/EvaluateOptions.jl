@@ -1,12 +1,12 @@
 @with_kw struct EvaluateOptions{Tinit<:Union{AbstractCMPS, Nothing}, 
-                                Tsolver<:Function, 
+                                Tdevice<:Device, 
                                 Ttrace<:EstimatorType,
                                 Thermitian<:Union{Bool, Nothing},
                                 Tcontinue<:Union{Bool, Integer},
                                 Tcompress<:CompressOptions,
                                 Toptim<:Optim.Options}
     init::Tinit = nothing
-    solver::Tsolver = cpu_solver
+    device::Tdevice = CPU
     trace_estimator::Ttrace = nothing
     hermitian::Thermitian = nothing
     Continue::Tcontinue = false
