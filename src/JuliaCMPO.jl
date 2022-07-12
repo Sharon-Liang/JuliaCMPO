@@ -17,7 +17,8 @@ using PhysModels, FiniteTLanczos
 @reexport import FiniteTLanczos: eigensolver, symmetrize, 
                                  Device, CPU, GPU, 
                                  solver_function,
-                                 cpu_solver, gpu_solver
+                                 cpu_solver, gpu_solver,
+                                 FTLMOptions, TraceEstimator
 
 
 # structs/CMPSandCMPO.jl
