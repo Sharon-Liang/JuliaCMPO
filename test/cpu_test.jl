@@ -1,5 +1,6 @@
 using JuliaCMPO, Test
-solver = cpu_solver
+device = CPU
+solver = solver_function(device)
 
 @testset "otimes.jl" begin
     include("otimes.jl")

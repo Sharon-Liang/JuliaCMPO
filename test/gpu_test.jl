@@ -1,6 +1,7 @@
 using JuliaCMPO, Test
 using CUDA; CUDA.allowscalar(false)
-solver = gpu_solver
+device = CPU
+solver = solver_function(device)
 
 @testset "otimes.jl" begin
     include("otimes.jl")
