@@ -1,5 +1,5 @@
 using Test, JuliaCMPO
-using LinearAlgebra
+using LinearAlgebra, PhysModels
 
 @testset "Ising_CMPO" begin
     J = 1.0

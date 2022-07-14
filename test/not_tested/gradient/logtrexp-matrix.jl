@@ -7,13 +7,22 @@ using FiniteDifferences, Zygote
 ngradient(f, x) = grad(central_fdm(5, 1), f, x)
 zgradient = Zygote.gradient
 
-Nl, Nr = 3, 4
+Nl, Nr = 16, 17
 
 ψl, ψr = init_cmps(Nl), init_cmps(Nr)
 Cmatrix = ψl * ψr
 M = Cmatrix |> Matrix
-
 t = rand()
+
+
+
+
+
+
+
+
+
+
 ∂t_M = x->logtrexp(x, M)
 ∂t_Cmatrix = x->logtrexp(x, Cmatrix)
 ∂t_Cmatrix_fed = x->logtrexp(x, Cmatrix, Full_ED)

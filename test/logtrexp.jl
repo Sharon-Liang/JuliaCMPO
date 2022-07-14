@@ -25,30 +25,30 @@ end
     end
 
     @testset "Full_ED" begin
-        estimator = TraceEstimator(Full_ED, FTLMOptions(FTLMOptions(), device = device))
-        res = logtrexp(t, Cmatrix, estimator)
+        trace_estimator = TraceEstimator(Full_ED, FTLMOptions(FTLMOptions(), processor = processor))
+        res = logtrexp(t, Cmatrix, trace_estimator)
         @test res ≈ log_trexp
     end
 
     @testset "simple_FTLM method" begin
         Ns = size(Cmatrix,1)
-        options = FTLMOptions(FTLMOptions(), Ne = 0, Nk=Ns, device = device)
-        estimator = TraceEstimator(FullSampling_FTLM, options)
-        res = logtrexp(t, Cmatrix, estimator)
+        options = FTLMOptions(FTLMOptions(), Ne = 0, Nk=Ns, processor = processor)
+        trace_estimator = TraceEstimator(FullSampling_FTLM, options)
+        res = logtrexp(t, Cmatrix, trace_estimator)
         @test res ≈ log_trexp
 
-        options = FTLMOptions(FTLMOptions(), device = device)
-        estimator = TraceEstimator(simple_FTLM, options)
-        res = logtrexp(t, Cmatrix, estimator)
+        options = FTLMOptions(FTLMOptions(), processor = processor)
+        trace_estimator = TraceEstimator(simple_FTLM, options)
+        res = logtrexp(t, Cmatrix, trace_estimator)
         @unpack Nr = options
         @test ≈(res, log_trexp, rtol=1/√Nr)
     end
     
     @testset "orthogonalized_FTLM method" begin
         Ns = size(Cmatrix,1)
-        options = FTLMOptions(FTLMOptions(), device = device)
-        estimator = TraceEstimator(orthogonalized_FTLM, options)
-        res = logtrexp(t, Cmatrix, estimator)
+        options = FTLMOptions(FTLMOptions(), processor = processor)
+        trace_estimator = TraceEstimator(orthogonalized_FTLM, options)
+        res = logtrexp(t, Cmatrix, trace_estimator)
         @unpack Nr = options
         @test ≈(res, log_trexp, rtol=1/Nr)
     end

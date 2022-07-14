@@ -1,6 +1,10 @@
 using JuliaCMPO, Test
-mydevice = CPU
-solver = solver_function(mydevice)
+processor = CPU
+solver = solver_function(processor)
+
+@testset "PhysicalModels.jl" begin
+    include("PhysicalModels.jl")
+end
 
 @testset "otimes.jl" begin
     include("otimes.jl")
