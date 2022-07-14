@@ -15,7 +15,7 @@ using PhysModels, FiniteTLanczos
 @reexport import LinearAlgebra: ishermitian, norm, normalize, diag
 @reexport import KrylovKit.eigsolve
 @reexport import FiniteTLanczos: eigensolver, symmetrize, 
-                                 Device, CPU, GPU, 
+                                 Processor, CPU, GPU, 
                                  solver_function,
                                  cpu_solver, gpu_solver,
                                  FTLMOptions, TraceEstimator
@@ -73,10 +73,11 @@ export make_operator
 
 #structs/EvaluateOptions.jl
 export EstimatorType, EvaluateOptions
+
 #evaluate.jl
-export evaluate,
-       hermitian_evaluate, 
-       non_hermitian_evaluate
+#export evaluate,
+#       hermitian_evaluate, 
+#       non_hermitian_evaluate
 
 
 include("./structs/CMPSandCMPO.jl")

@@ -9,16 +9,19 @@ function logtrexp(t::Real, M::AbstractMatrix)
     return logsumexp(t*vals)
 end
 logtrexp(t::Real, M::CMPSMatrix) = logtrexp(t, Matrix(M))
-logtrexp(t, M, esitmator::Nothing) = logtrexp(t, M)
+logtrexp(t, M, trace_esitmator::Nothing) = logtrexp(t, M)
 
-function logtrexp(t::Real, M, estimator::TraceEstimator)
+function logtrexp(t::Real, M, trace_estimator::TraceEstimator)
     sign(t) == 1 ? which = :LR : which=:SR
-    e0, _, _ = eigsolve(M, size(M,1), 1, which, ishermitian = true)
-    e0 = e0[1]
-    expr = e -> exp(t * (e - e0))
+    @unpack estimator, options = trace_estimator
+    @unpack processor = estimator
+    processor == CPU ? x0 = rand(size(M,1)) : x0 = CUDA.rand(size(M,1))
+    e0, _, _ = eigsolve(M, x0, 1, which, ishermitian = true)
+    e1 = e0[1]
+    expr = e -> exp(t * (e - e1))
 
-    options = FTLMOptions(estimator.options, which = which)
-    res = FiniteTLanczos.evaluate(TraceEstimator(estimator.estimator, options), M, expr)[1]
-    return log(res) + t*e0
+    options = FTLMOptions(options, which = which)
+    res = FiniteTLanczos.evaluate(TraceEstimator(estimator, options), M, expr)[1]
+    return log(res) + t*e1
 end
 

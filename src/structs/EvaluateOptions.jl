@@ -1,12 +1,12 @@
 @with_kw struct EvaluateOptions{Tinit<:Union{AbstractCMPS, Nothing}, 
-                                Tdevice<:Device, 
+                                Tprocessor<:Processor, 
                                 Ttrace<:EstimatorType,
                                 Thermitian<:Union{Bool, Nothing},
                                 Tcontinue<:Union{Bool, Integer},
                                 Tcompress<:CompressOptions,
                                 Toptim<:Optim.Options}
     init::Tinit = nothing
-    device::Tdevice = CPU
+    processor::Tprocessor = CPU
     trace_estimator::Ttrace = nothing
     hermitian::Thermitian = nothing
     Continue::Tcontinue = false
@@ -18,7 +18,8 @@
     compress_options::Tcompress = CompressOptions(CompressOptions(),
                         show_trace = show_trace,
                         store_trace = store_trace,
-                        trace_estimator = trace_estimator)
+                        trace_estimator = trace_estimator,
+                        processor = processor)
     #optim option for hermitian_evaluate
     optim_options::Toptim = Optim.Options(f_tol = eps(), 
                                   g_tol = 1.e-8,

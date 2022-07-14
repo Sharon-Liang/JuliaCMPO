@@ -4,11 +4,12 @@
 function compress_cmps(ψ0::AbstractCMPS{T, S, U}, χ::Integer, β::Real; 
     options::CompressOptions=CompressOptions()) where {T,S,U}
     @unpack (init, show_trace, mera_update_options, 
-             optim_options, trace_estimator) = options
+             optim_options, trace_estimator, processor) = options
     if show_trace 
         println("----------------------------Compress CMPS-----------------------------") 
     end
-
+    solver = solver_function(processor)
+    
     χ0 = size(ψ0.Q, 1)
     U <: AbstractMatrix ? vir_dim = 1 : vir_dim = size(ψ0.R, 3)
     optim_result = nothing

@@ -1,11 +1,13 @@
 @with_kw struct CompressOptions{Ti<:Union{AbstractCMPS, Nothing}, 
                          Tm<:MeraUpdateOptions,
                          To<:Optim.Options,
-                         Ttrace<:EstimatorType}
+                         Ttrace<:EstimatorType,
+                         Tprocessor<:Processor}
     init::Ti = nothing
     show_trace::Bool = false
     store_trace::Bool = true
     trace_estimator::Ttrace = nothing
+    processor::Tprocessor = CPU
     mera_update_options::Tm = MeraUpdateOptions(MeraUpdateOptions(),
                             show_trace = show_trace,
                             store_trace = store_trace,
