@@ -14,8 +14,8 @@ logtrexp(t, M, trace_esitmator::Nothing) = logtrexp(t, M)
 function logtrexp(t::Real, M, trace_estimator::TraceEstimator)
     sign(t) == 1 ? which = :LR : which=:SR
     @unpack estimator, options = trace_estimator
-    @unpack processor = estimator
-    processor == CPU ? x0 = rand(size(M,1)) : x0 = CUDA.rand(size(M,1))
+    @unpack processor = options
+    processor == CPU ? x0 = rand(size(M,1)) : x0 = CUDA.rand(Float64, size(M,1))
     e0, _, _ = eigsolve(M, x0, 1, which, ishermitian = true)
     e1 = e0[1]
     expr = e -> exp(t * (e - e1))
