@@ -1,42 +1,49 @@
 """
     rrule for logtrexp(tM) function where `typeof(M)=CMPSMatrix`, 
-    `estimator = replaced_FTLM`
+    `trace_estimator = replaced_FTLM`
 """
 function ChainRules.rrule(::typeof(logtrexp), 
                           t::Real, M::CMPSMatrix{Ts,T,S,U}, 
-                          estimator::TraceEstimator{Tf, To}
+                          trace_estimator::TraceEstimator{Tf, To}
                           ) where {Ts,T,S,U,Tf<:typeof(replaced_FTLM),To}
-    @unpack options = estimator
-    @unpack distr, Nr, Nk, Ne = options
+    @unpack options = trace_estimator
+    @unpack distr, Nr, Nk, Ne, processor = options
     @unpack ψl, ψr = M
+    solver = solver_function(processor)
+
     Ns = size(M, 1)
     Ne = min(Ne, Ns-1)
     χl, χr = size(ψl.Q, 1), size(ψr.Q, 1)
     
     sign(t) == 1 ? which = :LR : which=:SR
-    e0, _, _ = eigsolve(M, size(M,1), 1, which, ishermitian = true)
-    e0 = e0[1]
-    expr_Λ = e -> exp(t*(e-e0))
-    expr_∂y_∂t = e -> e * exp(t*(e-e0))
+    processor == CPU ? x0 = rand(T,Ns) : x0 = CUDA.rand(T, Ns)
+    e0, _, _ = eigsolve(M, x0, 1, which, ishermitian = true)
+    e0 = e1
+    expr_Λ = e -> exp(t*(e-e1))
+    expr_∂y_∂t = e -> e * exp(t*(e-e1))
     expr = (expr_Λ, expr_∂y_∂t)
 
-    evals, evecs, _ = eigsolve(M, Ns, Ne, :SR, ishermitian = true)
-    evals = evals[1:Ne]
-    evecs = hcat(evecs[1:Ne]...)
+    vals, vecs, _ = eigsolve(M, x0, Ne, :SR, ishermitian = true)
+    eigen_vals = solver(x->x, vals[1:Ne])
+    eigen_vecs = hcat(vecs[1:Ne]...)
 
     res = zeros(2)
     ∂y_∂Ql, ∂y_∂Qr, ∂y_∂Rl, ∂y_∂Rr = zeros(4)
     for r = 1: Nr
         v0 = random_unit_vector(Ns, distr)
+        v0 = solver(x->x, v0)
         @unpack init_vector, weight, values, vectors = 
                 itFOLM(M, init_vector = v0, Nk = Nk) |> eigensolver
 
-        values = vcat(evals, values[Ne+1:end])
-        vectors = hcat(evecs, vectors[:, Ne+1:end])
-        eweight = map(i-> v0' * evecs[:,i], 1:Ne)
-        weight = vcat(eweight, weight[Ne+1:end])
+        eigen_weight = ein"i,ij->j"(conj(v0), eigen_vecs)
+        weight = vcat(eigen_weight, weight[Ne+1:end])
+        values = vcat(eigen_vals, values[Ne+1:end])
 
-        func = f -> map((e,w)->f(e)* w * w', values, weight) |> sum
+        func = f -> begin
+            Λ = map(f, values)
+            Z = ein"i,i,i -> "(Λ, weight, conj(weight))
+            return Array(Z)[1]
+        end
         res = map(+, res, map(func, expr))
 
         Λ = map(expr_Λ, values)
@@ -59,8 +66,9 @@ function ChainRules.rrule(::typeof(logtrexp),
         end
     end
     
-    y, ∂y_∂t = map(x -> x * Ns/Nr, res)
-    ∂y_∂Ql, ∂y_∂Qr, ∂y_∂Rl, ∂y_∂Rr = map(x -> x * Ns/Nr, (∂y_∂Ql, ∂y_∂Qr, ∂y_∂Rl, ∂y_∂Rr))
+    factor = Ns/Nr
+    y, ∂y_∂t = map(x -> x * factor, res)
+    ∂y_∂Ql, ∂y_∂Qr, ∂y_∂Rl, ∂y_∂Rr = map(x -> x * factor, (∂y_∂Ql, ∂y_∂Qr, ∂y_∂Rl, ∂y_∂Rr))
 
     function logtrexp_pullback(ȳ)
         ∂y_∂t, ∂y_∂Ql, ∂y_∂Qr, ∂y_∂Rl, ∂y_∂Rr = map(x -> x/y, (∂y_∂t, ∂y_∂Ql, ∂y_∂Qr, ∂y_∂Rl, ∂y_∂Rr))

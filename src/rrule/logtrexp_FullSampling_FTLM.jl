@@ -1,57 +1,62 @@
 """
     rrule for logtrexp(tM) function where `typeof(M)=CMPSMatrix`, 
-    `estimator = FullSampling_FTLM`
+    `trace_estimator = FullSampling_FTLM`
 """
 function ChainRules.rrule(::typeof(logtrexp), 
                           t::Real, M::CMPSMatrix{Ts,T,S,U}, 
-                          estimator::TraceEstimator{Tf, To}
+                          trace_estimator::TraceEstimator{Tf, To}
                           ) where {Ts,T,S,U,Tf<:typeof(FullSampling_FTLM),To}
-    @unpack options = estimator
-    @unpack Nk = options
+    @unpack options = trace_estimator
+    @unpack Nk, processor = options
     @unpack ψl, ψr = M
     Ns = size(M, 1)
     χl, χr = size(ψl.Q, 1), size(ψr.Q, 1)
     
     sign(t) == 1 ? which = :LR : which=:SR
-    e0, _, _ = eigsolve(M, size(M,1), 1, which, ishermitian = true)
-    e0 = e0[1]
-    expr_Λ = e -> exp(t*(e-e0))
-    expr_∂y_∂t = e -> e * exp(t*(e-e0))
+    processor == CPU ? x0 = rand(T,Ns) : x0 = CUDA.rand(T, Ns)
+    e0, _, _ = eigsolve(M, x0, 1, which, ishermitian = true)
+    e0 = e1
+    expr_Λ = e -> exp(t*(e-e1))
+    expr_∂y_∂t = e -> e * exp(t*(e-e1))
     expr = (expr_Λ, expr_∂y_∂t)
 
     ortho_basis = basis_generate(Ns)
     res = zeros(2)
     ∂y_∂Ql, ∂y_∂Qr, ∂y_∂Rl, ∂y_∂Rr = zeros(4)
+
     for r = 1: Ns
         v0 = ortho_basis[:, r]
+        v0 = solver(x->x, v0)
         @unpack init_vector, weight, values, vectors = itFOLM(M, init_vector = v0, Nk = Nk) |> eigensolver
 
-        func = f -> map((e,w)->f(e)* w * w', values, weight) |> sum
+        func = f -> begin
+            Λ = map(f, values)
+            Z = ein"i,i,i -> "(Λ, weight, conj(weight))
+            return Array(Z)[1]
+        end
         res = map(+, res, map(func, expr))
 
         Λ = map(expr_Λ, values)
-        vecs = reshape(vectors, χr, χl, Nk)
+        vectors = reshape(vectors, χr, χl, Nk)
         v0 = reshape(init_vector, χr, χl)
 
         Onel = ones(χl, χl); Onel = convert(S, Onel)
         Oner = ones(χr, χr); Oner = convert(S, Oner)
-        ∂y_∂Ql += -t * ein"n,n,kbn,ka,kk -> ab"(Λ, weight, conj(vecs), v0, Oner)
-        ∂y_∂Qr += -t * ein"n,n,bkn,ak,kk -> ab"(Λ, weight, conj(vecs), v0, Onel)
+        ∂y_∂Ql += -t * ein"n,n,kbn,ka,kk -> ab"(Λ, weight, conj(vectors), v0, Oner)
+        ∂y_∂Qr += -t * ein"n,n,bkn,ak,kk -> ab"(Λ, weight, conj(vectors), v0, Onel)
 
         if U <: AbstractMatrix
-            ∂y_∂Rl += -t * ein"n,n,kl,lbn,ka,kl -> ab"(Λ, weight, ψr.R, conj(vecs), v0, Oner)
-            ∂y_∂Rr += -t * ein"n,n,kl,bln,ak,kl -> ab"(Λ, weight, ψl.R, conj(vecs), v0, Onel)
+            ∂y_∂Rl += -t * ein"n,n,kl,lbn,ka,kl -> ab"(Λ, weight, ψr.R, conj(vectors), v0, Oner)
+            ∂y_∂Rr += -t * ein"n,n,kl,bln,ak,kl -> ab"(Λ, weight, ψl.R, conj(vectors), v0, Onel)
         else
             Onel = ones(χl, χl, size(ψ.R,3)); Onel = convert(U, Onel)
             Oner = ones(χr, χr, size(ψ.R,3)); Oner = convert(U, Oner)
-            ∂y_∂Rl += -t * ein"n,n,klm,lbn,ka,klm -> ab"(Λ, weight, ψr.R, conj(vecs), v0, Oner)
-            ∂y_∂Rr += -t * ein"n,n,klm,bln,ak,klm -> ab"(Λ, weight, ψl.R, conj(vecs), v0, Onel)
+            ∂y_∂Rl += -t * ein"n,n,klm,lbn,ka,klm -> ab"(Λ, weight, ψr.R, conj(vectors), v0, Oner)
+            ∂y_∂Rr += -t * ein"n,n,klm,bln,ak,klm -> ab"(Λ, weight, ψl.R, conj(vectors), v0, Onel)
         end
     end
     
-    y, ∂y_∂t = map(x -> x * Ns/Nr, res)
-    ∂y_∂Ql, ∂y_∂Qr, ∂y_∂Rl, ∂y_∂Rr = map(x -> x * Ns/Nr, (∂y_∂Ql, ∂y_∂Qr, ∂y_∂Rl, ∂y_∂Rr))
-
+    y, ∂y_∂t = res
     function logtrexp_pullback(ȳ)
         ∂y_∂t, ∂y_∂Ql, ∂y_∂Qr, ∂y_∂Rl, ∂y_∂Rr = map(x -> x/y, (∂y_∂t, ∂y_∂Ql, ∂y_∂Qr, ∂y_∂Rl, ∂y_∂Rr))
 

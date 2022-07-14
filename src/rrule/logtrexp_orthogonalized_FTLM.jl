@@ -1,48 +1,51 @@
 """
     rrule for logtrexp(tM) function where `typeof(M)=CMPSMatrix`, 
-    `estimator = orthogonalized_FTLM`
+    `trace_estimator = orthogonalized_FTLM`
 """
 function ChainRules.rrule(::typeof(logtrexp), 
                           t::Real, M::CMPSMatrix{Ts,T,S,U}, 
-                          estimator::TraceEstimator{Tf, To}
+                          trace_estimator::TraceEstimator{Tf, To}
                           ) where {Ts,T,S,U,Tf<:typeof(orthogonalized_FTLM),To}
-    @unpack options = estimator
-    @unpack distr, Nr, Nk, Ne = options
+    @unpack options = trace_estimator
+    @unpack distr, Nr, Nk, Ne, processor = options
     @unpack ψl, ψr = M
+    solver = solver_function(processor)
+
     Ns = size(M, 1)
     Ne = min(Ne, Ns-1)
     χl, χr = size(ψl.Q, 1), size(ψr.Q, 1)
 
     sign(t) == 1 ? which = :LR : which=:SR
-    e0, _, _ = eigsolve(M, size(M,1), 1, which, ishermitian = true)
-    e0 = e0[1]
-    expr_Λ = e -> exp(t*(e-e0))
-    expr_∂y_∂t = e -> e * exp(t*(e-e0))
+    processor == CPU ? x0 = rand(T,Ns) : x0 = CUDA.rand(T, Ns)
+    e0, _, _ = eigsolve(M, x0, 1, which, ishermitian = true)
+    e0 = e1
+    expr_Λ = e -> exp(t*(e-e1))
+    expr_∂y_∂t = e -> e * exp(t*(e-e1))
     expr = (expr_Λ, expr_∂y_∂t)
 
     #exact eigen pair part
-    evals, evecs, _ = eigsolve(M, Ns, Ne, :SR, ishermitian = true)
-    evals = evals[1:Ne]
-    evecs = hcat(evecs[1:Ne]...)
+    vals, vecs, _ = eigsolve(M, x0, Ne, :SR, ishermitian = true)
+    eigen_vals = solver(x->x, vals[1:Ne])
+    eigen_vecs = hcat(vecs[1:Ne]...)
 
-    func1 = f -> map(f, evals) |> sum
+    func1 = f -> reduce(+, map(f, eigen_vals))
     res1 = map(func1, expr) #store y1, ∂y_∂t1
-
-    Λ = map(expr_Λ, evals) 
-    evecs = reshape(evecs, χr, χl, Ne)
+    
+    Λ1 = map(expr_Λ, eigen_vals)
+    eigen_vecs = reshape(eigen_vecs, χr, χl, Ne)
     Onel = ones(χl, χl); Onel = convert(S, Onel)
     Oner = ones(χr, χr); Oner = convert(S, Oner)
 
-    ∂y_∂Ql1 = -t * ein"n,kbn,kan,kk -> ab"(Λ, conj(evecs), evecs, Oner)
-    ∂y_∂Qr1 = -t * ein"n,bkn,akn,kk -> ab"(Λ, conj(evecs), evecs, Onel)
+    ∂y_∂Ql1 = -t * ein"n,kbn,kan,kk -> ab"(Λ1, conj(eigen_vecs), eigen_vecs, Oner)
+    ∂y_∂Qr1 = -t * ein"n,bkn,akn,kk -> ab"(Λ1, conj(eigen_vecs), eigen_vecs, Onel)
     if U <: AbstractMatrix
-        ∂y_∂Rl1 = -t * ein"n,kl,lbn,kan,kl -> ab"(Λ, ψr.R, conj(evecs), evecs, Oner)
-        ∂y_∂Rr1 = -t * ein"n,kl,bln,akn,kl -> ab"(Λ, ψl.R, conj(evecs), evecs, Onel)
+        ∂y_∂Rl1 = -t * ein"n,kl,lbn,kan,kl -> ab"(Λ1, ψr.R, conj(eigen_vecs), eigen_vecs, Oner)
+        ∂y_∂Rr1 = -t * ein"n,kl,bln,akn,kl -> ab"(Λ1, ψl.R, conj(eigen_vecs), eigen_vecs, Onel)
     else
         Onel = ones(χl, χl, size(ψ.R,3)); Onel = convert(U, Onel)
         Oner = ones(χr, χr, size(ψ.R,3)); Oner = convert(U, Oner)
-        ∂y_∂Rl1 = -t * ein"n,klm,lbn,kan,kl -> ab"(Λ, ψr.R, conj(evecs), evecs, Oner)
-        ∂y_∂Rr1 = -t * ein"n,klm,bln,akn,kl -> ab"(Λ, ψl.R, conj(evecs), evecs, Onel)
+        ∂y_∂Rl1 = -t * ein"n,klm,lbn,kan,kl -> ab"(Λ1, ψr.R, conj(eigen_vecs), eigen_vecs, Oner)
+        ∂y_∂Rr1 = -t * ein"n,klm,bln,akn,kl -> ab"(Λ1, ψl.R, conj(eigen_vecs), eigen_vecs, Onel)
     end
 
 
@@ -51,34 +54,40 @@ function ChainRules.rrule(::typeof(logtrexp),
     ∂y_∂Ql2, ∂y_∂Qr2, ∂y_∂Rl2, ∂y_∂Rr2 = zeros(4)
     for r = 1: Nr
         v0 = random_unit_vector(Ns, distr)
+        v0 = solver(x->x, v0)
         @unpack init_vector, weight, values, vectors = 
-            itFOLM(M, evecs, init_vector = v0, Nk = Nk) |> eigensolver
+            itFOLM(M, eigen_vecs, init_vector = v0, Nk = Nk) |> eigensolver
 
-        func2 = f -> map((e,w)->f(e)* w * w', values, weight) |> sum
+        func2 = f -> begin
+            Λ = map(f, values)
+            Z = ein"i,i,i -> "(Λ, weight, conj(weight))
+            return Array(Z)[1]
+        end
         res2 = map(+, res2, map(func2, expr))
 
-        Λ = map(expr_Λ, values)
-        vecs = reshape(vectors, χr, χl, Nk)
+        Λ2 = map(expr_Λ, values)
+        vectors = reshape(vectors, χr, χl, Nk)
         v0 = reshape(init_vector, χr, χl)
 
         Onel = ones(χl, χl); Onel = convert(S, Onel)
         Oner = ones(χr, χr); Oner = convert(S, Oner)
-        ∂y_∂Ql2 += -t * ein"n,n,kbn,ka,kk -> ab"(Λ, weight, conj(vecs), v0, Oner)
-        ∂y_∂Qr2 += -t * ein"n,n,bkn,ak,kk -> ab"(Λ, weight, conj(vecs), v0, Onel)
+        ∂y_∂Ql2 += -t * ein"n,n,kbn,ka,kk -> ab"(Λ2, weight, conj(vectors), v0, Oner)
+        ∂y_∂Qr2 += -t * ein"n,n,bkn,ak,kk -> ab"(Λ2, weight, conj(vectors), v0, Onel)
 
         if U <: AbstractMatrix
-            ∂y_∂Rl2 += -t * ein"n,n,kl,lbn,ka,kl -> ab"(Λ, weight, ψr.R, conj(vecs), v0, Oner)
-            ∂y_∂Rr2 += -t * ein"n,n,kl,bln,ak,kl -> ab"(Λ, weight, ψl.R, conj(vecs), v0, Onel)
+            ∂y_∂Rl2 += -t * ein"n,n,kl,lbn,ka,kl -> ab"(Λ2, weight, ψr.R, conj(vectors), v0, Oner)
+            ∂y_∂Rr2 += -t * ein"n,n,kl,bln,ak,kl -> ab"(Λ2, weight, ψl.R, conj(vectors), v0, Onel)
         else
             Onel = ones(χl, χl, size(ψ.R,3)); Onel = convert(U, Onel)
             Oner = ones(χr, χr, size(ψ.R,3)); Oner = convert(U, Oner)
-            ∂y_∂Rl2 += -t * ein"n,n,klm,lbn,ka,klm -> ab"(Λ, weight, ψr.R, conj(vecs), v0, Oner)
-            ∂y_∂Rr2 += -t * ein"n,n,klm,bln,ak,klm -> ab"(Λ, weight, ψl.R, conj(vecs), v0, Onel)
+            ∂y_∂Rl2 += -t * ein"n,n,klm,lbn,ka,klm -> ab"(Λ2, weight, ψr.R, conj(vectors), v0, Oner)
+            ∂y_∂Rr2 += -t * ein"n,n,klm,bln,ak,klm -> ab"(Λ2, weight, ψl.R, conj(vectors), v0, Onel)
         end
     end
     
-    res2 = map(x -> x * Ns/Nr, res2)
-    ∂y_∂Ql2, ∂y_∂Qr2, ∂y_∂Rl2, ∂y_∂Rr2 = map(x -> x * Ns/Nr, (∂y_∂Ql, ∂y_∂Qr, ∂y_∂Rl, ∂y_∂Rr))
+    factor = (Ns-Ne)/Nr
+    res2 = map(x -> x * factor, res2)
+    ∂y_∂Ql2, ∂y_∂Qr2, ∂y_∂Rl2, ∂y_∂Rr2 = map(x -> x * factor, (∂y_∂Ql, ∂y_∂Qr, ∂y_∂Rl, ∂y_∂Rr))
 
     y, ∂y_∂t = map(+, res1, res2)
     ∂y_∂Ql, ∂y_∂Qr, ∂y_∂Rl, ∂y_∂Rr = map(+,(∂y_∂Ql1, ∂y_∂Qr1, ∂y_∂Rl1, ∂y_∂Rr1),

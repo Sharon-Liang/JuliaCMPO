@@ -64,14 +64,14 @@ end
 
 """
     rrule for logtrexp(tM) function where `typeof(M)=CMPSMatrix`, 
-    `∂y_∂M` also return a `CMPSMatrix`. When `estimator = Full_ED`, 
+    `∂y_∂M` also return a `CMPSMatrix`. When `trace_estimator = Full_ED`, 
     `exp(tM)` is not explicitly constructed. 
     (Note there is no memory saving in this case because one has to 
     save all eigen vectors of the CMPSMatrix.)
 """
 function ChainRules.rrule(::typeof(logtrexp), 
                           t::Real, M::CMPSMatrix{Ts,T,S,U}, 
-                          estimator::typeof(Full_ED)) where {Ts,T,S,U}
+                          trace_estimator::typeof(Full_ED)) where {Ts,T,S,U}
     @unpack ψl, ψr = M
     vals, vecs = eigensolver(M)
     y = logsumexp(t*vals)
