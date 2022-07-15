@@ -1,6 +1,7 @@
 using JuliaCMPO, Test
 processor = CPU
 solver = solver_function(processor)
+@show solver
 
 @testset "PhysicalModels.jl" begin
     include("PhysicalModels.jl")
