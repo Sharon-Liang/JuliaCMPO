@@ -116,7 +116,7 @@ function ≈(a::T, b::T; kwargs...) where T<:AbstractCMPO
 end
 
 function ≈(a::T, b::T; kwargs...) where T<:AbstractCMPS
-    return ≈(a.Q, b.Q; kwargs...) && ≈(a.R, b.R)
+    return ≈(a.Q, b.Q; kwargs...) && ≈(a.R, b.R; kwargs...)
 end
 
 
