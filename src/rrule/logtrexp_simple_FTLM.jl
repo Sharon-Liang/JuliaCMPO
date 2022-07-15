@@ -9,27 +9,28 @@ function ChainRules.rrule(::typeof(logtrexp),
     @unpack options = trace_estimator
     @unpack distr, Nr, Nk, processor = options
     @unpack ψl, ψr = M
-    solver = solver_function(processor)
-
     Ns = size(M, 1)
     χl, χr = size(ψl.Q, 1), size(ψr.Q, 1)
+    solver = solver_function(processor)
     
     sign(t) == 1 ? which = :LR : which=:SR
     processor == CPU ? x0 = rand(T,Ns) : x0 = CUDA.rand(T, Ns)
     e0, _, _ = eigsolve(M, x0, 1, which, ishermitian = true)
-    e0 = e1
+    e1 = e0[1]
     expr_Λ = e -> exp(t*(e-e1))
     expr_∂y_∂t = e -> e * exp(t*(e-e1))
     expr = (expr_Λ, expr_∂y_∂t)
 
     res = zeros(2)
-    ∂y_∂Ql, ∂y_∂Qr, ∂y_∂Rl, ∂y_∂Rr = zeros(4)
+    ∂y_∂Ql, ∂y_∂Qr = zeros(size(ψl.Q)), zeros(size(ψr.Q))
+    ∂y_∂Rl, ∂y_∂Rr = zeros(size(ψl.R)), zeros(size(ψr.R))
 
     for r = 1: Nr
         v0 = random_unit_vector(Ns, distr)
         v0 = solver(x->x, v0)
         @unpack init_vector, weight, values, vectors = itFOLM(M, init_vector = v0, Nk = Nk) |> eigensolver
-
+        Nk = size(values,1)
+        
         func = f -> begin
             Λ = map(f, values)
             Z = ein"i,i,i -> "(Λ, weight, conj(weight))
@@ -38,23 +39,27 @@ function ChainRules.rrule(::typeof(logtrexp),
         res = map(+, res, map(func, expr))
 
         Λ = map(expr_Λ, values)
-        vecs = reshape(vectors, χr, χl, Nk)
+        vectors = reshape(vectors, χr, χl, Nk)
         v0 = reshape(init_vector, χr, χl)
 
         Onel = ones(χl, χl); Onel = convert(S, Onel)
         Oner = ones(χr, χr); Oner = convert(S, Oner)
-        ∂y_∂Ql += -t * ein"n,n,kbn,ka,kk -> ab"(Λ, weight, conj(vecs), v0, Oner)
-        ∂y_∂Qr += -t * ein"n,n,bkn,ak,kk -> ab"(Λ, weight, conj(vecs), v0, Onel)
+        ∂y_∂Ql_temp = -t * ein"n,n,kbn,ka,kk -> ab"(Λ, weight, conj(vectors), v0, Oner)
+        ∂y_∂Qr_temp = -t * ein"n,n,bkn,ak,kk -> ab"(Λ, weight, conj(vectors), v0, Onel)
+        ∂y_∂Ql = map(+, ∂y_∂Ql, ∂y_∂Ql_temp)
+        ∂y_∂Qr = map(+, ∂y_∂Qr, ∂y_∂Qr_temp)
 
         if U <: AbstractMatrix
-            ∂y_∂Rl += -t * ein"n,n,kl,lbn,ka,kl -> ab"(Λ, weight, ψr.R, conj(vecs), v0, Oner)
-            ∂y_∂Rr += -t * ein"n,n,kl,bln,ak,kl -> ab"(Λ, weight, ψl.R, conj(vecs), v0, Onel)
+            ∂y_∂Rl_temp = -t * ein"n,n,kl,lbn,ka,kl -> ab"(Λ, weight, ψr.R, conj(vectors), v0, Oner)
+            ∂y_∂Rr_temp = -t * ein"n,n,kl,bln,ak,kl -> ab"(Λ, weight, ψl.R, conj(vectors), v0, Onel)
         else
             Onel = ones(χl, χl, size(ψ.R,3)); Onel = convert(U, Onel)
             Oner = ones(χr, χr, size(ψ.R,3)); Oner = convert(U, Oner)
-            ∂y_∂Rl += -t * ein"n,n,klm,lbn,ka,klm -> ab"(Λ, weight, ψr.R, conj(vecs), v0, Oner)
-            ∂y_∂Rr += -t * ein"n,n,klm,bln,ak,klm -> ab"(Λ, weight, ψl.R, conj(vecs), v0, Onel)
+            ∂y_∂Rl_temp = -t * ein"n,n,klm,lbn,ka,klm -> ab"(Λ, weight, ψr.R, conj(vectors), v0, Oner)
+            ∂y_∂Rr_temp = -t * ein"n,n,klm,bln,ak,klm -> ab"(Λ, weight, ψl.R, conj(vectors), v0, Onel)
         end
+        ∂y_∂Rl = map(+, ∂y_∂Rl, ∂y_∂Rl_temp)
+        ∂y_∂Rr = map(+, ∂y_∂Rr, ∂y_∂Rr_temp)
     end
     
     factor = Ns/Nr

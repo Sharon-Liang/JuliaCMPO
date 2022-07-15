@@ -30,7 +30,8 @@ function ChainRules.rrule(::typeof(logtrexp),
         v0 = ortho_basis[:, r]
         v0 = solver(x->x, v0)
         @unpack init_vector, weight, values, vectors = itFOLM(M, init_vector = v0, Nk = Nk) |> eigensolver
-
+        Nk = size(values,1)
+        
         func = f -> begin
             Λ = map(f, values)
             Z = ein"i,i,i -> "(Λ, weight, conj(weight))
