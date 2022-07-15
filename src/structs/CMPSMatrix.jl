@@ -101,17 +101,3 @@ iterate(A::CMPSMatrix, n) = (getindex(A,n), n+1)
 CTensor(x::T) where T<:CMPSMatrix = CMPSMatrix(ψl=CTensor(x.ψl), ψr=CTensor(x.ψr))
 CuCTensor(x::T) where T<:CMPSMatrix = CMPSMatrix(ψl=CuCTensor(x.ψl), ψr=CuCTensor(x.ψr))
 
-"""
-    ==(a::T, b::T) where T<:CMPSMatrix
-"""
-function ==(a::T, b::T) where T<:CMPSMatrix
-    return ==(a.ψl, b.ψl) && ==(a.ψr, b.ψr)
-end
-
-
-"""
-    ≈(a::T, b::T) where T<:CMPSMatrix
-"""
-function ≈(a::T, b::T; kwargs...) where T<:AbstractCMPS
-    return ≈(a.ψl, b.ψl; kwargs...) && ≈(a.ψr, b.ψr; kwargs...)
-end

@@ -106,6 +106,14 @@ end
 
 
 """
+    ==(a::T, b::T) where T<:CMPSMatrix
+"""
+function ==(a::T, b::T) where T<:CMPSMatrix
+    return ==(a.ψl, b.ψl) && ==(a.ψr, b.ψr)
+end
+
+
+"""
     ≈(a::T, b::T) where T<:AbstractCTensor
 """
 function ≈(a::T, b::T; kwargs...) where T<:AbstractCMPO
@@ -116,7 +124,16 @@ function ≈(a::T, b::T; kwargs...) where T<:AbstractCMPO
 end
 
 function ≈(a::T, b::T; kwargs...) where T<:AbstractCMPS
-    return ≈(a.Q, b.Q; kwargs...) && ≈(a.R, b.R; kwargs...)
+    return ≈(a.Q, b.Q; kwargs...) && 
+           ≈(a.R, b.R; kwargs...)
+end
+
+
+"""
+    ≈(a::T, b::T) where T<:CMPSMatrix
+"""
+function ≈(a::T, b::T; kwargs...) where T<:CMPSMatrix
+    return ≈(a.ψl, b.ψl; kwargs...) && ≈(a.ψr, b.ψr; kwargs...)
 end
 
 
