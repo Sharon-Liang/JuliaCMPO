@@ -71,8 +71,10 @@ end
 """
 function ChainRules.rrule(::typeof(logtrexp), 
                           t::Real, M::CMPSMatrix{Ts,T,S,U}, 
-                          trace_estimator::typeof(Full_ED)) where {Ts,T,S,U}
+                          trace_estimator::TraceEstimator{Tf, To}
+                          ) where {Ts,T,S,U,Tf<:typeof(Full_ED),To}
     @unpack ψl, ψr = M
+    χl, χr = size(ψl.Q, 1), size(ψr.Q, 1)
     vals, vecs = eigensolver(M)
     y = logsumexp(t*vals)
 
