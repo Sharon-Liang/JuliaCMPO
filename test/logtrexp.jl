@@ -12,7 +12,7 @@ using Random; Random.seed!()
 end
 
 @testset "CMPSMatrix logtrexp" begin
-    Nl, Nr = 16, 17
+    Nl, Nr = 10, 11
     ψl, ψr = init_cmps(Nl), init_cmps(Nr)
     Cmatrix = ψl * ψr; Cmatrix = solver(x->x, Cmatrix)
     M = Cmatrix |> Matrix; M = solver(x->x, M)

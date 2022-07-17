@@ -1,7 +1,7 @@
 using LinearAlgebra, Parameters, FiniteTLanczos
 using Random; Random.seed!()
 
-Nl, Nr = 10, 15
+Nl, Nr = 10, 11
 
 for vD = 1:2
     ψl, ψr = init_cmps(Nl, vD), init_cmps(Nr, vD)

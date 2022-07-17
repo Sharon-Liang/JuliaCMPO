@@ -22,3 +22,7 @@ end
 @testset "logtrexp.jl" begin
     include("./logtrexp.jl")
 end
+
+@testset "gradient/logtrexp.jl" begin
+    include("./gradient/logtrexp.jl")
+end
