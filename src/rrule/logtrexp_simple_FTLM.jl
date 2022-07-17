@@ -71,8 +71,8 @@ function ChainRules.rrule(::typeof(logtrexp),
                 Onel = CUDA.ones(T, χl, χl, size(ψl.R,3))
                 Oner = CUDA.ones(T, χr, χr, size(ψr.R,3))
             end
-            ∂y_∂Rl_temp = -t * ein"n,n,klm,lbn,ka,klm -> ab"(Λ, weight, ψr.R, conj(vectors), v0, Oner)
-            ∂y_∂Rr_temp = -t * ein"n,n,klm,bln,ak,klm -> ab"(Λ, weight, ψl.R, conj(vectors), v0, Onel)
+            ∂y_∂Rl_temp = -t * ein"n,n,klm,lbn,ka,klm -> abm"(Λ, weight, ψr.R, conj(vectors), v0, Oner)
+            ∂y_∂Rr_temp = -t * ein"n,n,klm,bln,ak,klm -> abm"(Λ, weight, ψl.R, conj(vectors), v0, Onel)
         end
         ∂y_∂Rl = map(+, ∂y_∂Rl, ∂y_∂Rl_temp)
         ∂y_∂Rr = map(+, ∂y_∂Rr, ∂y_∂Rr_temp)
