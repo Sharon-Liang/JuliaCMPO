@@ -74,6 +74,7 @@ function ChainRules.rrule(::typeof(logtrexp),
                           trace_estimator::TraceEstimator{Tf, To}
                           ) where {Ts,T,S,U,Tf<:typeof(Full_ED),To}
     @unpack ψl, ψr = M
+    @unpack processor = trace_estimator.options
     χl, χr = size(ψl.Q, 1), size(ψr.Q, 1)
     vals, vecs = eigensolver(M)
     y = logsumexp(t*vals)
@@ -87,8 +88,13 @@ function ChainRules.rrule(::typeof(logtrexp),
         vecs = reshape(vecs, χr, χl, Ns)
 
         χl, χr = size(ψl.Q, 1), size(ψr.Q, 1)
-        Onel = ones(χl, χl); Onel = convert(S, Onel)
-        Oner = ones(χr, χr); Oner = convert(S, Oner)
+        if processor == CPU
+            Onel = ones(T, χl, χl)
+            Oner = ones(T, χr, χr)
+        else
+            Onel = CUDA.ones(T, χl, χl)
+            Oner = CUDA.ones(T, χr, χr)
+        end
 
         ∂y_∂Ql = -t * ein"n,kbn,kan,kk -> ab"(Λ, conj(vecs), vecs, Oner)
         ∂y_∂Qr = -t * ein"n,bkn,akn,kk -> ab"(Λ, conj(vecs), vecs, Onel)
@@ -96,8 +102,13 @@ function ChainRules.rrule(::typeof(logtrexp),
             ∂y_∂Rl = -t * ein"n,kl,lbn,kan,kl -> ab"(Λ, ψr.R, conj(vecs), vecs, Oner)
             ∂y_∂Rr = -t * ein"n,kl,bln,akn,kl -> ab"(Λ, ψl.R, conj(vecs), vecs, Onel)
         else
-            Onel = ones(χl, χl, size(ψ.R,3)); Onel = convert(U, Onel)
-            Oner = ones(χr, χr, size(ψ.R,3)); Oner = convert(U, Oner)
+            if processor == CPU
+                Onel = ones(T, χl, χl, size(ψl.R,3))
+                Oner = ones(T, χr, χr, size(ψr.R,3))
+            else
+                Onel = CUDA.ones(T, χl, χl, size(ψl.R,3))
+                Oner = CUDA.ones(T, χr, χr, size(ψr.R,3))
+            end
             ∂y_∂Rl = -t * ein"n,klm,lbn,kan,kl -> ab"(Λ, ψr.R, conj(vecs), vecs, Oner)
             ∂y_∂Rr = -t * ein"n,klm,bln,akn,kl -> ab"(Λ, ψl.R, conj(vecs), vecs, Onel)
         end

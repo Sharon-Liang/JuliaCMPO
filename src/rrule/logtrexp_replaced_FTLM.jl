@@ -13,6 +13,8 @@ function ChainRules.rrule(::typeof(logtrexp),
 
     Ns = size(M, 1)
     Ne = min(Ne, Ns)
+    Nk = min(max(Nk, Ne), Ns)
+    
     χl, χr = size(ψl.Q, 1), size(ψr.Q, 1)
     
     sign(t) == 1 ? which = :LR : which=:SR
@@ -29,8 +31,13 @@ function ChainRules.rrule(::typeof(logtrexp),
     eigen_vecs = hcat(vecs[1:Ne]...)
 
     res = zeros(2)
-    ∂y_∂Ql, ∂y_∂Qr = zeros(size(ψl.Q)), zeros(size(ψr.Q))
-    ∂y_∂Rl, ∂y_∂Rr = zeros(size(ψl.R)), zeros(size(ψr.R))
+    if processor == CPU
+        ∂y_∂Ql, ∂y_∂Qr = zeros(T, size(ψl.Q)), zeros(T, size(ψr.Q))
+        ∂y_∂Rl, ∂y_∂Rr = zeros(T, size(ψl.R)), zeros(T, size(ψr.R))
+    else
+        ∂y_∂Ql, ∂y_∂Qr = CUDA.zeros(T, size(ψl.Q)), CUDA.zeros(T, size(ψr.Q))
+        ∂y_∂Rl, ∂y_∂Rr = CUDA.zeros(T, size(ψl.R)), CUDA.zeros(T, size(ψr.R))
+    end
     
     Nk = max(Nk, Ne)
     for r = 1: Nr
@@ -38,7 +45,7 @@ function ChainRules.rrule(::typeof(logtrexp),
         v0 = solver(x->x, v0)
         @unpack init_vector, weight, values, vectors = 
                 itFOLM(M, init_vector = v0, Nk = Nk) |> eigensolver
-        Nk = size(values,1)
+        #Nk = size(values,1)
         
         eigen_weight = ein"i,ij->j"(conj(v0), eigen_vecs)
         weight = vcat(eigen_weight, weight[Ne+1:end])
@@ -55,8 +62,13 @@ function ChainRules.rrule(::typeof(logtrexp),
         vecs = reshape(vectors, χr, χl, Nk)
         v0 = reshape(init_vector, χr, χl)
 
-        Onel = ones(χl, χl); Onel = convert(S, Onel)
-        Oner = ones(χr, χr); Oner = convert(S, Oner)
+        if processor == CPU
+            Onel = ones(T, χl, χl)
+            Oner = ones(T, χr, χr)
+        else
+            Onel = CUDA.ones(T, χl, χl)
+            Oner = CUDA.ones(T, χr, χr)
+        end
         ∂y_∂Ql_temp = -t * ein"n,n,kbn,ka,kk -> ab"(Λ, weight, conj(vecs), v0, Oner)
         ∂y_∂Qr_temp = -t * ein"n,n,bkn,ak,kk -> ab"(Λ, weight, conj(vecs), v0, Onel)
         ∂y_∂Ql = map(+, ∂y_∂Ql, ∂y_∂Ql_temp)
@@ -66,8 +78,13 @@ function ChainRules.rrule(::typeof(logtrexp),
             ∂y_∂Rl_temp = -t * ein"n,n,kl,lbn,ka,kl -> ab"(Λ, weight, ψr.R, conj(vecs), v0, Oner)
             ∂y_∂Rr_temp = -t * ein"n,n,kl,bln,ak,kl -> ab"(Λ, weight, ψl.R, conj(vecs), v0, Onel)
         else
-            Onel = ones(χl, χl, size(ψ.R,3)); Onel = convert(U, Onel)
-            Oner = ones(χr, χr, size(ψ.R,3)); Oner = convert(U, Oner)
+            if processor == CPU
+                Onel = ones(T, χl, χl, size(ψl.R,3))
+                Oner = ones(T, χr, χr, size(ψr.R,3))
+            else
+                Onel = CUDA.ones(T, χl, χl, size(ψl.R,3))
+                Oner = CUDA.ones(T, χr, χr, size(ψr.R,3))
+            end
             ∂y_∂Rl_temp = -t * ein"n,n,klm,lbn,ka,klm -> ab"(Λ, weight, ψr.R, conj(vecs), v0, Oner)
             ∂y_∂Rr_temp = -t * ein"n,n,klm,bln,ak,klm -> ab"(Λ, weight, ψl.R, conj(vecs), v0, Onel)
         end
