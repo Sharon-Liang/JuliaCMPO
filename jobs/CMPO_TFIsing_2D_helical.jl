@@ -43,6 +43,14 @@ settings = ArgParseSettings(prog="CMPO code for TFIsing_2D_helical"
         arg_type = String
         default = "/data/sliang/JuliaCMPO/TFIsing_2D_helical_unexpanded"
         help = "result folder"
+    "--tag"
+        arg_type = String
+        default = Dates.format(now(), "yyyy-mm-dd")
+        help = "date tag"
+    "--processor"
+        arg_type = Processor
+        default = CPU
+        help = "processor used"
 end
 parsed_args = parse_args(settings; as_symbols=true)
 print(parsed_args,"\n")
@@ -53,7 +61,12 @@ const width = parsed_args[:width]
 const β = parsed_args[:beta]
 const bondD = parsed_args[:bondD]
 const max_pow_step = parsed_args[:max_pow_step]
+const tag = parsed_args[:tag]
+const processor = parsed_args[:processor]
+
 Continue = parsed_args[:Continue]
+if Continue ≥ max_pow_step Continue = true end
+
 #Creat ResultFolders if there is none
 const ResultFolder = parsed_args[:ResultFolder]
 isdir(ResultFolder) || mkdir(ResultFolder)
@@ -63,11 +76,17 @@ isdir(ModelResultFolder) || mkdir(ModelResultFolder)
 
 #CMPO
 model = TFIsing_2D_helical(J, Γ, width, expand=false)
-if Continue ≥ max_pow_step Continue = true end
+
 @timeit to "evaluate" begin
-    res = evaluate(model, bondD, β, ModelResultFolder, 
-                        hermitian = false, 
-                        max_pow_step = max_pow_step, Continue = Continue)
+    evaluate_options = EvaluateOptions(EvaluateOptions(),
+                            init = ψ0,
+                            hermitian = false,
+                            max_pow_step = max_pow_step,
+                            Continue = Continue,
+                            tag = tag,
+                            processor = processor)
+    res = JuliaCMPO.evaluate(model, bondD, β, ModelResultFolder, 
+                            options = evaluate_options)
 end
 
 const End_Time = Dates.format(now(), "yyyy-mm-dd HH:MM:SS")

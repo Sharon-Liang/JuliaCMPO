@@ -2,14 +2,14 @@ using Printf, DelimitedFiles
 using Random; Random.seed!()
 
 @enum Partitian a100 p100 v100 titanv
-@enum Device CPU GPU
+@enum Processor CPU GPU
 
 """
     submitJob: Prepare a jobfile
 """
 function submitJob(env, prog, args, jobname;
                   partitian::Partitian = a100,
-                  device::Device = CPU,
+                  processor::Processor = CPU,
                   gpu_memory::Int = 0,
                   cpu_per_task::Integer = 4,
                   Run=false, 
@@ -89,7 +89,7 @@ function submitJob(env, prog, args, jobname;
 
     if Run 
         run(`sbatch $(jobfile)`) 
-        sleep(2.0)
+        sleep(1.0)
         if return_id
             jobid = readdlm(jobname*"_id.txt", Int64)[1]
             rm(jobname*"_id.txt")

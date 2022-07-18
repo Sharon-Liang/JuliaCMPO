@@ -5,16 +5,16 @@ phys_model = "XXZ_2D_helical"
 env = "/home/sliang/JuliaCode/JuliaCMPO"
 prog = env * "/jobs/CMPO_$(phys_model).jl"
 
-device = GPU
+processor = GPU
 machine = a100
 gpu_memory = 80
-logtag = Dates.format(now(), "yyyy-mm-dd")*"-"*"$(device)"
+logtag = Dates.format(now(), "yyyy-mm-dd")*"-"*"$(processor)"
 
 Wait = nothing
 cpu_per_task = 8
 
-#tag = "2022-06-21"*"-"*device
-tag = Dates.format(now(), "yyyy-mm-dd")*"-"*"$(device)"
+#tag = "2022-06-21"*"-"*processor
+tag = Dates.format(now(), "yyyy-mm-dd")*"-"*"$(processor)"
 beta1 = [0.1, 0.5]
 beta2 = [i for i in range(1.0, 5.0, step=1.0)]
 beta3 = [i for i in range(1.1, 1.9, step=0.2)]
@@ -46,7 +46,7 @@ for bondD in bondDlist
                     "max_pow_step"=>max_pow_step,
                     "Continue"=>Continue,
                     "tag"=>tag,
-                    "device"=> device
+                    "processor"=> processor
                     )
         jobname = logdir * "/" * phys_model
         isdir(jobname) || mkdir(jobname)
@@ -58,7 +58,7 @@ for bondD in bondDlist
 
         jobid = submitJob(env, prog, args, jobname, 
                             partitian = machine,
-                            device = device,
+                            processor = processor,
                             gpu_memory = gpu_memory,
                             cpu_per_task = cpu_per_task,
                             Run = true, 

@@ -55,10 +55,10 @@ settings = ArgParseSettings(prog="CMPO code for XXZ model"
         arg_type = String
         default = Dates.format(now(), "yyyy-mm-dd")
         help = "date tag"
-    "--device"
-        arg_type = Symbol
-        default = :cpu
-        help = "device used"
+    "--processor"
+        arg_type = Processor
+        default = CPU
+        help = "processor used"
 end
 parsed_args = parse_args(settings; as_symbols=true)
 print(parsed_args,"\n")
@@ -73,7 +73,7 @@ const bondD = parsed_args[:bondD]
 const init = parsed_args[:init]
 const Continue = parsed_args[:Continue]
 const tag = parsed_args[:tag]
-const device = parsed_args[:device]
+const processor = parsed_args[:processor]
 
 const wid = 1
 const ResultFolder = parsed_args[:ResultFolder]
@@ -84,7 +84,6 @@ isdir(ModelResultFolder) || mkdir(ModelResultFolder)
 
 #CMPO
 model = XXZmodel(Jz/Jxy)
-#group = 2  #AFM XXZ
 
 if β0 == 0
     ψ0 = nothing
@@ -102,15 +101,17 @@ if Continue == false
 end
 
 βlist = [i for i in range(bi, bf, step=bstep)]
-device == :cpu ? solver = cpu_solver : solver = gpu_solver
+
 for b = 1:length(βlist)
     β = βlist[b]
     @timeit to "evaluate" begin
-        res = evaluate(model, bondD, β, ModelResultFolder, 
-                            init = ψ0, 
-                            group = group, 
-                            tag=tag,
-                            solver = solver)
+        evaluate_options = EvaluateOptions(EvaluateOptions(),
+                            init = ψ0,
+                            group = group,
+                            tag = tag,
+                            processor = processor)
+        res = JuliaCMPO.evaluate(model, bondD, β, ModelResultFolder, 
+                       options = evaluate_options)
     end
 
     open(EngFile,"a") do file  

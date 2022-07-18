@@ -47,6 +47,14 @@ settings = ArgParseSettings(prog="CMPO: TFIsing model"
         arg_type = String
         default = "/data/sliang/JuliaCMPO/TFIsing"
         help = "result folder"
+    "--tag"
+        arg_type = String
+        default = Dates.format(now(), "yyyy-mm-dd")
+        help = "date tag"
+    "--processor"
+        arg_type = Processor
+        default = CPU
+        help = "processor used"
 end
 
 parsed_args = parse_args(settings; as_symbols=true)
@@ -61,6 +69,8 @@ const β0 = parsed_args[:init]
 const bondD = parsed_args[:bondD]
 const Continue = parsed_args[:Continue]
 const ResultFolder = parsed_args[:ResultFolder]
+const tag = parsed_args[:tag]
+const processor = parsed_args[:processor]
 
 const wid = 1
 
@@ -87,10 +97,16 @@ if Continue == false
 end
 
 βlist = [i for i in range(bi, bf, step=bstep)]
+
 for b = 1:length(βlist)
     β = βlist[b]
     @timeit to "evaluate" begin
-        res = evaluate(model, bondD, β, ModelResultFolder, init = ψ0)
+        evaluate_options = EvaluateOptions(EvaluateOptions(),
+                            init = ψ0,
+                            tag = tag,
+                            processor = processor)
+        res = JuliaCMPO.evaluate(model, bondD, β, ModelResultFolder, 
+                       options = evaluate_options)
     end
 
     open(EngFile,"a") do file  
