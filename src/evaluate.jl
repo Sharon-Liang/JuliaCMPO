@@ -49,10 +49,10 @@ function hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder
     dQ = convert(Vector, diag(ψ.Q))
     R  = convert(Array, ψ.R)
 
-    loss() = free_energy(solver(CMPS_generate, diagm(dQ), R), Tm, β)
+    loss() = free_energy(solver(CMPS_generate, diagm(dQ), R), Tm, β, trace_estimator)
     F_initial = loss()
 
-    p0, f, g! = optim_functions(loss, Params([dQ, R]))
+    p0, f, g! = optim_functions(loss, Zygote.Params([dQ, R]))
     optim_result = Optim.optimize(f, g!, p0, LBFGS(), optim_options)
     F_final = minimum(optim_result)
 
