@@ -33,7 +33,6 @@ function compress_cmps(ψ0::AbstractCMPS{T, S, U}, χ::Integer, β::Real;
             dQ = convert(Vector, diag(ψ.Q))
             R =  convert(Array, ψ.R)
 
-            T <: CuCMPS ? solver = gpu_solver : solver = cpu_solver
             loss() = -logfidelity(solver(CMPS_generate, diagm(dQ), R), ψ0, β, trace_estimator)
             p0, f, g! = optim_functions(loss, Params([dQ, R]))
 
