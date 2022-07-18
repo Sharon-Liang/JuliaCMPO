@@ -19,7 +19,8 @@ end
     n = 3
     for m in [TFIsing(1.0,1.0), TFIsing_2D_helical(1.0,1.0,2)], χ in [2^n, 2^n-3]
         processor == CPU ? tensor_type = CMPS : tensor_type = CuCMPS
-        ψ = solver(Tm->init_cmps(χ, Tm, β), m.Tmatrix)
+        options = CompressOptions(CompressOptions(), processor = processor)
+        ψ = solver(Tm->init_cmps(χ, Tm, β, options = options), m.Tmatrix)
         @test typeof(ψ) <: tensor_type
         @test size(ψ.Q) == (χ, χ)
         @test size(ψ.R)[1:2] == (χ, χ) && length(size(ψ.R)) == length(size(m.Tmatrix.R))

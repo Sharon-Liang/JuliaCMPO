@@ -22,7 +22,8 @@ function adaptive_mera_update(ψ0::AbstractCMPS, χ::Integer, β::Real;
     logfidelity0 = 9.9e9
     loss(p_matrix) = logfidelity(project(ψ0, p_matrix), ψ0, β, trace_estimator)
 
-    _, v = eigensolver(ψ0.Q |> symmetrize)
+    Q = symmetrize(ψ0.Q)
+    _, v = eigensolver(Q)
     p_current = v[:, end-χ+1:end]
     
     loss_previous = 9.9e9

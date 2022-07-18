@@ -28,7 +28,7 @@ function ChainRules.rrule(::typeof(logtrexp), t::Real, M::CMPSMatrix{Ts,T,S,U}) 
     @unpack ψl, ψr = M
     χl, χr = size(ψl.Q, 1), size(ψr.Q, 1)
 
-    M = Matrix(M)
+    M = Matrix(M) |> symmetrize
     vals, vecs = eigensolver(M)
     y = logsumexp(t*vals)
 
