@@ -1,6 +1,6 @@
 #module PhysicalModels
 """
-    Data structure of a physical model
+    Data structure of a physical model 
     PhysModel:
         `Tmatrix`: local transfer matrix
         `phy_dim`: bond dimension of physical legs
@@ -9,21 +9,22 @@
               Note that in general, `Ut` not necessarily be unitary, but be invertible, 
               however, in the limiting cases we know right now, they are unitary.
 """
-struct PhysModel{T<:AbstractCMPO}
-    Tmatrix::T 
+@with_kw struct PhysModel{Tm<:AbstractCMPO, 
+                          Tu<:Union{AbstractMatrix, Nothing}}
+    Tmatrix::Tm 
     phy_dim::Int64  
     vir_dim::Int64  
-    Ut::Union{AbstractMatrix, Nothing} 
+    Ut::Tu
 end
 
 
 """
     Ising type CMPO: H = -J ôl ôr block
 """
-function Ising_CMPO(J::Real, ol::AbstractArray, or::AbstractArray, wid::Integer = 1)
+function Ising_CMPO(J::Real, ol::AbstractArray{T}, or::AbstractArray{T}, wid::Integer = 1) where {T}
     sgn = sign(J); val =√(abs(J))
     o2 = zeros(2, 2)
-    i2 = Matrix{Float64}(I, 2, 2)
+    i2 = Matrix{T}(I, 2, 2)
     #construct L and R
     ol = val * ol; or = sgn * val * or
     L = ol; R = or
@@ -42,7 +43,7 @@ function Ising_CMPO(J::Real, ol::AbstractArray, or::AbstractArray, wid::Integer 
         i == 1 ? P = pcol : P = cat(P, pcol, dims = 4)
     end
         
-    return CMPO(zeros(2,2), R, L, P)
+    return CMPO(zeros(T,2,2), R, L, P)
 end
 
 
@@ -61,18 +62,18 @@ end
 """
     Expand cmpo
 """
-function expand_cmpo(o::CMPO)
+function expand_cmpo(o::AbstractCMPO{T,S,U,V}) where {T,S,U,V}
     R = √(0.5) * cat(o.R, o.L, dims = 3)
     L = √(0.5) * cat(o.L, o.R, dims = 3)
 
-    if length(size(o.P)) == 2
-        oP = reshape(o.P, size(o.P)[1], size(o.P)[2], 1, 1)
+    if V <: AbstractMatrix
+        oP = reshape(o.P, size(o.P,1), size(o.P,2), 1, 1)
     else
         oP = o.P
     end
 
     pl = cat(oP, zeros(size(oP)), dims = 3)
-    pr = cat(zeros(size(oP)), ein"ijkl->ijlk"(oP), dims = 3)
+    pr = cat(zeros(T,size(oP)), ein"ijkl->ijlk"(oP), dims = 3)
     P = cat(pl, pr, dims = 4)
     
     return CMPO(o.Q, R, L, P)
@@ -82,17 +83,19 @@ end
 """
     cat CMPO blocks
 """
-function cat(o1::CMPO, o2::CMPO)
-    pd = size(o1.Q)[1]
-    length(size(o1.P)) == 2 ? vd1 = 1 : vd1 = size(o1.P)[3]
-    length(size(o2.P)) == 2 ? vd2 = 1 : vd2 = size(o2.P)[3]
+function cat(o1::AbstractCMPO{T,S1,U1,V1}, 
+             o2::AbstractCMPO{T,S2,U2,V2}
+             ) where {T,S1,U1,V1, S2,U2,V2}
+    pd = size(o1.Q,1)
+    V1<:AbstractMatrix ? vd1 = 1 : vd1 = size(o1.P,3)
+    V2<:AbstractMatrix ? vd2 = 1 : vd2 = size(o2.P,3)
 
-    Q = zeros(pd, pd)
+    Q = zeros(T, pd, pd)
     R = cat(o1.R, o2.R, dims = 3)
     L = cat(o1.L, o2.L, dims = 3)
 
-    pl = cat(o1.P, zeros(pd, pd, vd2, vd1), dims = 3)
-    pr = cat(zeros(pd, pd, vd1, vd2), o2.P, dims = 3)
+    pl = cat(o1.P, zeros(T, pd, pd, vd2, vd1), dims = 3)
+    pr = cat(zeros(T, pd, pd, vd1, vd2), o2.P, dims = 3)
     P = cat(pl, pr, dims = 4)
 
     return CMPO(Q, R, L, P)
@@ -128,7 +131,7 @@ function XYmodel()
     Q = zeros(2, 2)
     P = zeros(2, 2, 2, 2)
     Tmatrix = CMPO(Q,R,L,P)
-    Ut = Matrix(1.0I, 2, 2)
+    Ut = Matrix{Float64}(I, 2, 2)
     return PhysModel(Tmatrix, 2, 2, Ut)
 end
 
@@ -171,7 +174,7 @@ function XXZmodel(Δ::Real)
         Q = zeros(2, 2)
         P = zeros(2, 2, 3, 3)
         Tmatrix = CMPO(Q,R,L,P)
-        Ut = Matrix(1.0I, 3, 3) 
+        Ut = Matrix{Float64}(I, 3, 3) 
         return PhysModel(Tmatrix, 2, 3, Ut)
     end
 end

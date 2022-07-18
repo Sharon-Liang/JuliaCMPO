@@ -7,6 +7,7 @@ veclength(x) = length(x)
 Base.zeros(grads::Zygote.Grads) = zeros(veclength(grads))
 Base.zeros(pars::Zygote.Params) = zeros(veclength(pars))
 
+
 """
     optim_function(loss, pars): Return two functions(loss function, gradient function)
     and p0, a vectorized version of pars.

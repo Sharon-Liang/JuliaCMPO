@@ -14,9 +14,9 @@ end
     Logarithm of the overlap of two CMPS:
         `log_overlap = ln(⟨ψl|ψr⟩)`
 """
-function log_overlap(ψl::AbstractCMPS, ψr::AbstractCMPS, β::Real, estimator::EstimatorType)
+function log_overlap(ψl::AbstractCMPS, ψr::AbstractCMPS, β::Real, trace_estimator::EstimatorType)
     K = CMPSMatrix(ψl, ψr)
-    return logtrexp(-β, K, estimator)
+    return logtrexp(-β, K, trace_estimator)
 end
 #log_overlap(ψl::AbstractCMPS, ψr::AbstractCMPS, β::Real) = log_overlap(ψl, ψr, β, nothing)
 
@@ -24,8 +24,8 @@ end
 """
     Norm of a CMPS
 """
-function norm(s::AbstractCMPS, β::Real, estimator::EstimatorType)
-    λ = log_overlap(s, s, β, estimator) 
+function norm(s::AbstractCMPS, β::Real, trace_estimator::EstimatorType)
+    λ = log_overlap(s, s, β, trace_estimator) 
     return exp(λ/2)
 end
 #norm(s::AbstractCMPS, β::Real) = norm(s, β, nothing)
@@ -34,8 +34,8 @@ end
 """
     Normalize a CMPS, i.e. ⟨ψ|ψ⟩ = 1
 """
-function normalize(s::AbstractCMPS{T, S, U}, β::Real, estimator::EstimatorType) where {T,S,U}
-    λ = log_overlap(s, s, β, estimator)/β
+function normalize(s::AbstractCMPS{T, S, U}, β::Real, trace_estimator::EstimatorType) where {T,S,U}
+    λ = log_overlap(s, s, β, trace_estimator)/β
     eye = λ/2 * Matrix{Float64}(I,size(s.Q))
     Q = s.Q - convert(S, eye)
     return CMPS_generate(Q, s.R)
@@ -48,19 +48,19 @@ end
         fidelity = ⟨ψ|T|r⟩/√(⟨ψ|ψ⟩)
         logfidelity(ψ, ψ0) = ln(Fd)
 """
-function logfidelity(ψ::T, ψ0::T, β::Real, esitmator::EstimatorType) where T<:AbstractCMPS
-    return log_overlap(ψ, ψ0, β, estimator) - 0.5*log_overlap(ψ, ψ, β, estimator)
+function logfidelity(ψ::T, ψ0::T, β::Real, trace_estimator::EstimatorType) where T<:AbstractCMPS
+    return log_overlap(ψ, ψ0, β, trace_estimator) - 0.5*log_overlap(ψ, ψ, β, trace_estimator)
 end
 #logfidelity(ψ::T, ψ0::T, β::Real) where T<:AbstractCMPS = logfidelity(ψ, ψ0, β, nothing)
 
 
-function fidelity(ψ::T, ψ0::T, β::Real, estimator::EstimatorType; 
+function fidelity(ψ::T, ψ0::T, β::Real, trace_estimator::EstimatorType; 
                   Normalize::Bool = false) where T<:AbstractCMPS
     if Normalize
-        ψ = normalize(ψ, β, estimator)
-        ψ0 = normalize(ψ0, β, estimator)
+        ψ = normalize(ψ, β, trace_estimator)
+        ψ0 = normalize(ψ0, β, trace_estimator)
     end
-    return logfidelity(ψ, ψ0, β, estimator) |> exp
+    return logfidelity(ψ, ψ0, β, trace_estimator) |> exp
 end
 #fidelity(ψ::T, ψ0::T, β::Real; Normalize::Bool = false) where T<:AbstractCMPS =
 #    fidelity(ψ, ψ0, β, nothing; Normalize = Normalize)

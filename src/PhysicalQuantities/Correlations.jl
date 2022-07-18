@@ -5,7 +5,8 @@
 function correlation_2time(τ::Number, A::AbstractMatrix,B::AbstractMatrix,
                             ψl::AbstractCMPS, ψr::AbstractCMPS, W::AbstractCMPO, β::Real)
     K = ψl * W * ψr 
-    e, v = symeigen(K)
+    K = symmetrize(K)
+    e, v = eigensolver(K)
     min = minimum(e); e = e .- min
     A = v' * A * v
     B = v' * B * v

@@ -49,11 +49,13 @@ thermal_average(Op::AbstractMatrix, ψ::AbstractCMPS, β::Real) =thermal_average
 """
     Free energy: F = -1/(βL) lnZ
 """
-function free_energy(ψl::AbstractCMPS, ψr::AbstractCMPS, W::AbstractCMPO, β::Real)
-    res = log_overlap(ψl, W * ψr, β) - log_overlap(ψl, ψr, β)
+function free_energy(ψl::AbstractCMPS, ψr::AbstractCMPS, 
+                     W::AbstractCMPO, β::Real, trace_estimator::EstimatorType = nothing)
+    res = log_overlap(ψl, W * ψr, β, trace_estimator) - log_overlap(ψl, ψr, β, trace_estimator)
     return -res/β
 end
-free_energy(ψ::AbstractCMPS, W::AbstractCMPO, β::Real) = free_energy(ψ, ψ, W, β)
+free_energy(ψ::AbstractCMPS, W::AbstractCMPO, β::Real, trace_estimator::EstimatorType = nothing) = 
+    free_energy(ψ, ψ, W, β, trace_estimator)
 
 
 """

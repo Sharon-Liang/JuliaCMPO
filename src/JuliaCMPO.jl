@@ -109,7 +109,8 @@ include("./PhysicalQuantities/Correlations.jl")
 include("./structs/EvaluateOptions.jl")
 include("evaluate.jl")
 
-
+include("./rrule/ConstructorAdjoint.jl")
+include("./rrule/accum.jl")
 include("./rrule/logtrexp.jl")
 
 
