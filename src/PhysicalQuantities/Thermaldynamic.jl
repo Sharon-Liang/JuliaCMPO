@@ -16,9 +16,8 @@ end
 """
     The thermal average of local opeartors ⊢o⊣ with respect to K = ψl * W * ψr
 """
-function thermal_average(Op, ψl::AbstractCMPS, ψr::AbstractCMPS, W::AbstractCMPO, β::Real)
+function thermal_average(Op::AbstractMatrix, ψl::AbstractCMPS, ψr::AbstractCMPS, W::AbstractCMPO, β::Real)
     K = ψl * W * ψr |> Matrix |> symmetrize
-    Op = Matrix(Op)
 
     e, v = eigensolver(K)
     e = -β*e
@@ -28,16 +27,15 @@ function thermal_average(Op, ψl::AbstractCMPS, ψr::AbstractCMPS, W::AbstractCM
     num = exp.(e) .* diag(Op) |> sum
     return num/den   
 end
-thermal_average(Op, ψ::AbstractCMPS, W::AbstractCMPO, β::Real) = thermal_average(Op, ψ, ψ, W, β)
+thermal_average(Op::AbstractMatrix, ψ::AbstractCMPS, W::AbstractCMPO, β::Real) = thermal_average(Op, ψ, ψ, W, β)
 
 
 
 """
     The thermal average of local opeartors ⊢o⊣ with respect to K = ψ * ψ
 """
-function thermal_average(Op, ψl::AbstractCMPS, ψr::AbstractCMPS, β::Real)
+function thermal_average(Op::AbstractMatrix, ψl::AbstractCMPS, ψr::AbstractCMPS, β::Real)
     K = ψl * ψr |> Matrix |> symmetrize
-    Op = Matrix(Op)
     
     e, v = eigensolver(K)
     e = -β*e
@@ -47,7 +45,7 @@ function thermal_average(Op, ψl::AbstractCMPS, ψr::AbstractCMPS, β::Real)
     num = exp.(e) .* diag(Op) |> sum
     return num/den
 end
-thermal_average(Op, ψ::AbstractCMPS, β::Real) = thermal_average(Op, ψ, ψ, β)
+thermal_average(Op::AbstractMatrix, ψ::AbstractCMPS, β::Real) = thermal_average(Op, ψ, ψ, β)
 
 
 """
