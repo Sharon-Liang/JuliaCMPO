@@ -6,12 +6,12 @@
     init::Ti = nothing
     show_trace::Bool = false
     store_trace::Bool = true
-    trace_estimator::Ttrace = nothing
+    trace_estimator::Ttrace
     processor::Tprocessor = CPU
-    mera_update_options::Tm = MeraUpdateOptions(MeraUpdateOptions(),
+    mera_update_options::Tm = MeraUpdateOptions(trace_estimator = trace_estimator,
                             show_trace = show_trace,
-                            store_trace = store_trace,
-                            trace_estimator = trace_estimator)
+                            store_trace = store_trace
+                            )
     # The same as scipy L-BFGS-B
     optim_options::To = Optim.Options(f_tol = 2.220446049250313e-9, 
                                   g_tol = 1.e-5,

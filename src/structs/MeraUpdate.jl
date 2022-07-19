@@ -18,7 +18,7 @@ const EstimatorType = Union{TraceEstimator, Nothing}
     interpolate::Tb = true
     store_trace::Tb = false
     show_trace::Tb = false
-    trace_estimator::Testimator = nothing
+    trace_estimator::Testimator 
 end
 
 

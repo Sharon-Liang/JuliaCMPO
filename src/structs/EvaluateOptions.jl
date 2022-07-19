@@ -7,7 +7,7 @@
                                 Toptim<:Optim.Options}
     init::Tinit = nothing
     processor::Tprocessor = CPU
-    trace_estimator::Ttrace = nothing
+    trace_estimator::Ttrace 
     hermitian::Thermitian = nothing
     Continue::Tcontinue = false
     max_pow_step::Integer = 100
@@ -15,10 +15,9 @@
     tag::String = Dates.format(now(), "yyyy-mm-dd")
     show_trace::Bool = false
     store_trace::Bool = true
-    compress_options::Tcompress = CompressOptions(CompressOptions(),
+    compress_options::Tcompress = CompressOptions(trace_estimator = trace_estimator,
                         show_trace = show_trace,
-                        store_trace = store_trace,
-                        trace_estimator = trace_estimator,
+                        store_trace = store_trace, 
                         processor = processor)
     #optim option for hermitian_evaluate
     optim_options::Toptim = Optim.Options(f_tol = eps(), 

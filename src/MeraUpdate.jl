@@ -14,7 +14,7 @@ end
 
 
 function adaptive_mera_update(ψ0::AbstractCMPS, χ::Integer, β::Real; 
-    options::MeraUpdateOptions = MeraUpdateOptions())
+    options::MeraUpdateOptions = MeraUpdateOptions(trace_estimator=nothing))
     @unpack (atol, ldiff_tol, maxiter, interpolate,
             store_trace, show_trace, trace_estimator) = options
     step = 1

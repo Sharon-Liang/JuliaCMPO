@@ -2,7 +2,7 @@
     `compress_cmps`:
 """
 function compress_cmps(ψ0::AbstractCMPS{T, S, U}, χ::Integer, β::Real; 
-    options::CompressOptions=CompressOptions()) where {T,S,U}
+    options::CompressOptions=CompressOptions(trace_estimator=nothing)) where {T,S,U}
     @unpack (init, show_trace, mera_update_options, 
              optim_options, trace_estimator, processor) = options
     if show_trace 
