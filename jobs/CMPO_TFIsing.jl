@@ -1,14 +1,14 @@
 using LinearAlgebra; BLAS.set_num_threads(Threads.nthreads())
 using TimerOutputs, Dates, ArgParse
 using DelimitedFiles, HDF5, Printf
-using JuliaCMPO
+using JuliaCMPO, FiniteTLanczos
 
 println("JULIA_NUM_THREADS = ", Threads.nthreads())
 println("OPENBLAS_NUM_THREADS = ", BLAS.get_num_threads())
 
 const to = TimerOutput()
 const Start_Time = Dates.format(now(), "yyyy-mm-dd HH:MM:SS")
-settings = ArgParseSettings(prog="CMPO: TFIsing model"
+settings = ArgParseSettings(prog="CMPO: 1D TFIsing model"
 )
 @add_arg_table! settings begin
     "--J"
@@ -52,9 +52,9 @@ settings = ArgParseSettings(prog="CMPO: TFIsing model"
         default = Dates.format(now(), "yyyy-mm-dd")
         help = "date tag"
     "--processor"
-        arg_type = Processor
-        default = CPU
-        help = "processor used"
+        arg_type = Int64
+        default = 0
+        help = "processor used: 0 for CPU and 1 for GPU"
 end
 
 parsed_args = parse_args(settings; as_symbols=true)
@@ -70,7 +70,8 @@ const bondD = parsed_args[:bondD]
 const Continue = parsed_args[:Continue]
 const ResultFolder = parsed_args[:ResultFolder]
 const tag = parsed_args[:tag]
-const processor = parsed_args[:processor]
+const processor = Processor(parsed_args[:processor])
+
 
 const wid = 1
 
@@ -81,14 +82,20 @@ isdir(ModelResultFolder) || mkdir(ModelResultFolder)
 #CMPO
 model = TFIsing(J, Γ)
 
+#trace_estimator = nothing
+#trace_estimator = TraceEstimator(Full_ED, FTLMOptions(processor = processor))
+trace_estimator = TraceEstimator(FullSampling_FTLM, FTLMOptions(Nk = 100, processor = processor))
+
+trace_estimator === nothing ? estimator_name = "nothing" : estimator_name = string(trace_estimator.estimator)
+
 if β0 == 0
     ψ0 = nothing
 else
-    init_path = @sprintf "%s/bondD_%02i_CMPS/beta_%.2f.hdf5" ModelResultFolder bondD β0
+    init_path = @sprintf "%s/bondD_%02i_CMPS_%s_%s/beta_%.2f.hdf5" ModelResultFolder bondD estimator_name tag β0
     ψ0 = readCMPS(init_path)
 end
 
-EngFile = @sprintf "%s/Obsv_FECvS_bondD_%02i.txt" ModelResultFolder bondD
+EngFile = @sprintf "%s/Obsv_FECvS_bondD_%02i_%s_%s.txt" ModelResultFolder bondD estimator_name tag
 if Continue == false
     open(EngFile,"w") do file  
         write(file, "  β          free_energy           energy              specific_heat            entropy      \n")
@@ -101,7 +108,7 @@ end
 for b = 1:length(βlist)
     β = βlist[b]
     @timeit to "evaluate" begin
-        evaluate_options = EvaluateOptions(EvaluateOptions(),
+        evaluate_options = EvaluateOptions(trace_estimator=trace_estimator,
                             init = ψ0,
                             tag = tag,
                             processor = processor)

@@ -30,7 +30,7 @@ function submitJob(env, prog, args, jobname;
     #SBATCH --error=%s 
     """ partitian runtime cpu_per_task jobname log_file_path log_file_path
     
-    if device == GPU
+    if processor == GPU
         if partitian == a100 && gpu_memory != 0
             job *= """
             #SBATCH --gres=gpu:A100_$(gpu_memory)G:1

@@ -56,9 +56,9 @@ settings = ArgParseSettings(prog="CMPO code for XXZ model"
         default = Dates.format(now(), "yyyy-mm-dd")
         help = "date tag"
     "--processor"
-        arg_type = Processor
-        default = CPU
-        help = "processor used"
+        arg_type = Int64
+        default = 0
+        help = "processor used: 0 for CPU and 1 for GPU"
 end
 parsed_args = parse_args(settings; as_symbols=true)
 print(parsed_args,"\n")
@@ -72,7 +72,7 @@ const β = parsed_args[:beta]
 const bondD = parsed_args[:bondD]
 const max_pow_step = parsed_args[:max_pow_step]
 const tag = parsed_args[:tag]
-const processor = parsed_args[:processor]
+const processor = Processor(parsed_args[:processor])
 
 Continue = parsed_args[:Continue]
 if Continue ≥ max_pow_step Continue = true end
@@ -87,9 +87,14 @@ isdir(ModelResultFolder) || mkdir(ModelResultFolder)
 #CMPO
 model = XXZmodel_2D_helical(Jz/Jxy, width, expand = expand)
 
+trace_estimator = nothing
+#trace_estimator = TraceEstimator(Full_ED, FTLMOptions(processor = processor))
+#trace_estimator = TraceEstimator(FullSampling_FTLM, FTLMOptions(Nk = 100, processor = processor))
+trace_estimator === nothing ? estimator_name = "nothing" : estimator_name = string(trace_estimator.estimator)
+
+
 @timeit to "evaluate" begin
-    evaluate_options = EvaluateOptions(EvaluateOptions(),
-                            init = ψ0,
+    evaluate_options = EvaluateOptions(trace_estimator = trace_estimator,
                             hermitian = false,
                             group = group,
                             max_pow_step = max_pow_step,
@@ -99,6 +104,7 @@ model = XXZmodel_2D_helical(Jz/Jxy, width, expand = expand)
     res = JuliaCMPO.evaluate(model, bondD, β, ModelResultFolder, 
                             options = evaluate_options)
 end
+
 
 const End_Time = Dates.format(now(), "yyyy-mm-dd HH:MM:SS")
 const Running_TimeTable = string(to)
