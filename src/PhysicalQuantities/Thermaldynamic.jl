@@ -17,7 +17,7 @@ end
     The thermal average of local opeartors ⊢o⊣ with respect to K = ψl * W * ψr
 """
 function thermal_average(Op, ψl::AbstractCMPS, ψr::AbstractCMPS, W::AbstractCMPO, β::Real)
-    K = ψl * W * ψr |> Matrix 
+    K = ψl * W * ψr |> Matrix |> symmetrize
     Op = Matrix(Op)
 
     e, v = eigensolver(K)
@@ -36,7 +36,7 @@ thermal_average(Op, ψ::AbstractCMPS, W::AbstractCMPO, β::Real) = thermal_avera
     The thermal average of local opeartors ⊢o⊣ with respect to K = ψ * ψ
 """
 function thermal_average(Op, ψl::AbstractCMPS, ψr::AbstractCMPS, β::Real)
-    K = ψl * ψr |> Matrix 
+    K = ψl * ψr |> Matrix |> symmetrize
     Op = Matrix(Op)
     
     e, v = eigensolver(K)
@@ -66,8 +66,8 @@ free_energy(ψ::AbstractCMPS, W::AbstractCMPO, β::Real, trace_estimator::Estima
     Energy density: E = -∂lnZ/∂β
 """
 function energy(ψl::AbstractCMPS, ψr::AbstractCMPS, W::AbstractCMPO, β::Real)
-    K = ψl * W * ψr |> Matrix 
-    H = ψl * ψr |> Matrix 
+    K = ψl * W * ψr |> Matrix |> symmetrize
+    H = ψl * ψr |> Matrix |> symmetrize
     res = thermal_average(K, ψl, ψr, W, β) - thermal_average(H, ψl, ψr, β)
     return res
 end
@@ -80,8 +80,8 @@ energy(ψ::AbstractCMPS, W::AbstractCMPO, β::Real) = energy(ψ, ψ, W, β)
 function specific_heat(ψl::AbstractCMPS, ψr::AbstractCMPS, W::AbstractCMPO, β::Real; 
                         method::Symbol = :adiff)
     if method == :adiff
-        K = ψl * W * ψr |> Matrix 
-        H = ψl * ψr |> Matrix 
+        K = ψl * W * ψr |> Matrix |> symmetrize
+        H = ψl * ψr |> Matrix |> symmetrize
         K2 = K * K
         H2 = H * H
         c = thermal_average(K2, ψl, ψr, W, β) - thermal_average(K, ψl, ψr, W, β)^2

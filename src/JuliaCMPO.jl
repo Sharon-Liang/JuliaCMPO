@@ -37,6 +37,7 @@ export MeraUpdateOptions,
        MeraUpdateResult
 #structs/CMPSCompress.jl
 export CompressOptions, CompressResult
+#export update_processor
 
 #utilities
 export ⊗
