@@ -23,7 +23,7 @@ end
     rrule for logtrexp(tM) function where `typeof(M)=CMPSMatrix`, 
     `∂y_∂M` also return a `CMPSMatrix`. `exp(tM)` is constructed 
     explicitly if no `estimator` is assigned.
-"""
+
 function ChainRules.rrule(::typeof(logtrexp), t::Real, M::CMPSMatrix{Ts,T,S,U}) where {Ts,T,S,U}
     @unpack ψl, ψr = M
     χl, χr = size(ψl.Q, 1), size(ψr.Q, 1)
@@ -60,7 +60,7 @@ function ChainRules.rrule(::typeof(logtrexp), t::Real, M::CMPSMatrix{Ts,T,S,U}) 
     end
     return y, logtrexp_pullback
 end
-
+"""
 
 """
     rrule for logtrexp(tM) function where `typeof(M)=CMPSMatrix`, 
