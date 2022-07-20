@@ -17,7 +17,7 @@ function logtrexp(t::Real, M, trace_estimator::TraceEstimator)
     @unpack processor = options
     processor == CPU ? x0 = rand(size(M,1)) : x0 = CUDA.rand(Float64, size(M,1))
     e0, _, _ = eigsolve(M, x0, 1, which, ishermitian = true)
-    e1 = e0[1]
+    e1 = e0[1] #typeof(e0) = Vector{Float64}
     expr = e -> exp(t * (e - e1))
 
     options = FTLMOptions(options, which = which)
