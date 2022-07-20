@@ -1,15 +1,15 @@
-using LinearAlgebra; BLAS.set_num_threads(Threads.nthreads())
+using LinearAlgebra; BLAS.set_num_threads(8)
 using TimerOutputs, Dates, ArgParse
 using DelimitedFiles, HDF5, Printf
-using JuliaCMPO
+using JuliaCMPO, FiniteTLanczos
 
 println("JULIA_NUM_THREADS = ", Threads.nthreads())
 println("OPENBLAS_NUM_THREADS = ", BLAS.get_num_threads())
 
 const to = TimerOutput()
 const Start_Time = Dates.format(now(), "yyyy-mm-dd HH:MM:SS")
-settings = ArgParseSettings(prog="CMPO code for XXZ model"
-)
+settings = ArgParseSettings(prog="CMPO code for XXZ model")
+
 @add_arg_table! settings begin
     "--Jxy"
         arg_type = Float64
@@ -88,10 +88,10 @@ isdir(ModelResultFolder) || mkdir(ModelResultFolder)
 model = XXZmodel_2D_helical(Jz/Jxy, width, expand = expand)
 
 trace_estimator = nothing
-#trace_estimator = TraceEstimator(Full_ED, FTLMOptions(processor = processor))
-#trace_estimator = TraceEstimator(FullSampling_FTLM, FTLMOptions(Nk = 100, processor = processor))
-trace_estimator === nothing ? estimator_name = "nothing" : estimator_name = string(trace_estimator.estimator)
+#trace_estimator = TraceEstimator(simple_FTLM, FTLMOptions(processor = processor))
+#trace_estimator = TraceEstimator(orthogonalized_FTLM, FTLMOptions(processor = processor))
 
+trace_estimator === nothing ? estimator_name = "nothing" : estimator_name = string(trace_estimator.estimator)
 
 @timeit to "evaluate" begin
     evaluate_options = EvaluateOptions(trace_estimator = trace_estimator,

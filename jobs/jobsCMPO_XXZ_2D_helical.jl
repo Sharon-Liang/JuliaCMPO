@@ -5,22 +5,22 @@ phys_model = "XXZ_2D_helical"
 env = "/home/sliang/JuliaCode/JuliaCMPO"
 prog = env * "/jobs/CMPO_$(phys_model).jl"
 
-processor = CPU
-machine = v100
+processor = GPU
+machine = p100
 gpu_memory = 80
 logtag = Dates.format(now(), "yyyy-mm-dd")*"-"*"$(processor)"
 
 Wait = nothing
-cpu_per_task = 8
+cpu_per_task = 1
 
 #tag = "2022-06-21"*"-"*processor
 tag = Dates.format(now(), "yyyy-mm-dd")*"-"*"$(processor)"
 
-βlist = [1.0] 
+βlist = [0.5] 
 Jzlist = [1.0]
 Jxylist = [1.0]
-bondDlist = [8]
-widlist = [1]
+bondDlist = [32]
+widlist = [3]
 Continue = 0  #Continue > max_pow_step,  Continue = true
 max_pow_step = 10
 
