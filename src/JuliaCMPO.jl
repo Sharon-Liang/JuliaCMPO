@@ -10,10 +10,6 @@ using OMEinsum, LinearAlgebra, KrylovKit
 using Zygote, Optim, ChainRules
 using PhysModels, FiniteTLanczos
 
-@reexport import Base: kron, *, eltype, size, length, getindex, iterate
-@reexport import Base: ==, ≈,  transpose, adjoint, cat
-@reexport import LinearAlgebra: ishermitian, norm, normalize, diag
-@reexport import KrylovKit.eigsolve
 @reexport import FiniteTLanczos: eigensolver, symmetrize, 
                                  Processor, CPU, GPU, 
                                  solver_function,
@@ -24,10 +20,11 @@ using PhysModels, FiniteTLanczos
 # structs/CMPSandCMPO.jl
 export AbstractCTensor, AbstractCMPS, AbstractCMPO,
        CMPS, CMPO, CuCMPS, CuCMPO,
-       CMPS_generate, CMPO_generate,
+       cmps_generate, cmpo_generate,
        CTensor, CuCTensor,
        bond_dimension,
        virtual_bond_dimension
+
 #structs/CMPSMatrix.jl
 export CMPSMatrix
 #structs/MeraUpdate.jl
@@ -64,21 +61,16 @@ export compress_cmps
 export init_cmps
 
 #PhysicalQuantities/PhysicalModels.jl
-export PhysModel, Ising_CMPO, generalUt, expand_cmpo
+export ising_cmpo
 export TFIsing, TFIsing_2D_helical,
        XYmodel, XYmodel_2D_helical, 
-       XXZmodel,  XXZmodel_2D_helical
+       XXZmodel, XXZmodel_2D_helical
 
 #PhysicalQuantities/Thermaldynamic.jl
 export make_operator
 
 #structs/EvaluateOptions.jl
 export EstimatorType, EvaluateOptions
-
-#evaluate.jl
-#export evaluate,
-#       hermitian_evaluate, 
-#       non_hermitian_evaluate
 
 
 include("./structs/CMPSandCMPO.jl")
@@ -90,28 +82,26 @@ include("./structs/CMPSCompress.jl")
 include("./utilities/otimes.jl")
 
 include("solver.jl")
-include("OptimFunctions.jl")
-include("SaveLoad.jl")
+include("optim_functions.jl")
+include("save_load.jl")
 
-include("CTensorProducts.jl")
+include("ctensor_products.jl")
 
 include("eigensolver.jl")
 include("logtrexp.jl")
-include("CMPSOperations.jl")
+include("cmps_operations.jl")
 
-include("MeraUpdate.jl")
-include("CMPSCompress.jl")
-include("CMPSInitiate.jl")
+include("mera_update.jl")
+include("cmps_compress.jl")
+include("cmps_initiate.jl")
 
-include("./PhysicalQuantities/PhysicalModels.jl")
-include("./PhysicalQuantities/Thermaldynamic.jl")
-include("./PhysicalQuantities/Correlations.jl")
+include("./physical_quantities/physical_models.jl")
+include("./physical_quantities/thermaldynamic.jl")
+include("./physical_quantities/Correlations.jl")
 
 include("./structs/EvaluateOptions.jl")
 include("evaluate.jl")
 
-include("./rrule/ConstructorAdjoint.jl")
-include("./rrule/accum.jl")
 include("./rrule/logtrexp.jl")
 
 

@@ -1,8 +1,11 @@
 """
+    _interpolate_isometry(p1, p2, θ)
+
+Interpolate between two isometries.
     adaptive_mera_update: update the isometry using iterative SVD update with line search.
     `interpolate_isometry(p1,p2,θ)`: interpolate between two isometries
 """
-function interpolate_isometry(p1::AbstractMatrix, p2::AbstractMatrix, θ::Real)
+function _interpolate_isometry(p1::AbstractMatrix, p2::AbstractMatrix, θ::Real)
     """ interpolate two isometries
         θ = π/2 : mix = p1
         θ = 0   : mix = p2
@@ -13,12 +16,14 @@ function interpolate_isometry(p1::AbstractMatrix, p2::AbstractMatrix, θ::Real)
 end
 
 
-function adaptive_mera_update(ψ0::AbstractCMPS, χ::Integer, β::Real; 
-    options::MeraUpdateOptions = MeraUpdateOptions(trace_estimator=nothing))
-    @unpack (atol, ldiff_tol, maxiter, interpolate,
-            store_trace, show_trace, trace_estimator) = options
+"""
+    adaptive_mera_update(ψ0::AbstractCMPS, χ, β[; options::MeraUpdateOptions])
+
+"""
+function adaptive_mera_update(ψ0::AbstractCMPS, χ::Integer, β::Real; mera_update_options::MeraUpdateOptions)
+    @unpack (atol, loss_atol, maxiter, interpolate,
+             store_trace, show_trace, trace_estimator) = mera_update_options
     step = 1
-    #logfidelity0 = logfidelity(ψ0, ψ0, β)
     logfidelity0 = 9.9e9
     loss(p_matrix) = logfidelity(project(ψ0, p_matrix), ψ0, β, trace_estimator)
 
@@ -31,19 +36,17 @@ function adaptive_mera_update(ψ0::AbstractCMPS, χ::Integer, β::Real;
     adiff = abs(loss_current - logfidelity0)
     ldiff = abs(loss_current - loss_previous)
     
-    trace = MeraUpdateTrace()
+    mtrace = MeraUpdateTrace()
     step_info = MeraUpdateStep(step, π, ldiff, exp(-adiff))
-    if options.store_trace push!(trace, step_info) end
-    if options.show_trace
-        println("-----------------------------MERA update------------------------------")
-        println("step           θ                 loss_diff             fidelity      \n")
-        println("----  -------------------  --------------------   -------------------\n")
+    if store_trace push!(mtrace, step_info) end
+    if show_trace
+        println(_header(mtrace))
         println(step_info) 
     end
 
-    while step < options.maxiter
+    while step < maxiter
         step += 1   
-        grad = Zygote.gradient(x -> loss(x), p_current)[1]
+        grad = Zygote.gradient(loss, p_current)[1]
         F = svd(grad)
         p_next = F.U * F.Vt
  
@@ -58,7 +61,7 @@ function adaptive_mera_update(ψ0::AbstractCMPS, χ::Integer, β::Real;
                 p_next = p_current
                 proceed = false
             else
-                p_interpolate = interpolate_isometry(p_next, p_current, θ)
+                p_interpolate = _interpolate_isometry(p_next, p_current, θ)
                 loss_interpolate = logfidelity(project(ψ0, p_interpolate), ψ0, β, trace_estimator)
                 if loss_interpolate > loss_current
                     p_next = p_interpolate
@@ -75,11 +78,11 @@ function adaptive_mera_update(ψ0::AbstractCMPS, χ::Integer, β::Real;
 
         #store_trace
         step_info = MeraUpdateStep(step, θ, ldiff, exp(-adiff))
-        if options.store_trace push!(trace, step_info) end 
-        if options.show_trace println(step_info) end
+        if store_trace push!(mtrace, step_info) end 
+        if show_trace println(step_info) end
 
-        if adiff < options.atol || ldiff < options.ldiff_tol break end
+        if adiff < atol || ldiff < loss_atol break end
     end
     ψ = project(ψ0, p_current)
-    return MeraUpdateResult(ψ, trace)
+    return MeraUpdateResult(ψ, mtrace)
 end

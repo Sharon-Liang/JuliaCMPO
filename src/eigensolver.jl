@@ -1,9 +1,12 @@
 @reexport import KrylovKit.eigsolve
-import LinearAlgebra.Eigen
+@reexport import FiniteTLanczos.eigensolver
 
-function eigensolver(M::CMPSMatrix{Ts,T,S,U}) where {Ts,T,S,U} 
-    res = Matrix(M) |> symmetrize
+"""
+    eigensolver(A::CMPSMatrix)
+
+Solve all eigen pairs of a symmetric `A`.
+"""
+function eigensolver(A::CMPSMatrix)
+    res = tomatrix(A) |> symmetrize
     return eigensolver(res)
 end
-
-#end

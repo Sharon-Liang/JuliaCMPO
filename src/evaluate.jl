@@ -1,27 +1,32 @@
 #module evaluate
 
 """
-    Evaluate PhysModel `m` when the hermiticty of its transfer matrix is unknown or not specified
+    evaluate(A, bondD, β, ResultFolder; evaluate_options)
+    
+Calculate left and right CMPS of a CMPO `A` at temperature `β`,
+results are save in folder `ResultFolder` 
 """
-function evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder::String; 
-                    options::EvaluateOptions)
+function evaluate(A::AbstractCMPO, bondD::Integer, β::Real, ResultFolder::String; evaluate_options::EvaluateOptions)
     @unpack hermitian = options
-    hermitian === nothing ? hermitian = ishermitian(m.Tmatrix) : hermitian = hermitian
+    hermitian === nothing ? hermitian = ishermitian(A) : hermitian = hermitian
     if hermitian
-        hermitian_evaluate(m, bondD, β, ResultFolder, options = options)
+        hermitian_evaluate(A, bondD, β, ResultFolder; evaluate_options)
     else
-        non_hermitian_evaluate(m, bondD, β, ResultFolder, options = options)
+        non_hermitian_evaluate(A, bondD, β, ResultFolder; evaluate_options)
     end
 end
 
 
 """
-    Evaluate PhysModel m when its transfer matrix is hermitian
+    hermitian_evaluate(A, bondD, β, ResultFolder; evaluate_options)
+
+Calculate left and right CMPS of a CMPO `A` at temperature `β` by optimizing free_energy,
+results are save in folder `ResultFolder` 
 """
-function hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder::String; 
-            options::EvaluateOptions=EvaluateOptions(trace_estimator=nothing))
+function hermitian_evaluate(A::AbstractCMPO, bondD::Integer, β::Real, ResultFolder::String; 
+                            evaluate_options::EvaluateOptions)
     @unpack (init, processor, trace_estimator, 
-            compress_options, optim_options, tag, show_trace) = options
+             compress_options, optim_options, tag, show_trace) = evaluate_options
     solver = solver_function(processor)
 
     """
@@ -35,24 +40,24 @@ function hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder
     isdir(CMPSResultFolder) || mkdir(CMPSResultFolder) 
     isdir(OptResultFolder) || mkdir(OptResultFolder)
 
-    Tm = solver(x->x, m.Tmatrix)
+    A = solver(A)
     #initiate cmps
     init === nothing ? 
-        ψ = solver(x->init_cmps(bondD, x, β, options=compress_options), Tm) : ψ = solver(x->x, init)
+        ψ = init_cmps(bondD, A, β; compress_options) : ψ = solver(init)
 
-    ψ = solver(diagQ, ψ)
+    ψ = diagQ(ψ)
 
     dQ = convert(Vector, diag(ψ.Q))
     R  = convert(Array, ψ.R)
 
-    loss() = free_energy(solver(CMPS_generate, diagm(dQ), R), Tm, β, trace_estimator)
+    loss() = free_energy(solver(cmps_generate, diagm(dQ), R), A, β, trace_estimator)
     F_initial = loss()
 
     p0, f, g! = optim_functions(loss, Zygote.Params([dQ, R]))
     optim_result = Optim.optimize(f, g!, p0, LBFGS(), optim_options)
     F_final = minimum(optim_result)
 
-    ψ = solver(CMPS_generate, diagm(dQ), R)
+    ψ = solver(cmps_generate, diagm(dQ), R)
     #save optimize result
     OptResultFile = @sprintf "%s/beta_%.2f.txt" OptResultFolder β
     open(OptResultFile, "w") do file
@@ -67,8 +72,8 @@ function hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder
     # calculate thermal dynamic quanties
     dict = Dict()
     dict["F"] = F_final
-    dict["E"] = energy(ψ, Tm, β)
-    dict["Cv"] = specific_heat(ψ, Tm, β)
+    dict["E"] = energy(ψ, A, β)
+    dict["Cv"] = specific_heat(ψ, A, β)
     dict["S"] = β * (dict["E"] - dict["F"])
     ResultFile = @sprintf "%s/beta_%.2f.hdf5" CMPSResultFolder β
     saveCMPS(ResultFile, CTensor(ψ), dict)
@@ -77,14 +82,15 @@ end
 
 
 """
-    Evaluate PhysModel m when its transfer matrix is non-hermitian, 
-    or force to do power projection 
+    non_hermitian_evaluate(A, bondD, β, ResultFolder; evaluate_options)
+
+Calculate left and right CMPS of a CMPO `A` at temperature `β` by power method,
+results are save in folder `ResultFolder` 
 """
-function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFolder::String; 
-                                options::EvaluateOptions=EvaluateOptions())
-    @unpack (init, processor, trace_estimator, 
-            compress_options, optim_options, 
-            Continue, max_pow_step, group, tag, show_trace) = options
+function non_hermitian_evaluate(A::AbstractCMPO, bondD::Integer, β::Real, ResultFolder::String; 
+                                evaluate_options::EvaluateOptions)
+    @unpack (init, processor, trace_estimator, compress_options, 
+             tocontinue, max_pow_step, group, tag, show_trace) = evaluate_options
     solver = solver_function(processor)
     
     """
@@ -92,11 +98,11 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
         CMPSResultFolder: CMPS information, classified by bond dimension
         ChkpFolder: Check points
     """
-    Tm = solver(x->x, m.Tmatrix)
+    A = solver(A)
     g = 1
-    while g < group #enlarged Tmatrix: phy_dim -> phy_dim^group
-        Tm = solver(x-> x * Tm, m.Tmatrix)
-        g+=1
+    while g < group #enlarged matrix: phy_dim -> phy_dim^group
+        A *= A
+        g += 1
     end
 
     trace_estimator === nothing ? estimator_name = "nothing" : estimator_name = string(trace_estimator.estimator)
@@ -114,7 +120,7 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
     PsiFidelityFile = "$(ChkpFolder)/Fidelity_psi.txt"
     LpsiFidelityFile = "$(ChkpFolder)/Fidelity_Lpsi.txt"
 
-    if Continue == false || Continue == 0
+    if tocontinue == false || tocontinue == 0
         #CLEAR ChkpFolder
         if length(readdir(ChkpFolder)) != 0
             for file in readdir(ChkpFolder) rm("$(ChkpFolder)/$(file)",recursive=true) end
@@ -122,68 +128,52 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
         isdir(ChkpPsiFolder) || mkdir(ChkpPsiFolder)
         isdir(ChkpLpsiFolder) || mkdir(ChkpLpsiFolder)
         isdir(ChkpOptPsiFolder) || mkdir(ChkpOptPsiFolder)
-
-        if m.Ut === nothing
-            isdir(ChkpOptLpsiFolder) || mkdir(ChkpOptLpsiFolder)
-        end
+        isdir(ChkpOptLpsiFolder) || mkdir(ChkpOptLpsiFolder)
 
         #initiate cmps
         pow_step = 0
         if init === nothing 
-            ψr = solver(x->init_cmps(bondD, x, β, options=compress_options), Tm)
-            m.Ut === nothing ? 
-                ψl = solver(x->init_cmps(bondD, x, β, options=compress_options), transpose(Tm)) : 
-                ψl = solver(x -> x * ψr, m.Ut)
+            ψr = init_cmps(bondD, A, β; compress_options)
+            ψl = init_cmps(bondD, transpose(A), β; compress_options)
         else 
-            ψr, ψl = solver(x->x, init)
+            ψr, ψl = solver(init)
         end
 
-        ψr = solver(diagQ, ψr)
-        ψl = solver(diagQ, ψl)
+        ψr, ψl = diagQ(ψr), diagQ(ψl) 
         ChkpPsiFile = @sprintf "%s/step_%03i.hdf5" ChkpPsiFolder pow_step
         ChkpLpsiFile = @sprintf "%s/step_%03i.hdf5" ChkpLpsiFolder pow_step
         saveCMPS(ChkpPsiFile, CTensor(ψr))
         saveCMPS(ChkpLpsiFile, CTensor(ψl))
 
         open(ChkpEngFile,"w") do cfile
-            F = free_energy(ψl, ψr, Tm, β)/group
-            E = energy(ψl, ψr, Tm, β)/group
-            Cv = specific_heat(ψl, ψr, Tm, β)/group
+            F = free_energy(ψl, ψr, A, β)/group
+            E = energy(ψl, ψr, A, β)/group
+            Cv = specific_heat(ψl, ψr, A, β)/group
             S = β * (E - F)    
             write(cfile, "step    free_energy/site        energy/site       specific_heat/site      entropy/site    \n")
             write(cfile, "----  -------------------  --------------------   -------------------  -------------------\n")
             EngString = @sprintf "%3i   %.16f   %.16f   %.16f   %.16f \n" pow_step F E Cv S
             write(cfile, EngString)
         end
-    
-        open(PsiFidelityFile,"w") do cfile
-            write(cfile, "step   fidelity_initial      fidelity_final  \n")
-            write(cfile, "----  ------------------   ------------------\n")
-        end
-    
-        if m.Ut === nothing
-            open(LpsiFidelityFile,"w") do cfile
-                write(cfile, "step   fidelity_initial      fidelity_final  \n")
+        for pfile in [PsiFidelityFile, LpsiFidelityFile]
+            open(pfile,"w") do cfile
+                write(cfile, "step   initial fidelity      final fidelity  \n")
                 write(cfile, "----  ------------------   ------------------\n")
             end
         end
     else
-        if Continue == true
+        if tocontinue == true
             pow_step = readdlm(ChkpEngFile, skipstart=2)[end,1]
         else
-            pow_step = Continue
+            pow_step = tocontinue
             EngData = readlines(ChkpEngFile, keep=true)
             open(ChkpEngFile, "w") do file
                 for i = 1:pow_step+3 write(file, EngData[i]) end
             end
-            PsiFidelity = readlines(PsiFidelityFile, keep=true)
-            open(PsiFidelityFile, "w") do file
-                for i = 1:pow_step+2 write(file, PsiFidelity[i]) end
-            end
-            if m.Ut === nothing
-                LpsiFidelity = readlines(LpsiFidelityFile, keep=true)
-                open(LpsiFidelityFile, "w") do file
-                    for i = 1:pow_step+2 write(file, LpsiFidelity[i]) end
+            for pfile in [PsiFidelityFile, LpsiFidelityFile]
+                psi_fidelity = readlines(pfile, keep=true)
+                open(pfile, "w") do file
+                    for i = 1:pow_step+2 write(file, psi_fidelity[i]) end
                 end
             end
         end
@@ -197,19 +187,15 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
         pow_step += 1
         if show_trace println(@sprintf "Power Step = %03i" pow_step) end
 
-        res = solver(x ->compress_cmps(Tm * x, bondD, β, options=compress_options), ψr)
-        ψr = solver(x->x, res.ψ)
-        if m.Ut === nothing
-            res2 = solver(x->compress_cmps(transpose(Tm) * x, bondD, β, options=compress_options), ψl)
-            ψl = solver(x->x, res2.ψ)
-        else
-            ψl = solver(x -> x * ψr, m.Ut)
-        end
+        ψr, ψl = solver(ψr), solver(ψl)
+        Psi = compress_cmps(A * ψr, bondD, β; compress_options)
+        Lpsi = compress_cmps(transpose(A) * ψl, bondD, β; compress_options)
+        ψr, ψl = Psi.cmps, Lpsi.cmps
 
         open(ChkpEngFile,"a") do cfile
-            F = free_energy(ψl, ψr, Tm, β)/group
-            E = energy(ψl, ψr, Tm, β)/group
-            Cv = specific_heat(ψl, ψr, Tm, β)/group
+            F = free_energy(ψl, ψr, A, β)/group
+            E = energy(ψl, ψr, A, β)/group
+            Cv = specific_heat(ψl, ψr, A, β)/group
             S = β * (E - F)
             EngString = @sprintf "%3i   %.16f   %.16f   %.16f   %.16f \n" pow_step F E Cv S
             write(cfile, EngString)
@@ -221,27 +207,25 @@ function non_hermitian_evaluate(m::PhysModel, bondD::Integer, β::Real, ResultFo
         saveCMPS(ChkpLpsiFile, CTensor(ψl))
 
         open(PsiFidelityFile,"a") do cfile
-            FidelityString = @sprintf "%3i   %.16f   %.16f \n" pow_step res.fidelity_initial res.fidelity_final
+            FidelityString = @sprintf "%3i   %.16f   %.16f \n" pow_step Psi.ifidel Psi.ffidel
             write(cfile, FidelityString)
         end
 
         OptPsitFile = @sprintf "%s/step_%03i.txt" ChkpOptPsiFolder pow_step
         open(OptPsitFile, "w") do file
-            write(file, res.optim_result)
-            if res.optim_result.trace !== nothing write(file, res.optim_result.trace) end
+            write(file, Psi.optim_result)
+            if Psi.optim_result.trace !== nothing write(file, Psi.optim_result.trace) end
         end
 
-        if m.Ut === nothing
-            open(LpsiFidelityFile,"a") do cfile
-                FidelityString = @sprintf "%3i   %.16f   %.16f \n" pow_step res2.fidelity_initial res2.fidelity_final
-                write(cfile, FidelityString)
-            end
+        open(LpsiFidelityFile,"a") do cfile
+            FidelityString = @sprintf "%3i   %.16f   %.16f \n" pow_step Lpsi.ifidel Lpsi.ffidel
+            write(cfile, FidelityString)
+        end
 
-            OptLpsiFile = @sprintf "%s/step_%03i.txt" ChkpOptLpsiFolder pow_step
-            open(OptLpsiFile, "w") do file
-                write(file, res2.optim_result)
-                if res2.optim_result.trace !== nothing write(file, res2.optim_result.trace) end
-            end
+        OptLpsiFile = @sprintf "%s/step_%03i.txt" ChkpOptLpsiFolder pow_step
+        open(OptLpsiFile, "w") do file
+            write(file, Lpsi.optim_result)
+            if Lpsi.optim_result.trace !== nothing write(file, Lpsi.optim_result.trace) end
         end
     end
     return 

@@ -1,6 +1,8 @@
 
 """
-    multiplications of Arrays in CMPS and CMPO struct
+    ⊗(A, B)
+
+multiplications of Arrays in `AbstractCMPS` and `AbstractCMPO` struct
 """
 function ⊗(A::AbstractMatrix, B::AbstractMatrix)
     (r1, c1) = size(A)

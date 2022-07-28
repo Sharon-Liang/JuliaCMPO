@@ -17,7 +17,7 @@ function ChainRules.rrule(::typeof(logtrexp),
     
     sign(t) == 1 ? which = :LR : which=:SR
     processor == CPU ? x0 = rand(T,Ns) : x0 = CUDA.rand(T, Ns)
-    e0, _, _ = eigsolve(M, x0, 1, which, ishermitian = true)
+    e0, _, _ =eigsolve(M, x0, 1, which, ishermitian = true, tol=1.e-12)
     e1 = e0[1]
     expr_Λ = e -> exp(t*(e-e1))
     expr_∂y_∂t = e -> e * exp(t*(e-e1))

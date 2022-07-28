@@ -1,20 +1,26 @@
 #module ThermaldynamicQuanties
+#TODO: insert trace_estimators
 """
-    make operator ⊢o⊣
+    make_operator(Op::AbstractMatrix, dim::Integer)
+    make_operator(Op::AbstractMatrix, ψ::Integer)
+
+Generate a operator ``⊢o⊣``.
 """
-function make_operator(Op::AbstractMatrix{T}, dim::Int64) where {T}
-    eye = Matrix{T}(I, dim, dim)
+function make_operator(Op::AbstractMatrix, dim::Integer)
+    eye = Matrix{eltype(Op)}(I, dim, dim)
     return eye ⊗ Op ⊗ eye
 end
 
-function make_operator(Op::AbstractMatrix{T}, ψ::AbstractCMPS{T,S,U}) where {T,S,U}
-    eye = Matrix{T}(I, size(ψ.Q))
+function make_operator(Op::AbstractMatrix, ψ::AbstractCMPS)
+    eye = oneunit(ψ.Q)
     return eye ⊗ Op ⊗ eye
 end
 
 
 """
-    The thermal average of local opeartors ⊢o⊣ with respect to K = ψl * W * ψr
+    thermal_average(Op, ψl, ψr, W, β)
+
+    The thermal average of local opeartors ``⊢o⊣`` with respect to K = ψl * W * ψr
 """
 function thermal_average(Op::AbstractMatrix, ψl::AbstractCMPS, ψr::AbstractCMPS, W::AbstractCMPO, β::Real)
     K = ψl * W * ψr |> Matrix |> symmetrize
@@ -32,7 +38,7 @@ thermal_average(Op::AbstractMatrix, ψ::AbstractCMPS, W::AbstractCMPO, β::Real)
 
 
 """
-    The thermal average of local opeartors ⊢o⊣ with respect to K = ψ * ψ
+    The thermal average of local opeartors ``⊢o⊣`` with respect to K = ψ * ψ
 """
 function thermal_average(Op::AbstractMatrix, ψl::AbstractCMPS, ψr::AbstractCMPS, β::Real)
     K = ψl * ψr |> Matrix |> symmetrize

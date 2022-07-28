@@ -1,4 +1,11 @@
 #module SaveAndLoad
+function _header(s::String) 
+    str = @sprintf """
+    ----------------------------%s-----------------------------
+    """ s
+    return str
+end
+
 function saveCMPS(path::String, ψ::CMPS, dict::Dict = Dict())
     h5open(path, "w") do file
         file["Q"] = ψ.Q
@@ -91,9 +98,5 @@ function Base.write(io::IO, tr::Optim.OptimizationTrace)
     end
     return
 end
-
-
-
-
 
 #end    # module SaveAndLoad

@@ -9,8 +9,9 @@ Base.zeros(pars::Zygote.Params) = zeros(veclength(pars))
 
 
 """
-    optim_function(loss, pars): Return two functions(loss function, gradient function)
-    and p0, a vectorized version of pars.
+    optim_functions(loss, pars::Zygote.Params)
+
+Generate the loss function, gradient function and and `p0`, a vectorized version of pars.
 """
 function optim_functions(loss, pars::Zygote.Params)
     grads = Zygote.gradient(loss, pars)
