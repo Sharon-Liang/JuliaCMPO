@@ -43,7 +43,7 @@ Normalize a CMPS `s`, i.e. make ``⟨ψ|ψ⟩ = 1``.
 function LinearAlgebra.normalize(s::AbstractCMPS, β::Real, trace_estimator = nothing)
     λ = log_overlap(s, s, β, trace_estimator)/β
     Q = s.Q - λ/2 * oneunit(s.Q)
-    return CMPS_generate(Q, s.R)
+    return cmps_generate(Q, s.R)
 end
 
 
@@ -84,7 +84,7 @@ function Base.transpose(o::AbstractCMPO)
     R = o.L
     L = o.R
     typeof(o.P) <: AbstractMatrix ? P = ein"ij->ij"(o.P) : P = ein"ijkl->ijlk"(o.P)
-    return CMPO_generate(Q,R,L,P)
+    return cmpo_generate(Q,R,L,P)
 end
 
 
@@ -99,7 +99,7 @@ function Base.adjoint(o::AbstractCMPO)
     R = conj.(ot.L)
     L = conj.(ot.R)
     P = conj.(ot.P)
-    return CMPO_generate(Q,R,L,P)
+    return cmpo_generate(Q,R,L,P)
 end
 
 
@@ -176,7 +176,7 @@ function project(s::AbstractCMPS, u::AbstractMatrix)
     else
         R = ein"(ip,pql),qj -> ijl"(u', s.R, u)
     end
-    return CMPS_generate(Q, R)
+    return cmps_generate(Q, R)
 end
 
 function project(o::AbstractCMPO, u::AbstractMatrix)
@@ -190,7 +190,7 @@ function project(o::AbstractCMPO, u::AbstractMatrix)
         L = ein"(ip,pql),qj -> ijl"(u', o.L, u)
         P = ein"(ip,pqlm),qj -> ijlm"(u', o.P, u)
     end
-    return CMPO_generate(Q,R,L,P)
+    return cmpo_generate(Q,R,L,P)
 end
 
 
@@ -213,7 +213,7 @@ function *(Ut::AbstractMatrix, s::AbstractCMPS)
     else
         R = ein"mn, ijn -> ijm"(Ut, s.R)
     end
-    return CMPS_generate(s.Q, R)
+    return cmps_generate(s.Q, R)
 end
 
 
@@ -225,7 +225,7 @@ function *(Ut::AbstractMatrix, o::AbstractCMPO)
         R = ein"mk, ijk -> ijm"(Ut, o.R)
         P = ein"mk, ijkn -> ijmn"(Ut, o.P)
     end
-    return CMPO_generate(o.Q, R, o.L, P)
+    return cmpo_generate(o.Q, R, o.L, P)
 end
 
 
@@ -237,7 +237,7 @@ function *(o::AbstractCMPO, Ut::AbstractMatrix)
         L = ein"ijk, km -> ijm"(o.L, Ut)
         P = ein"ijnk, km -> ijnm"(o.P, Ut) 
     end
-    return CMPO_generate(o.Q, o.R, L, P)
+    return cmpo_generate(o.Q, o.R, L, P)
 end
 
 

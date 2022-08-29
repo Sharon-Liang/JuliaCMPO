@@ -48,7 +48,8 @@ export saveCMPS, readCMPS
 # logtrexp.jl
 export logtrexp
 # CMPSOperations
-export log_overlap,
+export tomatrix,
+       log_overlap,
        logfidelity, fidelity, 
        project,
        diagQ
@@ -97,7 +98,7 @@ include("cmps_initiate.jl")
 
 include("./physical_quantities/physical_models.jl")
 include("./physical_quantities/thermaldynamic.jl")
-include("./physical_quantities/Correlations.jl")
+#include("./physical_quantities/Correlations.jl")
 
 include("./structs/EvaluateOptions.jl")
 include("evaluate.jl")

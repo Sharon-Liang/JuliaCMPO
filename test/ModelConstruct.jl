@@ -8,7 +8,7 @@ import JuliaCMPO: free_energy
     pz = pauli(PZ); px = pauli(PX)
     # H = -J px pz
     @testset "width = 1" begin
-        o = Ising_CMPO(J, px, pz)
+        o = ising_cmpo(J, px, pz)
         @test o.Q == zeros(2,2)
         @test o.R == pz
         @test o.L == px
@@ -17,7 +17,7 @@ import JuliaCMPO: free_energy
 
     @testset "width > 1" begin
         wid = 5
-        o = Ising_CMPO(J, px, pz, wid)
+        o = ising_cmpo(J, px, pz, wid)
         @test o.Q == zeros(2,2)
         r = zeros(2,2,wid)
         r[:,:,1] = pz
@@ -36,8 +36,8 @@ end
 @testset "cat two CMPOs" begin
     pz = pauli(PZ); px = pauli(PX)
     for w1 in [1,2,3], w2 in [1,2,3]
-        o1 = Ising_CMPO(1.0, pz, pz, w1)
-        o2 = Ising_CMPO(1.0, px, px, w2)
+        o1 = ising_cmpo(1.0, pz, pz, w1)
+        o2 = ising_cmpo(1.0, px, px, w2)
 
         o = cat(o1, o2)
         @test o.Q == zeros(2,2)
@@ -63,29 +63,14 @@ end
     end   
 end
 
-@testset "expand a CMPO" begin
-    pz = pauli(PZ); px = pauli(PX)
-    for w1 in [1, 3]
-        o1 = Ising_CMPO(1.0, pz, pz, w1)
-        o2 = Ising_CMPO(0.5, pz, pz, w1)
-
-        O1 = expand_cmpo(o1)
-        O2 = cat(o2, transpose(o2))
-
-        @test ==(O1, O2)
-    end
-end
-
 @testset "adjoint and ishermitian" begin
-    for m in [TFIsing(1.0,1.0), XYmodel(), XXZmodel(1.0)]
-        T = m.Tmatrix
+    for T in [TFIsing(1.0,1.0), XYmodel(), XXZmodel(1.0)]  
         @test ==(T, T')
         @test ishermitian(T)
     end
 
     wid = 3
-    for m in [TFIsing_2D_helical(1.0,1.0, wid), XYmodel_2D_helical(wid), XXZmodel_2D_helical(1.0, wid)]
-        T = m.Tmatrix
+    for T in [TFIsing_2D_helical(1.0,1.0, wid), XYmodel_2D_helical(wid), XXZmodel_2D_helical(1.0, wid)]   
         @test ==(T, T') == false
         @test ishermitian(T) == false
     end
@@ -95,18 +80,10 @@ end
     #one should compare transfer matrix instead of JuliaCMPO local tensor
     β = 2.0
     for m in [TFIsing(1.0,1.0), XXZmodel_2D_helical(1.0, 2)]
-        ψ = init_cmps(2, m.vir_dim)
-        T1 =  transpose(m.Tmatrix * m.Tmatrix)
-        T2 =  transpose(m.Tmatrix) * transpose(m.Tmatrix)
+        ψ = init_cmps(2, virtual_bond_dimension(m)-1)
+        T1 =  transpose(m * m)
+        T2 =  transpose(m) * transpose(m)
         @test free_energy(ψ, T1, β) ≈ free_energy(ψ, T2, β)
     end
 end
 
-@testset "Ut' * T * Ut = transpose(T)" begin
-    wid = 3
-    for m in [TFIsing(1.0,1.0), XYmodel(), XYmodel_2D_helical(1, expand=true), XXZmodel_2D_helical(2.0, wid, expand=true)]
-        Tm = solver(x->x, m.Tmatrix)
-        Ut = solver(x->x, m.Ut)
-        @test  Ut' * Tm * Ut == transpose(Tm)
-    end
-end

@@ -44,6 +44,6 @@ function _sum_expr_w1_w2(expr::Function, vals, w1, w2)
 end
 
 include("./logtrexp_full_ed.jl")
-include("./logtrexp_simple_ftlm.jl")
+include("./logtrexp_standard_ftlm.jl")
 include("./logtrexp_replaced_ftlm.jl")
 include("./logtrexp_orthogonalized_ftlm.jl")

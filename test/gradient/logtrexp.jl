@@ -14,11 +14,11 @@ Nl, Nr = 6, 7
 for vD = 1:2
     ψl, ψr = init_cmps(Nl, vD), init_cmps(Nr, vD)
     Cmatrix = ψl * ψr
-    M = Cmatrix |> Matrix
+    M = Cmatrix |> tomatrix
     t = rand()
 
-    M2 = solver(x->x, M)
-    Cmatrix2 = solver(x->x, Cmatrix)
+    M2 = solver(M)
+    Cmatrix2 = solver(Cmatrix)
 
     #loss functions
     ∂t_M = x->logtrexp(x, M)
@@ -75,7 +75,7 @@ for vD = 1:2
     end
 
     @testset "logtrexp-CMPSMatrix-Full_ED" begin
-        trace_estimator = TraceEstimator(Full_ED, FTLMOptions(FTLMOptions(), processor = processor))
+        trace_estimator = TraceEstimator(full_ed_ftrace, FTLMOptions(FTLMOptions(), processor = processor))
         ∂t_Cmatrix_estimate_zygote = zgradient(x->∂t_Cmatrix_estimate2(x,trace_estimator), t)[1] 
         @test ≈(∂t_Cmatrix_estimate_zygote, ∂t_M_ndiff; rtol = 1e-5, atol = 1e-5)
 
@@ -84,22 +84,10 @@ for vD = 1:2
         @test ≈(∂Matrix_Cmatrix_estimate_zygote, ∂Matrix_Cmatrix_ndiff; rtol = 1e-5, atol = 1e-5)
     end
 
-    @testset "logtrexp-CMPSMatrix-FullSampling_FTLM" begin
-        Ns = size(Cmatrix,1)
-        options = FTLMOptions(FTLMOptions(), Ne = 0, Nk=Ns, processor = processor)
-        trace_estimator = TraceEstimator(FullSampling_FTLM, options)
-        ∂t_Cmatrix_estimate_zygote = zgradient(x->∂t_Cmatrix_estimate2(x,trace_estimator), t)[1] 
-        @test ≈(∂t_Cmatrix_estimate_zygote, ∂t_M_ndiff; rtol = 1e-5, atol = 1e-5)
-        
-        ∂Matrix_Cmatrix_estimate_zygote = zgradient(x->∂Matrix_estimate2(x, trace_estimator), Cmatrix2)[1]
-        ∂Matrix_Cmatrix_estimate_zygote = CTensor(∂Matrix_Cmatrix_estimate_zygote)
-        @test ≈(∂Matrix_Cmatrix_estimate_zygote, ∂Matrix_Cmatrix_ndiff; rtol = 1e-5, atol = 1e-5)
-    end
-
-    @testset "logtrexp-CMPSMatrix-simple_FTLM" begin
+    @testset "logtrexp-CMPSMatrix-standard_FTLM" begin
         Ns = size(Cmatrix,1)
         options = FTLMOptions(FTLMOptions(), processor = processor)
-        trace_estimator = TraceEstimator(simple_FTLM, options)
+        trace_estimator = TraceEstimator(standard_ftlm_ftrace, options)
         try
             ∂t_Cmatrix_estimate_zygote = zgradient(x->∂t_Cmatrix_estimate2(x,trace_estimator), t)[1] 
             ∂Matrix_Cmatrix_estimate_zygote = zgradient(x->∂Matrix_estimate2(x, trace_estimator), Cmatrix2)[1]
@@ -110,10 +98,10 @@ for vD = 1:2
         end
     end
 
-    @testset "logtrexp-CMPSMatrix-orthogonalized_FTLM" begin
+   @testset "logtrexp-CMPSMatrix-orthogonalized_FTLM" begin
         Ns = size(Cmatrix,1)
         options = FTLMOptions(FTLMOptions(), Ne = Ns , processor = processor)
-        trace_estimator = TraceEstimator(orthogonalized_FTLM, options)
+        trace_estimator = TraceEstimator(orthogonalized_ftlm_ftrace, options)
         ∂t_Cmatrix_estimate_zygote = zgradient(x->∂t_Cmatrix_estimate2(x,trace_estimator), t)[1] 
         @test ≈(∂t_Cmatrix_estimate_zygote, ∂t_M_ndiff; rtol = 1e-5, atol = 1e-5)
         
@@ -122,7 +110,7 @@ for vD = 1:2
         @test ≈(∂Matrix_Cmatrix_estimate_zygote, ∂Matrix_Cmatrix_ndiff; rtol = 1e-5, atol = 1e-5)
 
         options = FTLMOptions(FTLMOptions(), processor = processor)
-        trace_estimator = TraceEstimator(orthogonalized_FTLM, options)
+        trace_estimator = TraceEstimator(orthogonalized_ftlm_ftrace, options)
         try
             ∂t_Cmatrix_estimate_zygote = zgradient(x->∂t_Cmatrix_estimate2(x,trace_estimator), t)[1] 
             ∂Matrix_Cmatrix_estimate_zygote = zgradient(x->∂Matrix_estimate2(x, trace_estimator), Cmatrix2)[1]
@@ -135,8 +123,8 @@ for vD = 1:2
 
     @testset "logtrexp-CMPSMatrix-replaced_FTLM" begin
         Ns = size(Cmatrix,1)
-        options = FTLMOptions(FTLMOptions(), Ne = Ns, processor = processor)
-        trace_estimator = TraceEstimator(replaced_FTLM, options)
+        options = FTLMOptions(FTLMOptions(), Ne = 5, processor = processor)
+        trace_estimator = TraceEstimator(replaced_ftlm_ftrace, options)
         try
             ∂t_Cmatrix_estimate_zygote = zgradient(x->∂t_Cmatrix_estimate2(x,trace_estimator), t)[1] 
             ∂Matrix_Cmatrix_estimate_zygote = zgradient(x->∂Matrix_estimate2(x, trace_estimator), Cmatrix2)[1]

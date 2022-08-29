@@ -2,7 +2,7 @@ using JuliaCMPO, Test
 using CUDA; CUDA.allowscalar(false)
 processor = GPU
 solver = solver_function(processor)
-@show solver
+solver = solver_function(processor)
 
 @testset "otimes.jl" begin
     include("otimes.jl")
@@ -22,17 +22,6 @@ end
 
 @testset "CMPSOperations.jl" begin
     include("CMPSOperations.jl")
-end
-
-@testset "ModelConstruct.jl" begin
-    @testset "Ut' * T * Ut = transpose(T)" begin
-        wid = 3
-        for m in [TFIsing(1.0,1.0), XYmodel(), XYmodel_2D_helical(1, expand=true), XXZmodel_2D_helical(2.0, wid, expand=true)]
-            Tm = solver(x->x, m.Tmatrix)
-            Ut = solver(x->x, m.Ut)
-            @test  Ut' * Tm * Ut == transpose(Tm)
-         end
-    end
 end
 
 #gradient test

@@ -22,7 +22,6 @@ function init_cmps(dtype::DataType, χ::Int64, vD::Int64 = 1; hermitian::Bool = 
 end
 init_cmps(χ::Int64, vD::Int64; kwargs...) = init_cmps(Float64, χ, vD; kwargs...)
 init_cmps(χ::Int64; kwargs...) = init_cmps(Float64, χ, 1; kwargs...)
-init_cmps(dtype::DataType, χ::Int64; kwargs...) = init_cmps(dtype, χ, 1; kwargs...)
 
 
 """
@@ -39,7 +38,7 @@ function init_cmps(χ::Integer, Tm::AbstractCMPO, β::Real; compress_options::Co
 
     if size(ψ.Q,1) > χ 
         res = compress_cmps(ψ, χ, β; compress_options)
-        ψ = res.ψ
+        ψ = res.cmps
     end
     return ψ
 end

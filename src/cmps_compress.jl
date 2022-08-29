@@ -29,7 +29,7 @@ function compress_cmps(ψ0::AbstractCMPS, χ::Integer, β::Real; compress_option
             dQ = convert(Vector, diag(ψ.Q))
             R =  convert(Array, ψ.R)
 
-            loss() = -logfidelity(solver(cmps_generate, diagm(dQ), R), ψ0, β, trace_estimator)
+            loss() = -logfidelity(solver(cmps_generate(diagm(dQ), R)), ψ0, β, trace_estimator)
             p0, f, g! = optim_functions(loss, Params([dQ, R]))
 
             optim_result = Optim.optimize(f, g!, p0, LBFGS(), optim_options)

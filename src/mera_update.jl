@@ -54,7 +54,7 @@ function adaptive_mera_update(ψ0::AbstractCMPS, χ::Integer, β::Real; mera_upd
         #https://groups.google.com/forum/#!topic/manopttoolbox/2zhx67doXaU
         #interpolate between unitary matrices
         θ = π
-        proceed = options.interpolate
+        proceed = interpolate
         while proceed
             θ = θ/2
             if θ < π/(1.9^12) #12-times bisection, cos(θ) = 0.9999989926433588

@@ -1,4 +1,4 @@
-import Base: eltype, size, length, getindex, iterate
+import Base: *, eltype, size, length, getindex, iterate
 """
     CMPSMatrix
 
@@ -48,7 +48,7 @@ function getindex(A::CMPSMatrix ,Id::Vararg{Int, 2})
     li, ri = oneunit(ψl.Q), oneunit(ψr.Q)
     L = cat(li, ψl.Q, ψl.R, dims = 3)
     R = cat(ψr.Q, ri, ψr.R, dims = 3)
-    return reduce(+, L[rl,cl,:] .* R[rr,cr,:])
+    return -reduce(+, L[rl,cl,:] .* R[rr,cr,:])
 end
 
 function getindex(A::CMPSMatrix, i::Int)
@@ -76,9 +76,12 @@ function *(A::CMPSMatrix, v::AbstractVector)
     return vec(-Kv)
 end
 
-function *(v::LinearAlgebra.Adjoint{T, Vector{T}}, A::CMPSMatrix) where {T}
+AdjointType = Union{LinearAlgebra.Adjoint{T, Vector{T}} where T,
+                    LinearAlgebra.Adjoint{T, CuArray{T, 1, CUDA.Mem.DeviceBuffer}} where T
+                    }
+function *(v::AdjointType, A::CMPSMatrix)
     @unpack ψl, ψr = A
-    V = reshape(v, size(ψr.Q,2), size(ψl.Q,2))
+    V = reshape(vec(v), size(ψr.Q,2), size(ψl.Q,2))
     V = convert(typeof(ψl.Q), V)
 
     li, ri = oneunit(ψl.Q), oneunit(ψr.Q)
@@ -87,6 +90,25 @@ function *(v::LinearAlgebra.Adjoint{T, Vector{T}}, A::CMPSMatrix) where {T}
 
     Kv = ein"ki, (ijm,klm) -> lj"(V, L, R)
     return vec(-Kv) |> transpose
+end
+
+#TODO: test function
+"""
+    *(A::CMPSMatrix, v::AbstractMatrix)
+
+Compute the matrix-matrix product of a CMPSMatrix and a matrix.
+""" 
+function *(A::CMPSMatrix, v::AbstractMatrix)
+    @unpack ψl, ψr = A
+    V = convert(typeof(ψl.Q), v)
+    V = reshape(V, size(ψr.Q,2), size(ψl.Q,2), size(v,2))
+    
+    li, ri = oneunit(ψl.Q), oneunit(ψr.Q)
+    L = cat(li, ψl.Q, ψl.R, dims = 3)
+    R = cat(ψr.Q, ri, ψr.R, dims = 3)
+
+    Kv = ein"(ijm,klm),ljq -> kiq"(L, R, V)
+    return reshape(-Kv, size(v))
 end
 
 
@@ -107,6 +129,7 @@ iterate(A::CMPSMatrix, n) = (getindex(A,n), n+1)
 Convert tensors in `CMPSMatrix` to `CMPS`.
 """
 CTensor(x::CMPSMatrix) = CMPSMatrix(CTensor(x.ψl), CTensor(x.ψr))
+
 
 """
     CuCTensor(x::CMPSMatrix)

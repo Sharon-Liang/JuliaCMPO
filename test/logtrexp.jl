@@ -7,15 +7,15 @@ using Random; Random.seed!()
     for A in [randn(D,D), randn(T,D,D)]
         A = symmetrize(A)
         log_trexp = exp(t*A) |> tr |> real |> log
-        @test solver(x->logtrexp(t,x), A) ≈ log_trexp
+        @test logtrexp(t, solver(A)) ≈ log_trexp
     end
 end
 
 @testset "CMPSMatrix logtrexp" begin
     Nl, Nr = 10, 11
     ψl, ψr = init_cmps(Nl), init_cmps(Nr)
-    Cmatrix = ψl * ψr; Cmatrix = solver(x->x, Cmatrix)
-    M = Cmatrix |> Matrix; M = solver(x->x, M)
+    Cmatrix = ψl * ψr |> solver
+    M = Cmatrix |> tomatrix
     t = rand()
 
 
@@ -24,30 +24,25 @@ end
         @test logtrexp(t, Cmatrix) ≈ log_trexp
     end
 
-    @testset "Full_ED" begin
-        trace_estimator = TraceEstimator(Full_ED, FTLMOptions(FTLMOptions(), processor = processor))
+    @testset "Full ED method" begin
+        trace_estimator = TraceEstimator(full_ed_ftrace, FTLMOptions(FTLMOptions(), processor = processor))
         res = logtrexp(t, Cmatrix, trace_estimator)
         @test res ≈ log_trexp
     end
 
-    @testset "simple_FTLM method" begin
-        Ns = size(Cmatrix,1)
-        options = FTLMOptions(FTLMOptions(), Ne = 0, Nk=Ns, processor = processor)
-        trace_estimator = TraceEstimator(FullSampling_FTLM, options)
-        res = logtrexp(t, Cmatrix, trace_estimator)
-        @test res ≈ log_trexp
-
+    @testset "standard FTLM method" begin
+        Ns = size(Cmatrix, 1)
         options = FTLMOptions(FTLMOptions(), processor = processor)
-        trace_estimator = TraceEstimator(simple_FTLM, options)
+        trace_estimator = TraceEstimator(standard_ftlm_ftrace, options)
         res = logtrexp(t, Cmatrix, trace_estimator)
         @unpack Nr = options
         @test ≈(res, log_trexp, rtol=1/√Nr)
     end
     
-    @testset "orthogonalized_FTLM method" begin
+    @testset "orthogonalized FTLM method" begin
         Ns = size(Cmatrix,1)
         options = FTLMOptions(FTLMOptions(), processor = processor)
-        trace_estimator = TraceEstimator(orthogonalized_FTLM, options)
+        trace_estimator = TraceEstimator(orthogonalized_ftlm_ftrace, options)
         res = logtrexp(t, Cmatrix, trace_estimator)
         @unpack Nr = options
         @test ≈(res, log_trexp, rtol=1/Nr)

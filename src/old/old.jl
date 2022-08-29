@@ -54,3 +54,25 @@ function expand_cmpo(o::AbstractCMPO)
     
     return CMPO(o.Q, R, L, P)
 end
+
+@testset "expand a CMPO" begin
+    pz = pauli(PZ); px = pauli(PX)
+    for w1 in [1, 3]
+        o1 = ising_cmpo(1.0, pz, pz, w1)
+        o2 = ising_cmpo(0.5, pz, pz, w1)
+
+        O1 = expand_cmpo(o1)
+        O2 = cat(o2, transpose(o2))
+
+        @test ==(O1, O2)
+    end
+end
+
+@testset "Ut' * T * Ut = transpose(T)" begin
+    wid = 3
+    for m in [TFIsing(1.0,1.0), XYmodel(), XYmodel_2D_helical(1, expand=true), XXZmodel_2D_helical(2.0, wid, expand=true)]
+        Tm = solver(m)
+        Ut = solver(x->x, m.Ut)
+        @test  Ut' * Tm * Ut == transpose(Tm)
+    end
+end

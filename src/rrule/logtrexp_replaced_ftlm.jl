@@ -2,10 +2,10 @@
     ChainRules.rrule(::typeof(logtrexp), t::Real, M::AbstractArray, trace_estimator::TraceEstimator{<:typeof{replaced_ftlm}})
 
 Rrule for ``ln[Tr(e^{tM})]`` function where `typeof(M) <: CMPSMatrix`.
-`∂y_∂M` is also of type `CMPSMatrix`. `trace_estimator = replaced_ftlm`.
+`∂y_∂M` is also of type `CMPSMatrix`. `trace_estimator = replaced_ftlm_ftrace`.
 """
 function ChainRules.rrule(::typeof(logtrexp), t::Real, M::CMPSMatrix, 
-                          trace_estimator::TraceEstimator{<:typeof(replaced_ftlm), To}) where {To}
+                          trace_estimator::TraceEstimator{<:typeof(replaced_ftlm_ftrace), To}) where {To}
     @unpack options = trace_estimator
     @unpack distr, Nr, Nk, Ne, processor = options
     @unpack ψl, ψr = M
@@ -14,10 +14,17 @@ function ChainRules.rrule(::typeof(logtrexp), t::Real, M::CMPSMatrix,
     Ns = size(M, 1)
     Ne = min(Ne, Ns)
     Nk = min(max(Nk, Ne), Ns)
+    T = eltype(M)
     
     χl, χr = size(ψl.Q, 1), size(ψr.Q, 1)
     
-    sign(t) == 1 ? which = :LR : which=:SR
+    if sign(t) == 1 
+        which = :LR
+        slice = 1: Nk-Ne
+    else
+        which=:SR
+        slice = Ne+1: Nk
+    end
     processor == CPU ? x0 = rand(T,Ns) : x0 = CUDA.rand(T, Ns)
     e0, _, _ = eigsolve(M, x0, 1, which, ishermitian = true, tol=1.e-12)
     e1 = e0[1]
@@ -38,12 +45,12 @@ function ChainRules.rrule(::typeof(logtrexp), t::Real, M::CMPSMatrix,
     end
     y, ∂y_∂t = 0. , 0.
     for r = 1: Nr
-        nit_vector = random_unit_vector(Ns, distr) |> solver
+        init_vector = random_unit_vector(Ns, distr) |> solver
         @unpack weight, values, vectors = fullortho_lanczos(M; init_vector, Nk) |> eigensolver
-        
-        eigen_weight = ein"i,ij->j"(conj(v0), eigen_vecs)
-        weight = vcat(eigen_weight, weight[Ne+1:end])
-        values = vcat(eigen_vals, values[Ne+1:end])
+        eigen_weight = ein"i,ij->j"(conj(init_vector), eigen_vecs)
+        weight = vcat(eigen_weight, weight[slice])
+        values = vcat(eigen_vals, values[slice])
+        vectors = hcat(eigen_vecs, vectors[:, slice])
 
         y += _sum_expr_w1_w2(expr_Λ, values, weight, conj(weight))
         ∂y_∂t += _sum_expr_w1_w2(expr_∂y_∂t, values, weight, conj(weight))
@@ -83,8 +90,8 @@ function ChainRules.rrule(::typeof(logtrexp), t::Real, M::CMPSMatrix,
         R̄l = ȳ * ∂y_∂Rl
         Q̄r = ȳ * ∂y_∂Qr
         R̄r = ȳ * ∂y_∂Rr
-        ψ̄l = CMPS_generate(Q̄l, R̄l)
-        ψ̄r = CMPS_generate(Q̄r, R̄r)
+        ψ̄l = cmps_generate(Q̄l, R̄l)
+        ψ̄r = cmps_generate(Q̄r, R̄r)
         M̄ = CMPSMatrix(ψ̄l, ψ̄r)
         return ChainRules.NoTangent(), t̄, M̄, ChainRules.NoTangent()
     end

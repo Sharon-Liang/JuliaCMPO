@@ -1,5 +1,5 @@
 """
-    logtrexp(t, M[, estimator::Union{Nothingm=, TraceEstimator}])
+    logtrexp(t, M[, estimator::Union{Nothing, TraceEstimator}])
 
 Calculate ``lnTr(e^{tM})``, where ``t`` is a real number and 
 ``M`` is matrix-like instances and is required to be hermitian.
@@ -19,7 +19,7 @@ function logtrexp(t::Real, M, trace_estimator::TraceEstimator)
     sign(t) == 1 ? which = :LR : which=:SR
     @unpack estimator, options = trace_estimator
     @unpack processor = options
-    solver = solver_functions(processor)
+    solver = solver_function(processor)
     M = solver(M)
 
     processor == CPU ? x0 = rand(size(M,1)) : x0 = CUDA.rand(Float64, size(M,1))
@@ -28,7 +28,7 @@ function logtrexp(t::Real, M, trace_estimator::TraceEstimator)
     expr = e -> exp(t * (e - e1))
 
     options = FTLMOptions(options, which = which)
-    res = FiniteTLanczos.evaluate(TraceEstimator(estimator, options), M, expr)
+    res = FiniteTLanczos.evaluate_ftrace(TraceEstimator(estimator, options), M, expr)
     return log(res) + t*e1
 end
 

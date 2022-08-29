@@ -70,12 +70,12 @@ end
 ChainRules.rrule(::typeof(logtrexp), t::Real, M::AbstractArray, trace_estimator::TraceEstimator{<:typeof(full_ed)})
 
 Rrule for ``ln[Tr(e^{tM})]`` function where `typeof(M) <: CMPSMatrix`.
-`∂y_∂M` is also of type `CMPSMatrix`. When `trace_estimator = full_ed`, 
+`∂y_∂M` is also of type `CMPSMatrix`. When `trace_estimator = full_ed_ftrace`, 
 `exp(tM)` is not explicitly constructed. Note that there is no memory saving 
 in this case because one has to save all eigen vectors of the `CMPSMatrix.
 """
 function ChainRules.rrule(::typeof(logtrexp), t::Real, M::CMPSMatrix, 
-                          trace_estimator::TraceEstimator{<:typeof(full_ed), To}) where {To}
+                          trace_estimator::TraceEstimator{<:typeof(full_ed_ftrace), To}) where {To}
     @unpack ψl, ψr = M
     @unpack processor = trace_estimator.options
     χl, χr = size(ψl.Q, 1), size(ψr.Q, 1)

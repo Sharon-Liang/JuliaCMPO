@@ -2,10 +2,10 @@
     ChainRules.rrule(::typeof(logtrexp), t::Real, M::AbstractArray, trace_estimator::TraceEstimator{<:typeof{orthogonalized_ftlm}})
 
 Rrule for ``ln[Tr(e^{tM})]`` function where `typeof(M) <: CMPSMatrix`.
-`∂y_∂M` is also of type `CMPSMatrix`. `trace_estimator = orthogonalized_ftlm`.
+`∂y_∂M` is also of type `CMPSMatrix`. `trace_estimator = orthogonalized_ftlm_ftrace`.
 """
 function ChainRules.rrule(::typeof(logtrexp), t::Real, M::CMPSMatrix, 
-                          trace_estimator::TraceEstimator{<:typeof(orthogonalized_ftlm), To}) where {To}
+                          trace_estimator::TraceEstimator{<:typeof(orthogonalized_ftlm_ftrace), To}) where {To}
     @unpack options = trace_estimator
     @unpack distr, Nr, Nk, Ne, processor = options
     @unpack ψl, ψr = M
@@ -14,6 +14,7 @@ function ChainRules.rrule(::typeof(logtrexp), t::Real, M::CMPSMatrix,
     Ns = size(M, 1)
     Ne = min(Ne, Ns)
     Nk = min(Nk, Ns - Ne) 
+    T = eltype(M)
 
     χl, χr = size(ψl.Q, 1), size(ψr.Q, 1)
 
@@ -31,7 +32,7 @@ function ChainRules.rrule(::typeof(logtrexp), t::Real, M::CMPSMatrix,
     eigen_vecs = hcat(vecs[1:Ne]...)
 
     y1 = reduce(+, map(expr_Λ, eigen_vals))
-    ∂y_∂t1 = reduce(+, map(expr_Λ, eigen_vals))
+    ∂y_∂t1 = reduce(+, map(expr_∂y_∂t, eigen_vals))
     
     Λ1 = map(expr_Λ, eigen_vals)
     eigen_vecs2 = reshape(eigen_vecs, χr, χl, Ne)
@@ -39,11 +40,11 @@ function ChainRules.rrule(::typeof(logtrexp), t::Real, M::CMPSMatrix,
     ∂y_∂Ql1 = -t * ein"n,kbn,kan -> ab"(Λ1, conj(eigen_vecs2), eigen_vecs2)
     ∂y_∂Qr1 = -t * ein"n,bkn,akn -> ab"(Λ1, conj(eigen_vecs2), eigen_vecs2)
     if typeof(ψr.R) <: AbstractMatrix
-        ∂y_∂Rl1 = -t * ein"n,kl,lbn,kan,kl -> ab"(Λ1, ψr.R, conj(eigen_vecs2), eigen_vecs2)
-        ∂y_∂Rr1 = -t * ein"n,kl,bln,akn,kl -> ab"(Λ1, ψl.R, conj(eigen_vecs2), eigen_vecs2)
+        ∂y_∂Rl1 = -t * ein"n,kl,lbn,kan -> ab"(Λ1, ψr.R, conj(eigen_vecs2), eigen_vecs2)
+        ∂y_∂Rr1 = -t * ein"n,kl,bln,akn -> ab"(Λ1, ψl.R, conj(eigen_vecs2), eigen_vecs2)
     else
-        ∂y_∂Rl1 = -t * ein"n,klm,lbn,kan,klm -> abm"(Λ1, ψr.R, conj(eigen_vecs2), eigen_vecs2)
-        ∂y_∂Rr1 = -t * ein"n,klm,bln,akn,klm -> abm"(Λ1, ψl.R, conj(eigen_vecs2), eigen_vecs2)
+        ∂y_∂Rl1 = -t * ein"n,klm,lbn,kan -> abm"(Λ1, ψr.R, conj(eigen_vecs2), eigen_vecs2)
+        ∂y_∂Rr1 = -t * ein"n,klm,bln,akn -> abm"(Λ1, ψl.R, conj(eigen_vecs2), eigen_vecs2)
     end
 
     #lanczos part
@@ -55,10 +56,11 @@ function ChainRules.rrule(::typeof(logtrexp), t::Real, M::CMPSMatrix,
         ∂y_∂Ql2, ∂y_∂Qr2 = CUDA.zeros(T, size(ψl.Q)), CUDA.zeros(T, size(ψr.Q))
         ∂y_∂Rl2, ∂y_∂Rr2 = CUDA.zeros(T, size(ψl.R)), CUDA.zeros(T, size(ψr.R))
     end
+
     if Nk > 0
         for r = 1: Nr
             init_vector = random_unit_vector(Ns, distr) |> solver
-            @unpack weight, values, vectors = fullortho_lanczos(M; init_vector, Nk) |> eigensolver
+            @unpack weight, values, vectors = fullortho_lanczos(M, eigen_vecs; init_vector, Nk) |> eigensolver
 
             y2 += _sum_expr_w1_w2(expr_Λ, values, weight, conj(weight))
             ∂y_∂t2 += _sum_expr_w1_w2(expr_∂y_∂t, values, weight, conj(weight))
@@ -100,8 +102,8 @@ function ChainRules.rrule(::typeof(logtrexp), t::Real, M::CMPSMatrix,
         R̄l = ȳ * ∂y_∂Rl
         Q̄r = ȳ * ∂y_∂Qr
         R̄r = ȳ * ∂y_∂Rr
-        ψ̄l = CMPS_generate(Q̄l, R̄l)
-        ψ̄r = CMPS_generate(Q̄r, R̄r)
+        ψ̄l = cmps_generate(Q̄l, R̄l)
+        ψ̄r = cmps_generate(Q̄r, R̄r)
         M̄ = CMPSMatrix(ψ̄l, ψ̄r)
         return ChainRules.NoTangent(), t̄, M̄, ChainRules.NoTangent()
     end

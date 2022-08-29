@@ -1,16 +1,17 @@
 """
-    ChainRules.rrule(::typeof(logtrexp), t::Real, M::AbstractArray, trace_estimator::TraceEstimator{<:typeof{simple_ftlm}})
+    ChainRules.rrule(::typeof(logtrexp), t::Real, M::AbstractArray, trace_estimator::TraceEstimator{<:typeof{standard_ftlm}})
 
 Rrule for ``ln[Tr(e^{tM})]`` function where `typeof(M) <: CMPSMatrix`.
-`∂y_∂M` is also of type `CMPSMatrix`. `trace_estimator = simple_ftlm`.
+`∂y_∂M` is also of type `CMPSMatrix`. `trace_estimator = standard_ftlm_ftrace`.
 """
 function ChainRules.rrule(::typeof(logtrexp), t::Real, M::CMPSMatrix, 
-                          trace_estimator::TraceEstimator{<:typeof(simple_ftlm), To}) where {To}
+                          trace_estimator::TraceEstimator{<:typeof(standard_ftlm_ftrace), To}) where {To}
     @unpack options = trace_estimator
     @unpack distr, Nr, Nk, processor = options
     @unpack ψl, ψr = M
     Ns = size(M, 1)
     Nk = min(Nk, Ns)
+    T  = eltype(M)
 
     χl, χr = size(ψl.Q, 1), size(ψr.Q, 1)
     solver = solver_function(processor)
@@ -41,8 +42,8 @@ function ChainRules.rrule(::typeof(logtrexp), t::Real, M::CMPSMatrix,
         vectors = reshape(vectors, χr, χl, Nk)
         init_vector = reshape(init_vector, χr, χl)
 
-        ∂y_∂Ql_temp = -t * ein"n,n,kbn,ka,kk -> ab"(Λ, weight, conj(vectors), init_vector)
-        ∂y_∂Qr_temp = -t * ein"n,n,bkn,ak,kk -> ab"(Λ, weight, conj(vectors), init_vector)
+        ∂y_∂Ql_temp = -t * ein"n,n,kbn,ka -> ab"(Λ, weight, conj(vectors), init_vector)
+        ∂y_∂Qr_temp = -t * ein"n,n,bkn,ak -> ab"(Λ, weight, conj(vectors), init_vector)
         ∂y_∂Ql = map(+, ∂y_∂Ql, ∂y_∂Ql_temp)
         ∂y_∂Qr = map(+, ∂y_∂Qr, ∂y_∂Qr_temp)
 
@@ -72,8 +73,8 @@ function ChainRules.rrule(::typeof(logtrexp), t::Real, M::CMPSMatrix,
         R̄l = ȳ * ∂y_∂Rl
         Q̄r = ȳ * ∂y_∂Qr
         R̄r = ȳ * ∂y_∂Rr
-        ψ̄l = CMPS_generate(Q̄l, R̄l)
-        ψ̄r = CMPS_generate(Q̄r, R̄r)
+        ψ̄l = cmps_generate(Q̄l, R̄l)
+        ψ̄r = cmps_generate(Q̄r, R̄r)
         M̄ = CMPSMatrix(ψ̄l, ψ̄r)
         return ChainRules.NoTangent(), t̄, M̄, ChainRules.NoTangent()
     end

@@ -26,19 +26,19 @@ using Random; Random.seed!()
 
         sos = -(i2 ⊗ osq + x ⊗ i2 ⊗ i2 + z ⊗ osr)
                 
-        s = solver(CMPS_generate, x, z)
-        o = solver(CMPO_generate, x, x, z, p)
+        s = solver(cmps_generate, x, z)
+        o = solver(cmpo_generate, x, x, z, p)
 
-        @test  Matrix(s*s) ≈ solver(A->A, ss)         
-        @test (o*s).Q ≈ solver(A->A, osq)
-        @test (o*s).R ≈ solver(A->A, osr)
-        @test (s*o).Q ≈ solver(A->A, soq) 
-        @test (s*o).R ≈ solver(A->A, sor) 
-        @test (o*o).Q ≈ solver(A->A, ooq)  
-        @test (o*o).R ≈ solver(A->A, oor) 
-        @test (o*o).L ≈ solver(A->A, ool) 
-        @test (o*o).P ≈ solver(A->A, oop) 
-        @test Matrix(s*o*s) ≈ solver(A->A, sos)
+        @test  tomatrix(s*s) ≈ solver(ss)         
+        @test (o*s).Q ≈ solver(osq)
+        @test (o*s).R ≈ solver(osr)
+        @test (s*o).Q ≈ solver(soq) 
+        @test (s*o).R ≈ solver(sor) 
+        @test (o*o).Q ≈ solver(ooq)  
+        @test (o*o).R ≈ solver(oor) 
+        @test (o*o).L ≈ solver(ool) 
+        @test (o*o).P ≈ solver(oop) 
+        @test tomatrix(s*o*s) ≈ solver(sos)
     end
 end
 
@@ -77,19 +77,19 @@ end
         L = zeros(T,D,D,2); L[:,:,1] = z ; L[:,:,2] = z
         P = zeros(T,D,D,2,2)
             
-        s = solver(CMPS_generate, x, R)
-        o = solver(CMPO_generate, x, R, L, P)
+        s = solver(cmps_generate, x, R)
+        o = solver(cmpo_generate, x, R, L, P)
 
-        @test  Matrix(s*s) ≈ solver(A->A, ss)         
-        @test (o*s).Q ≈ solver(A->A, osq)
-        @test (o*s).R ≈ solver(A->A, osr)
-        @test (s*o).Q ≈ solver(A->A, soq) 
-        @test (s*o).R ≈ solver(A->A, sor) 
-        @test (o*o).Q ≈ solver(A->A, ooq)  
-        @test (o*o).R ≈ solver(A->A, oor) 
-        @test (o*o).L ≈ solver(A->A, ool) 
-        @test (o*o).P ≈ solver(A->A, oop) 
-        @test Matrix(s*o*s) ≈ solver(A->A, sos)
+        @test  tomatrix(s*s) ≈ solver(ss)         
+        @test (o*s).Q ≈ solver(osq)
+        @test (o*s).R ≈ solver(osr)
+        @test (s*o).Q ≈ solver(soq) 
+        @test (s*o).R ≈ solver(sor) 
+        @test (o*o).Q ≈ solver(ooq)  
+        @test (o*o).R ≈ solver(oor) 
+        @test (o*o).L ≈ solver(ool) 
+        @test (o*o).P ≈ solver(oop) 
+        @test tomatrix(s*o*s) ≈ solver(sos)
     end
 end
 
