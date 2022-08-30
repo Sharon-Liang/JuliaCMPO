@@ -83,8 +83,8 @@ isdir(ModelResultFolder) || mkdir(ModelResultFolder)
 model = TFIsing(J, Γ)
 
 #trace_estimator = nothing
-#trace_estimator = TraceEstimator(Full_ED, FTLMOptions(processor = processor))
-trace_estimator = TraceEstimator(FullSampling_FTLM, FTLMOptions(Nk = 100, processor = processor))
+trace_estimator = TraceEstimator(full_ed_ftrace, FTLMOptions(processor = processor))
+
 
 trace_estimator === nothing ? estimator_name = "nothing" : estimator_name = string(trace_estimator.estimator)
 
@@ -98,8 +98,10 @@ end
 EngFile = @sprintf "%s/Obsv_FECvS_bondD_%02i_%s_%s.txt" ModelResultFolder bondD estimator_name tag
 if Continue == false
     open(EngFile,"w") do file  
-        write(file, "  β          free_energy           energy              specific_heat            entropy      \n")
-        write(file, "------  -------------------  --------------------   -------------------  -------------------\n")
+        #write(file, "step    free_energy/site        energy/site         entropy/site    \n")
+        #write(file, "----  -------------------  --------------------  -------------------\n")
+        write(file, "step    free_energy/site \n")
+        write(file, "----  -------------------\n")
     end
 end
 
@@ -112,12 +114,12 @@ for b = 1:length(βlist)
                             init = ψ0,
                             tag = tag,
                             processor = processor)
-        res = JuliaCMPO.evaluate(model, bondD, β, ModelResultFolder, 
-                       options = evaluate_options)
+        res = JuliaCMPO.evaluate(model, bondD, β, ModelResultFolder; evaluate_options)
     end
 
     open(EngFile,"a") do file  
-        EngString = @sprintf "%.2f   %.16f   %.16f   %.16f   %.16f \n" β res[2]["F"] res[2]["E"] res[2]["Cv"] res[2]["S"]
+        #EngString = @sprintf "%.2f   %.16f   %.16f   %.16f \n" β res[2]["F"] res[2]["E"] res[2]["S"]
+        EngString = @sprintf "%.2f   %.16f \n" β res[2]["F"]
         write(file, EngString)
     end
 
@@ -126,6 +128,7 @@ end
 
 const End_Time = Dates.format(now(), "yyyy-mm-dd HH:MM:SS")
 const Running_TimeTable = string(to)
+
 @show Start_Time
 @show End_Time
 print(Running_TimeTable,"\n")

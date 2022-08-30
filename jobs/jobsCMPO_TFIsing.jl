@@ -6,7 +6,7 @@ env = "/home/sliang/JuliaCode/JuliaCMPO"
 prog = env * "/jobs/CMPO_$(phys_model).jl"
 
 processor = CPU
-machine = v100
+machine = p100
 gpu_memory = 80
 
 logtag = Dates.format(now(), "yyyy-mm-dd")*"-"*"$(processor)"

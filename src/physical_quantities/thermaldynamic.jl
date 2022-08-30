@@ -1,4 +1,6 @@
 #module ThermaldynamicQuanties
+
+#TODO: wrong thermal_average, energy and entropy function
 """
     make_operator(Op, dim::Integer)
     make_operator(Op, ψ::Integer)
@@ -41,9 +43,11 @@ The thermal average of local opeartors ``⊢o⊣`` with respect to ``K = ψl * W
     ⟨Op⟩ = \frac{Tr(Op e^{-βK})}{Z}
 ```
 """
-function thermal_average(Op, ψl::AbstractCMPS, ψr::AbstractCMPS, W::AbstractCMPO, β::Real,
-                         trace_estimator = nothing)
-    K = CMPSMatrix(ψl, W * ψr)
+thermal_average(Op, ψl, ψr, W, β) = thermal_average(Op, ψl, ψr, W, β, nothing)
+thermal_average(Op, ψ::AbstractCMPS, W::AbstractCMPO, β::Real, trace_estimator = nothing) = thermal_average(Op, ψ, ψ, W, β, trace_estimator)
+
+function thermal_average(Op::AbstractArray, ψl::AbstractCMPS, ψr::AbstractCMPS, W::AbstractCMPO, β::Real, ::Nothing)
+    K = ψl * W * ψr |> tomatrix |> symmetrize
     e, v = eigensolver(K)
     e0 = minimum(e)
     e = e .- e0
@@ -54,17 +58,12 @@ function thermal_average(Op, ψl::AbstractCMPS, ψr::AbstractCMPS, W::AbstractCM
     num = reduce(+, map(*, Λ, ave))
     return num/den   
 end
+thermal_average(Op::CMPSMatrix, ψl, ψr, W, β, trace_estimator::Nothing) = thermal_average(tomatrix(Op), ψl, ψr, W, β, trace_estimator)
 
-function thermal_average(Op, ψl::AbstractCMPS, ψr::AbstractCMPS, W::AbstractCMPO, β::Real, 
-                         trace_estimator::TraceEstimator)
+function thermal_average(Op, ψl::AbstractCMPS, ψr::AbstractCMPS, W::AbstractCMPO, β::Real, trace_estimator::TraceEstimator)
     K = CMPSMatrix(ψl, W * ψr)
     return FiniteTLanczos.thermal_average(K, β, Op; trace_estimator)
 end
-
-thermal_average(Op, ψl::AbstractCMPS, ψr::AbstractCMPS, W::AbstractCMPO, β::Real, ::Nothing) = 
-    thermal_average(Op, ψl, ψr, W, β)
-thermal_average(Op, ψ::AbstractCMPS, W::AbstractCMPO, β::Real, trace_estimator) = 
-    thermal_average(Op, ψ, ψ, W, β, trace_estimator)
 
 
 """
@@ -73,10 +72,12 @@ thermal_average(Op, ψ::AbstractCMPS, W::AbstractCMPO, β::Real, trace_estimator
 
     The thermal average of local opeartors ``⊢o⊣`` with respect to ``K = ψ * ψ``
 """
-function thermal_average(Op, ψl::AbstractCMPS, ψr::AbstractCMPS, β::Real,
-                         trace_estimator = nothing)
-    K = ψl * ψr 
-    
+thermal_average(Op, ψl, ψr, β) = thermal_average(Op, ψl, ψr, β, nothing)
+thermal_average(Op, ψ::AbstractCMPS, β::Real, trace_estimator = nothing) = thermal_average(Op, ψ, ψ, β, trace_estimator)
+
+#TODO: wrong energy function: ave wrong!
+function thermal_average(Op::AbstractArray, ψl::AbstractCMPS, ψr::AbstractCMPS, β::Real, ::Nothing)
+    K = ψl * ψr |> tomatrix |> symmetrize
     e, v = eigensolver(K)
     e0 = minimum(e)
     e = e .- e0
@@ -87,17 +88,12 @@ function thermal_average(Op, ψl::AbstractCMPS, ψr::AbstractCMPS, β::Real,
     num = reduce(+, map(*, Λ, ave))
     return num/den  
 end
+thermal_average(Op::CMPSMatrix, ψl, ψr, β, trace_estimator::Nothing) = thermal_average(tomatrix(Op), ψl, ψr, β, trace_estimator)
 
-function thermal_average(Op, ψl::AbstractCMPS, ψr::AbstractCMPS, β::Real, 
-                         trace_estimator::TraceEstimator)
+function thermal_average(Op, ψl::AbstractCMPS, ψr::AbstractCMPS, β::Real, trace_estimator::TraceEstimator)
     K = CMPSMatrix(ψl, ψr)
     return FiniteTLanczos.thermal_average(K, β, Op; trace_estimator)
 end
-
-thermal_average(Op, ψl::AbstractCMPS, ψr::AbstractCMPS, β::Real, ::Nothing) = 
-    thermal_average(Op, ψl, ψr, β)
-thermal_average(Op, ψ::AbstractCMPS, β::Real, trace_estimator) = 
-    thermal_average(Op, ψ, ψ, β, trace_estimator)
 
 
 """

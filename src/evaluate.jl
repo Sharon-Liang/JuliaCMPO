@@ -7,7 +7,7 @@ Calculate left and right CMPS of a CMPO `A` at temperature `β`,
 results are save in folder `ResultFolder` 
 """
 function evaluate(A::AbstractCMPO, bondD::Integer, β::Real, ResultFolder::String; evaluate_options::EvaluateOptions)
-    @unpack hermitian = options
+    @unpack hermitian = evaluate_options
     hermitian === nothing ? hermitian = ishermitian(A) : hermitian = hermitian
     if hermitian
         hermitian_evaluate(A, bondD, β, ResultFolder; evaluate_options)
@@ -72,9 +72,9 @@ function hermitian_evaluate(A::AbstractCMPO, bondD::Integer, β::Real, ResultFol
     # calculate thermal dynamic quanties
     dict = Dict()
     dict["F"] = F_final
-    dict["E"] = energy(ψ, A, β)
+    #dict["E"] = energy(ψ, A, β, trace_estimator)
     #dict["Cv"] = specific_heat(ψ, A, β)
-    dict["S"] = β * (dict["E"] - dict["F"])
+    #dict["S"] = β * (dict["E"] - dict["F"])
     ResultFile = @sprintf "%s/beta_%.2f.hdf5" CMPSResultFolder β
     saveCMPS(ResultFile, CTensor(ψ), dict)
     return  ψ, dict
@@ -147,12 +147,15 @@ function non_hermitian_evaluate(A::AbstractCMPO, bondD::Integer, β::Real, Resul
 
         open(ChkpEngFile,"w") do cfile
             F = free_energy(ψl, ψr, A, β)/group
-            E = energy(ψl, ψr, A, β)/group
+            #E = energy(ψl, ψr, A, β)/group
             #Cv = specific_heat(ψl, ψr, A, β)/group
-            S = β * (E - F)    
-            write(cfile, "step    free_energy/site        energy/site         entropy/site    \n")
-            write(cfile, "----  -------------------  --------------------  -------------------\n")
-            EngString = @sprintf "%3i   %.16f   %.16f   %.16f \n" pow_step F E S
+            #S = β * (E - F)    
+            #write(cfile, "step    free_energy/site        energy/site         entropy/site    \n")
+            #write(cfile, "----  -------------------  --------------------  -------------------\n")
+            #EngString = @sprintf "%3i   %.16f   %.16f   %.16f \n" pow_step F E S
+            write(cfile, "step    free_energy/site   \n")
+            write(cfile, "----  -------------------  \n")
+            EngString = @sprintf "%3i   %.16f \n" pow_step F 
             write(cfile, EngString)
         end
         for pfile in [PsiFidelityFile, LpsiFidelityFile]
@@ -194,10 +197,11 @@ function non_hermitian_evaluate(A::AbstractCMPO, bondD::Integer, β::Real, Resul
 
         open(ChkpEngFile,"a") do cfile
             F = free_energy(ψl, ψr, A, β)/group
-            E = energy(ψl, ψr, A, β)/group
+            #E = energy(ψl, ψr, A, β)/group
             #Cv = specific_heat(ψl, ψr, A, β)/group
-            S = β * (E - F)
-            EngString = @sprintf "%3i   %.16f   %.16f   %.16f \n" pow_step F E S
+            #S = β * (E - F)
+            #EngString = @sprintf "%3i   %.16f   %.16f   %.16f \n" pow_step F E S
+            EngString = @sprintf "%3i   %.16f \n" pow_step F 
             write(cfile, EngString)
         end
 

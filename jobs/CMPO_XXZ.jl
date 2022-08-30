@@ -95,8 +95,10 @@ end
 EngFile = @sprintf "%s/Obsv_FECvS_bondD_%02i.txt" ModelResultFolder bondD
 if Continue == false
     open(EngFile,"w") do file  
-        write(file, "  β          free_energy           energy              specific_heat            entropy      \n")
-        write(file, "------  -------------------  --------------------   -------------------  -------------------\n")
+        #write(file, "step    free_energy/site        energy/site         entropy/site    \n")
+        #write(file, "----  -------------------  --------------------  -------------------\n")
+        write(file, "step    free_energy/site \n")
+        write(file, "----  -------------------\n")
     end
 end
 
@@ -110,12 +112,12 @@ for b = 1:length(βlist)
                             group = group,
                             tag = tag,
                             processor = processor)
-        res = JuliaCMPO.evaluate(model, bondD, β, ModelResultFolder, 
-                       options = evaluate_options)
+        res = JuliaCMPO.evaluate(model, bondD, β, ModelResultFolder; evaluate_options)
     end
 
     open(EngFile,"a") do file  
-        EngString = @sprintf "%.2f   %.16f   %.16f   %.16f   %.16f \n" β res[2]["F"] res[2]["E"] res[2]["Cv"] res[2]["S"]
+        #EngString = @sprintf "%.2f   %.16f   %.16f   %.16f \n" β res[2]["F"] res[2]["E"] res[2]["S"]
+        EngString = @sprintf "%.2f   %.16f \n" β res[2]["F"]
         write(file, EngString)
     end
 
