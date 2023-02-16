@@ -6,10 +6,11 @@ Abstract type of CMPS and CMPO tensors
 """
 abstract type AbstractCTensor end
 
+
 """
     AbstractCMPS{T, S, U} <: AbstractCTensor
 
-Abstract type fo all CMPSs, the structure of a CMPS tensor:
+Abstract type of all CMPS, the structure of a CMPS tensor:
 --       --
 | I + ϵQ  |
 |         |
@@ -20,10 +21,11 @@ Abstract type fo all CMPSs, the structure of a CMPS tensor:
 """
 abstract type AbstractCMPS{T, S, U} <: AbstractCTensor end
 
+
 """
     AbstractCMPO{T,S,U,V} <: AbstractCTensor
 
-Abstract type fo all CMPOs, the structure of a CMPO tensor:
+Abstract type of all CMPO, the structure of a CMPO tensor:
 --                 --
 | I + ϵQ  -- √ϵL -- |
 |                   |
@@ -44,6 +46,7 @@ abstract type AbstractCMPO{T,S,U,V} <: AbstractCTensor end
     CMPS{T,S,U}(Q::Matrix{T}, R::Array{T}) where {T,S,U} = new(Q,R)
 end
 CMPS(Q::Matrix{T}, R::Array{T}) where {T} = CMPS{T,typeof(Q), typeof(R)}(Q,R)
+
 
 """
     CuCMPS <: AbstractCMPS

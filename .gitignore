@@ -37,3 +37,27 @@ run/nohup.out
 
 log/
 *.sh
+result_plots/heisenberg-compare-S-Lehmann.pdf
+result_plots/heisenberg-compare-S-nevanlinna-D-16-eta-0.05.pdf
+result_plots/heisenberg-compare-S-nevanlinna-D-16-eta-0.10.pdf
+result_plots/heisenberg-compare-S-nevanlinna-eta-0.01.pdf
+result_plots/heisenberg-compare-S-nevanlinna-eta-0.05.pdf
+result_plots/heisenberg-compare-S-nevanlinna-eta-0.10.pdf
+result_plots/heisenberg-compare-S-nnls.pdf
+result_plots/heisenberg-thermaldynamics.pdf
+result_plots/ising-compare-A-different-nevanlinna-D-16-beta-10.00-eta-0.05.pdf
+result_plots/ising-compare-A-different-nevanlinna-D-16-beta-10.00-eta-0.10.pdf
+result_plots/ising-compare-A-different-nevanlinna-D-16-beta-20.00-eta-0.05.pdf
+result_plots/ising-compare-A-different-nevanlinna-D-16-beta-20.00-eta-0.10.pdf
+result_plots/xxmodel-compare-A-different-nevanlinna-D-16-beta-0.10-eta-0.05.pdf
+result_plots/xxmodel-compare-A-different-nevanlinna-D-16-beta-0.10-eta-0.10.pdf
+result_plots/xxmodel-compare-A-different-nevanlinna-D-16-beta-1.00-eta-0.05.pdf
+result_plots/xxmodel-compare-A-different-nevanlinna-D-16-beta-1.00-eta-0.10.pdf
+result_plots/xxmodel-compare-A-different-nevanlinna-D-16-beta-2.00-eta-0.05.pdf
+result_plots/xxmodel-compare-A-different-nevanlinna-D-16-beta-2.00-eta-0.10.pdf
+result_plots/xxmodel-compare-A-different-nevanlinna-D-16-beta-5.00-eta-0.05.pdf
+result_plots/xxmodel-compare-A-different-nevanlinna-D-16-beta-5.00-eta-0.10.pdf
+result_plots/xxmodel-compare-A-different-nevanlinna-D-16-beta-10.00-eta-0.05.pdf
+result_plots/xxmodel-compare-A-different-nevanlinna-D-16-beta-10.00-eta-0.10.pdf
+result_plots/xxmodel-compare-A-different-nevanlinna-D-16-beta-20.00-eta-0.05.pdf
+result_plots/xxmodel-compare-A-different-nevanlinna-D-16-beta-20.00-eta-0.10.pdf

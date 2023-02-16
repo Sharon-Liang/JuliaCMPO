@@ -1,109 +1,227 @@
 module JuliaCMPO
 __precompile__()
 
-using Dates, Parameters, Reexport  
+#=
+### *Using Standard Libraries*
+=#
+
 using CUDA; CUDA.allowscalar(false)
-using Random; Random.seed!()
-using HDF5, DelimitedFiles, Printf
+using Parameters
+using OMEinsum, LinearAlgebra
 using LogExpFunctions
-using OMEinsum, LinearAlgebra, KrylovKit
 using Zygote, Optim, ChainRules
-using PhysModels, FiniteTLanczos
-
-@reexport import FiniteTLanczos: eigensolver, symmetrize, 
-                                 Processor, CPU, GPU, 
-                                 solver_function,
-                                 cpu_solver, gpu_solver,
-                                 FTLMOptions, TraceEstimator
+using Printf
 
 
-# structs/CMPSandCMPO.jl
-export AbstractCTensor, AbstractCMPS, AbstractCMPO,
-       CMPS, CMPO, CuCMPS, CuCMPO,
-       cmps_generate, cmpo_generate,
-       CTensor, CuCTensor,
-       bond_dimension,
-       virtual_bond_dimension
+#=
+### *Includes And Exports* : *global.jl*
+=#
 
-#structs/CMPSMatrix.jl
-export CMPSMatrix
-#structs/MeraUpdate.jl
-export MeraUpdateOptions,
-       MeraUpdateStep,
-       MeraUpdateTrace,
-       MeraUpdateResult
-#structs/CMPSCompress.jl
-export CompressOptions, CompressResult
-#export update_processor
+#=
+*Summary* :
 
-#utilities
-export ⊗
+Define some type aliases and string constants for the JuliaCMPO toolkit.
+
+*Members* :
+
+```text
+Processor   -> Enumerated type for supported processors.
+CPU, GPU    -> Values of Processor
+
+#
+__LIBNAME__ -> Name of this julia toolkit.
+__VERSION__ -> Version of this julia toolkit.
+__RELEASE__ -> Released date of this julia toolkit.
+__AUTHORS__ -> Authors of this julia toolkit.
+#
+authors     -> Print the authors of JuliaCMPO to screen.
+```
+=#
+
+#
+include("global.jl")
+#
+export Processor, CPU, GPU 
+#
+export __LIBNAME__
+export __VERSION__
+export __RELEASE__
+export __AUTHORS__
+#
+export authors
 
 
-# OptimFunctions.jl
-export veclength, optim_functions
-# SaveLoad.jl
-export saveCMPS, readCMPS
 
-# logtrexp.jl
+#=
+### *Includes And Exports* : *types.jl*
+=#
+
+#=
+*Summary* :
+
+Define some dicts and structs, which are used to store the config
+parameters or represent some essential data structures.
+
+*Members* :
+
+```text
+OperatorType    -> Enumerated type for Fermionic/Bosonic correlators.
+Fermi, Bose     -> Values of OperatorType
+PauliMatrixName -> Enumerated type for Pauli matrices.
+PX, PY, iPY, PZ, PPlus, PMinus  -> Values of PauliMatrixName.
+#
+CMPS          -> Data structure of cMPS local tensor.
+CMPO          -> Data structure of cMPO local tensor.
+```
+=#
+
+#
+include("types.jl")
+#
+export OperatorType, Bose, Fermi
+export PauliMatrixName, PX, PY, iPY, PZ, PPlus, PMinus
+#
+export CMPS
+export CMPO
+
+
+
+#=
+### *Includes And Exports* : *utils.jl*
+=#
+
+#=
+*Summary* :
+
+Utilities
+
+*Members* :
+
+```text
+symmetrize  -> Symmetrize a matrix.
+diagm       -> Construct a square matrix of type `CuMatrix` form a `CuVector`. 
+pauli       -> Generate Pauli matrices.
+#
+eigensolver -> generate eigen values and vectors of a hermitian matrix.
+#
+logtrexp    -> logtrexp function.
+#
+optim_functions -> Generate gradient function for optimization.
+#
+solver_function -> Generate solver function 
+cpu_solver      -> CPU solver function
+gpu_solver      -> GPU solver function
+```
+=#
+
+
+#
+include("utils.jl")
+#
+export symmetrize
+export pauli
+#
+export eigensolver
+#
 export logtrexp
-# CMPSOperations
-export tomatrix,
-       log_overlap,
-       logfidelity, fidelity, 
-       project,
-       diagQ
+#
+export optim_functions
+#
+export solver_function
+export cpu_solver
+export gpu_solver
 
-#MeraUpdate.jl
-export interpolate_isometry, adaptive_mera_update
-#CMPSCompress.jl 
-export compress_cmps
-# CMPSInitiate
+
+
+#=
+### *Includes And Exports* : *math.jl*
+=#
+
+#=
+*Summary* :
+
+Mathematics for cMPO and cMPS local tensors.
+
+*Members* :
+
+```text
+⊗           -> Multiplications between arrays in CMPS and CMPO data structures.
+*           -> Multiplications between CMPS and CMPO structures.
+#
+log_overlap -> ln(⟨ψl|ψr⟩).
+norm        -> √|⟨ψ|ψ⟩|.
+normalize   -> normalize a cMPS.
+logfidelity -> Calculate the logarithm of fidelity between two cMPS.
+fidelity    -> Calculate fidelity between two cMPS.
+project     -> Perform unitary transformation of a cMPS.
+diagQ       -> Transform a cMPS to a gauge where Q is diagonalized.
+#
+transpose   -> Calculate the transpose of a cMPO.
+adjoint     -> Calculate the adjoint of a cMPO.
+#
+==          -> Determine if two cMPS/cMPO are equal.
+≈           -> Determine if two cMPS/cMPO are approximate.
+ishermitian -> Determine if a cMPO is hermitian.
+#
+
+
+```
+=#
+
+#
+include("math.jl")
+#
+export ⊗
+#
+export log_overlap
+export logfidelity, fidelity
+export project
+export diagQ
+
+
+
+#=
+### *Includes And Exports* : *core.jl*
+=#
+
+#=
+*Summary* :
+
+Functions about initiating and compressing cMPS.
+
+*Members* :
+
+```text
+MeraUpdateOptions    -> Keyword Arguments of mera_update function
+_interpolate_isometry -> Interpolate between two unitrary matrices.
+mera_update           -> Adaptive MERA update algorithm
+#
+CompressOptions -> Keyword Arguments of compress_cmps function
+compress_cmps   -> To compress a cMPS.
+#
+init_cmps       -> initiate a cMPS
+#
+
+
+```
+=#
+
+#
+include("core.jl")
+#
 export init_cmps
-
-#PhysicalQuantities/PhysicalModels.jl
-export ising_cmpo
-export TFIsing, TFIsing_2D_helical,
-       XYmodel, XYmodel_2D_helical, 
-       XXZmodel, XXZmodel_2D_helical
-
-#PhysicalQuantities/Thermaldynamic.jl
-export make_operator
-
-#structs/EvaluateOptions.jl
-export EstimatorType, EvaluateOptions
+#
+export log_overlap
+export logfidelity, fidelity
+export project
+export diagQ
 
 
-include("./structs/CMPSandCMPO.jl")
-include("./structs/CMPSMatrix.jl")
-include("./structs/MeraUpdate.jl")
-include("./structs/CMPSCompress.jl")
 
 
-include("./utilities/otimes.jl")
 
-include("solver.jl")
-include("optim_functions.jl")
-include("save_load.jl")
 
-include("ctensor_products.jl")
 
-include("eigensolver.jl")
-include("logtrexp.jl")
-include("cmps_operations.jl")
-
-include("mera_update.jl")
-include("cmps_compress.jl")
-include("cmps_initiate.jl")
-
-include("./physical_quantities/physical_models.jl")
-include("./physical_quantities/thermaldynamic.jl")
-#include("./physical_quantities/Correlations.jl")
-
-include("./structs/EvaluateOptions.jl")
-include("evaluate.jl")
-
-include("./rrule/logtrexp.jl")
 
 
 end # module
