@@ -60,9 +60,10 @@ See also: [`MeraUpdateOptions`](@ref)
 function mera_update(ψ₀::CMPS, χ::Integer, β::Real; atol::Float64=1.e-5, btol::Float64=1.e-12, maxiter::Int=50, interpolate::Bool=true)
     #count iteration step
     step = 1
+    n₀ = norm(ψ₀, β)
 
     #Define loss function: P is the isometry
-    loss(P) = logfidelity(project(ψ₀, P), ψ₀, β, true)
+    loss(P) = logfidelity(project(ψ₀, P), ψ₀, β, false)
 
     #Calculate the current isometry Pc corresponding to current ψ₀
     Q = symmetrize(ψ₀.Q)
@@ -74,7 +75,7 @@ function mera_update(ψ₀::CMPS, χ::Integer, β::Real; atol::Float64=1.e-5, bt
     Lc = loss(Pc)
 
     #Calculate the difference between current fidelity and 1.0
-    ΔF = abs(exp(Lc) - 1.0)
+    ΔF = abs(exp(Lc)/n₀ - 1.0)
     #Calculate the difference of logfidelity between the current step and the previous step
     ΔlnF = abs(Lc - Lp)
     
@@ -108,7 +109,7 @@ function mera_update(ψ₀::CMPS, χ::Integer, β::Real; atol::Float64=1.e-5, bt
             end     
         end
 
-        ΔF = abs(exp(Lc) - 1.0)
+        ΔF = abs(exp(Lc)/n₀ - 1.0)
         ΔlnF = abs(Lc - Lp)
         println(@sprintf "%03i   %.16f   %.10e   %.10e\n" step θ ΔlnF ΔF)
 
@@ -219,7 +220,7 @@ function init_cmps(χ::Int64, D::Int64 = 1, hermitian::Bool = true)
             R[:,:,d] = symmetrize(R[:,:,d])
         end
     end
-    return CMPS(Q,R)
+    return CMPS(Q, R)
 end
 
 

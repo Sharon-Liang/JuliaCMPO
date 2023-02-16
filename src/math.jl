@@ -137,16 +137,16 @@ end
 
 
 """
-    logfidelity(ψ, ψ₀, β[, tonormalize::Bool = true])
+    logfidelity(ψ, ψ₀, β[, tonormalize::Bool = false])
 
 Calculate the logarithm of fidelity function ``\\mathcal{F} = \\frac{⟨ψ|ψ₀⟩}{√⟨ψ|ψ⟩}`` between two cMPS `ψ` and `ψ₀`.
 """
-function logfidelity(ψ::CMPS, ψ₀::CMPS, β::Real, tonormalize::Bool = true) 
+function logfidelity(ψ::CMPS, ψ₀::CMPS, β::Real, tonormalize::Bool = false) 
+    res = log_overlap(ψ, ψ₀, β) - 0.5*log_overlap(ψ, ψ, β)
     if tonormalize
-        ψ = normalize(ψ, β)
-        ψ₀ = normalize(ψ₀, β)
+        res -= 0.5*log_overlap(ψ₀, ψ₀, β)
     end
-    return log_overlap(ψ, ψ₀, β) - 0.5*log_overlap(ψ, ψ, β)
+    return res
 end
 
 
@@ -155,7 +155,7 @@ end
 
 Calculate the fidelity function ``\\mathcal{F} = \\frac{⟨ψ|ψ₀⟩}{√⟨ψ|ψ⟩}`` between two cMPS `ψ` and `ψ₀`.
 """
-fidelity(ψ::CMPS, ψ₀::CMPS, β::Real, tonormalize::Bool = true) = logfidelity(ψ, ψ₀, β, tonormalize) |> exp
+fidelity(ψ::CMPS, ψ₀::CMPS, β::Real, tonormalize::Bool = false) = logfidelity(ψ, ψ₀, β, tonormalize) |> exp
 
 
 """

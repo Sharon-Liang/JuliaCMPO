@@ -218,6 +218,28 @@ export diagQ
 
 
 
+#=
+### *Includes And Exports* : *rrule.jl*
+=#
+
+#=
+*Summary* :
+
+Rrules
+
+*Members* :
+
+```text
+rrule(::typeof(logtrexp), t::Real, M::AbstractArray)
+#
+
+
+```
+=#
+
+#
+include("rrule.jl")
+
 
 
 
