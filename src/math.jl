@@ -266,3 +266,36 @@ Determine if a cMPO is hermitian.
 LinearAlgebra.ishermitian(o::CMPO) = isequal(o, adjoint(o))
 
 
+#=
+### *Cat*
+=#
+
+"""
+    cat(o1, o2)
+
+Cat two CMPO blocks.
+"""
+function Base.cat(o1::CMPO, o2::CMPO)
+    d = size(o1.Q, 1)
+    typeof(o1.P) <:AbstractMatrix ? D1 = 1 : D1 = size(o1.P, 3)
+    typeof(o2.P) <:AbstractMatrix ? D2 = 1 : D2 = size(o2.P, 3)
+
+    Q = zeros(eltype(o1.Q), d, d)
+    R = cat(o1.R, o2.R, dims = 3)
+    L = cat(o1.L, o2.L, dims = 3)
+
+    pl = cat(o1.P, zeros(eltype(o1.P), d, d, D2, D1), dims = 3)
+    pr = cat(zeros(eltype(o2.P), d, d, D1, D2), o2.P, dims = 3)
+    P = cat(pl, pr, dims = 4)
+
+    return CMPO(Q, R, L, P)
+end
+
+
+function Base.cat(os::CMPO...)
+    res = cat(os[1], os[2])
+    for i = 3:lastindex(os)
+        res = cat(res, os[i])
+    end
+    return res
+end

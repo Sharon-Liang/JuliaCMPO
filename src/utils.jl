@@ -39,6 +39,20 @@ end
 pauli(name::PauliMatrixName) = pauli(Float64, name)
 
 
+"""
+    calc_ωn(n::Int, β::Real, T::OperatorType)
+
+Calculate `n`-th Masubara frequency `ωₙ` at temperature `β`.
+
+* ``T=Bose`` :  ``ωₙ = 2nπ/β``
+* ``T=Fermi``:  ``ωₙ = (2n+1)π/β``
+"""
+function calc_ωn(n::Int, β::Real, T::OperatorType)
+    T == Bose ?  N = 2n : N = 2n + 1
+    return N*π/β
+end
+
+
 
 #=
 ### *Eigensolver* 

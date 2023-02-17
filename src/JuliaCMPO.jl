@@ -101,6 +101,7 @@ Utilities
 symmetrize  -> Symmetrize a matrix.
 diagm       -> Construct a square matrix of type `CuMatrix` form a `CuVector`. 
 pauli       -> Generate Pauli matrices.
+calc_ωn     -> Calculate Masubara frequency ωn.
 #
 eigensolver -> generate eigen values and vectors of a hermitian matrix.
 #
@@ -120,6 +121,7 @@ include("utils.jl")
 #
 export symmetrize
 export pauli
+export calc_ωn
 #
 export eigensolver
 #
@@ -163,6 +165,7 @@ adjoint     -> Calculate the adjoint of a cMPO.
 ≈           -> Determine if two cMPS/cMPO are approximate.
 ishermitian -> Determine if a cMPO is hermitian.
 #
+cat         -> cat two CMPO blocks
 
 
 ```
@@ -241,6 +244,90 @@ rrule(::typeof(logtrexp), t::Real, M::AbstractArray)
 include("rrule.jl")
 
 
+
+#=
+### *Includes And Exports* : *models.jl*
+=#
+
+#=
+*Summary* :
+
+CMPO Construction for various physical models.
+
+*Members* :
+
+```text
+AbstractModel      -> Abstract type for physical model cMPO.
+model              -> Construct model cMPO
+#
+TFIsingChain       -> Transcerse field Ising chain.
+XXChain            -> 1D XX model.
+XXZChain           -> 1D XXZ model.
+J1J2Chain          -> 1D J1-J2 model.
+#
+TFIsingSquareHelical -> 2D transverse field ising model on a cylinder, square lattice, helical boundary condition.
+XXSquareHelical      -> 2D XX model on a cylinder, square lattice, helical boundary condition.
+XXZSquareHelical     -> 2D XXZ model on a cylinder, square lattice, helical boundary condition.
+#
+
+
+```
+=#
+
+#
+include("models.jl")
+#
+export AbstractModel
+export model
+#
+export TFIsingChain
+export XXChain
+export XXZChain
+export J1J2Chain
+#
+export TFIsingSquareHelical
+export XXSquareHelical
+export XXZSquareHelical
+
+
+
+#=
+### *Includes And Exports* : *observables.jl*
+=#
+
+#=
+*Summary* :
+
+Physical observables.
+
+*Members* :
+
+```text
+free_energy      -> Calculate free energy.
+thermal_average  -> Calculate thermal average.
+energy           -> Calculate energy density.
+entropy          -> Calculate entropy.
+specific_heat    -> Calculate specific heat.
+#
+correlation_2time -> Calculate C(τ) = -G(τ)
+retarded_GF       -> Calculate G(z)
+#
+
+
+```
+=#
+
+#
+include("observables.jl")
+#
+export free_energy
+export thermal_average
+export energy
+export entropy
+export specific_heat
+#
+export correlation_2time
+export retarded_GF
 
 
 
