@@ -80,8 +80,8 @@ function mera_update(ψ₀::CMPS, χ::Integer, β::Real; atol::Float64=1.e-5, bt
     ΔlnF = abs(Lc - Lp)
     
     println("Adaptive MERA Update")
-    println("step           θ/π                 ΔlnF                 1.0 - F      \n")     
-    println("----  -------------------  --------------------   -------------------\n")
+    println("step        θ/π               ΔlnF                1.0 - F      \n")     
+    println("----  ----------------  -----------------   -------------------\n")
     println(@sprintf "%03i   %.10e   %.10e   %.10e\n" step 1.0 ΔlnF ΔF)
 
     while step < maxiter
@@ -171,10 +171,10 @@ function compress_cmps(ψ₀::CMPS, χ::Integer, β::Real, init::Union{Nothing, 
     @unpack processor, mera_update_options, optim_options = options
 
     #Generate solver function and initiate cMPS accordingly
-    solver = solver_function(processor)
+    @show solver = solver_function(processor)
     ψ₀ = solver(ψ₀)
 
-    init === nothing ? ψ = mera_update(ψ₀, χ, β) : ψ = solver(init)
+    init === nothing ? ψ = mera_update(ψ₀, χ, β, mera_update_options) : ψ = solver(init)
     @assert size(ψ.Q) == (χ, χ) 
 
     #Calculate initial fidelity

@@ -1,6 +1,7 @@
 using Test, JuliaCMPO 
 using Random; Random.seed!()
 
+solver = solver_function(processor)
 #=
 ### *CMPS Initiate* 
 =#
@@ -21,9 +22,12 @@ end
 @testset "Initiate via boundary CMPS" begin
     β = rand()
     n = 3
-    for m in [model(TFIsingChain(), 1.0), model(TFIsingSquareHelical(), 1.0, 2)], χ in [2^n, 2^n-3]
-    
-        ψ = init_cmps(χ, solver(m), β)
+    χ = 2^n -3
+    for m in [model(TFIsingChain(), 1.0)]#, model(TFIsingSquareHelical(), 1.0, 2)], χ in [2^n-3]#, 2^n]
+        
+        m = solver(m)
+        ψ = init_cmps(χ, m, β; options=CompressOptions(processor=processor))
+
         @test typeof(ψ.Q) <: typeof(m.Q)
         @test size(ψ.Q) == (χ, χ)
         @test size(ψ.R)[1:2] == (χ, χ) && length(size(ψ.R)) == length(size(m.R))

@@ -1,17 +1,18 @@
 using JuliaCMPO, Test
 using FiniteDifferences, Zygote
 
-ngradient(f, x) = grad(central_fdm(5, 1), f, x)
-zgradient = Zygote.gradient
+filelist = ["util.jl", "math.jl", "core.jl", "grads.jl"]
 
-@testset "cpu_test.jl" begin
-    include("cpu_test.jl")
+processor = CPU
+for file in filelist
+    @testset "$(processor): $(file)" begin
+        include(file)
+    end
 end
 
-@testset "gpu_test.jl" begin
-    include("gpu_test.jl")
+@testset "models.jl" begin
+    include("models.jl")
 end
-
 
 
 

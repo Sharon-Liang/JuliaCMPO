@@ -1,3 +1,5 @@
+OMEinsum = "0.6.13"
+
 """
     compress_cmps(ψ0, χ, β; compress_options::CompressOptions)
 

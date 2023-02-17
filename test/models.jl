@@ -3,7 +3,6 @@ using LinearAlgebra
 
 import JuliaCMPO: _ising_2D_block
 
-
 @testset "Ising_CMPO" begin
     J = 1.0
     pz = pauli(PZ); px = pauli(PX)
