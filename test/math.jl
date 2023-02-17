@@ -160,9 +160,6 @@ end
         ψ = init_cmps(10, D) |> solver
         ψ1 = normalize(ψ, β)
         @test norm(ψ1, β) ≈ 1.
-        
-        @show fidelity(ψ1, ψ, β, true)
-        @show logfidelity(ψ1, ψ, β, true)
     end
 end
 

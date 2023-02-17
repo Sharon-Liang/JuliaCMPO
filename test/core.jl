@@ -22,8 +22,7 @@ end
 @testset "Initiate via boundary CMPS" begin
     β = rand()
     n = 3
-    χ = 2^n -3
-    for m in [model(TFIsingChain(), 1.0)]#, model(TFIsingSquareHelical(), 1.0, 2)], χ in [2^n-3]#, 2^n]
+    for m in [model(TFIsingChain(), 1.0), model(TFIsingSquareHelical(), 1.0, 2)], χ in [2^n-3, 2^n]
         
         m = solver(m)
         ψ = init_cmps(χ, m, β; options=CompressOptions(processor=processor))
