@@ -1,14 +1,15 @@
 using Test, JuliaCMPO
-using LinearAlgebra, PhysModels
+using LinearAlgebra
 
-import JuliaCMPO: free_energy
+import JuliaCMPO: _ising_2D_block
+
 
 @testset "Ising_CMPO" begin
     J = 1.0
     pz = pauli(PZ); px = pauli(PX)
     # H = -J px pz
     @testset "width = 1" begin
-        o = ising_cmpo(J, px, pz)
+        o = _ising_2D_block(J, px, pz)
         @test o.Q == zeros(2,2)
         @test o.R == pz
         @test o.L == px
@@ -17,7 +18,7 @@ import JuliaCMPO: free_energy
 
     @testset "width > 1" begin
         wid = 5
-        o = ising_cmpo(J, px, pz, wid)
+        o = _ising_2D_block(J, px, pz, wid)
         @test o.Q == zeros(2,2)
         r = zeros(2,2,wid)
         r[:,:,1] = pz
@@ -36,8 +37,8 @@ end
 @testset "cat two CMPOs" begin
     pz = pauli(PZ); px = pauli(PX)
     for w1 in [1,2,3], w2 in [1,2,3]
-        o1 = ising_cmpo(1.0, pz, pz, w1)
-        o2 = ising_cmpo(1.0, px, px, w2)
+        o1 = _ising_2D_block(1.0, pz, pz, w1)
+        o2 = _ising_2D_block(1.0, px, px, w2)
 
         o = cat(o1, o2)
         @test o.Q == zeros(2,2)
@@ -64,23 +65,24 @@ end
 end
 
 @testset "adjoint and ishermitian" begin
-    for T in [TFIsing(1.0,1.0), XYmodel(), XXZmodel(1.0)]  
+    for T in [model(TFIsingChain(), 1.0), model(XXChain()), model(XXZChain(), 1.0)]  
         @test ==(T, T')
         @test ishermitian(T)
     end
 
     wid = 3
-    for T in [TFIsing_2D_helical(1.0,1.0, wid), XYmodel_2D_helical(wid), XXZmodel_2D_helical(1.0, wid)]   
+    for T in [model(TFIsingSquareHelical(), 1.0, wid), model(XXSquareHelical(), wid), model(XXZSquareHelical(), 1.0, wid)]   
         @test ==(T, T') == false
         @test ishermitian(T) == false
     end
 end
 
-@testset "transpose(T^2) = transpose(T) * transpose(T)" begin
+
+@testset "transpose(T²) = transpose(T) * transpose(T)" begin
     #one should compare transfer matrix instead of JuliaCMPO local tensor
     β = 2.0
-    for m in [TFIsing(1.0,1.0), XXZmodel_2D_helical(1.0, 2)]
-        ψ = init_cmps(2, virtual_bond_dimension(m)-1)
+    for m in [model(TFIsingChain(), 1.0), model(XXZSquareHelical(), 1.0, 2)]
+        ψ = init_cmps(2, m, β)
         T1 =  transpose(m * m)
         T2 =  transpose(m) * transpose(m)
         @test free_energy(ψ, T1, β) ≈ free_energy(ψ, T2, β)

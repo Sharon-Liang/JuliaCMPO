@@ -65,3 +65,28 @@ end
         @test zgrad ≈ ngrad
     end
 end
+
+
+
+#=
+### *free energy* 
+=#
+@testset "Free energy: TFIsing Chain" begin
+    β = 2.0
+    χ = 4
+    m = model(TFIsingChain(), 1.0) |> solver
+    
+    ψ = init_cmps(χ) |> diagQ
+
+    Qd = convert(Vector, diag(ψ.Q))
+    R = convert(Array, ψ.R)
+    pars = Zygote.Params([Qd, R])
+    loss() = free_energy(solver(CMPS(diagm(Qd), R)), m, β)
+    
+    p₀, f, g! = optim_functions(loss, pars)
+
+    ngrad = ngradient(f, p₀)[1]
+    zgrad = similar(p₀); g!(zgrad, p₀)
+        
+    @test zgrad ≈ ngrad
+end

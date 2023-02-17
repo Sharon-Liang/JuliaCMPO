@@ -80,9 +80,9 @@ function mera_update(ψ₀::CMPS, χ::Integer, β::Real; atol::Float64=1.e-5, bt
     ΔlnF = abs(Lc - Lp)
     
     println("Adaptive MERA Update")
-    println("step           θ/π                   ΔlnF               1.0 - F      \n")     
+    println("step           θ/π                 ΔlnF                 1.0 - F      \n")     
     println("----  -------------------  --------------------   -------------------\n")
-    println(@sprintf "%03i   %.16f   %.10e   %.10e\n" step π ΔlnF ΔF)
+    println(@sprintf "%03i   %.16f   %.10e   %.10e\n" step 1.0 ΔlnF ΔF)
 
     while step < maxiter
         step += 1   
@@ -111,7 +111,7 @@ function mera_update(ψ₀::CMPS, χ::Integer, β::Real; atol::Float64=1.e-5, bt
 
         ΔF = abs(exp(Lc)/n₀ - 1.0)
         ΔlnF = abs(Lc - Lp)
-        println(@sprintf "%03i   %.16f   %.10e   %.10e\n" step θ ΔlnF ΔF)
+        println(@sprintf "%03i   %.16f   %.10e   %.10e\n" step θ/π ΔlnF ΔF)
 
         #Update
         Pc = Pn
@@ -212,7 +212,7 @@ Randomly initiate a cMPS local tensor with bond dimension `D+1` and virtual bond
 """
 function init_cmps(χ::Int64, D::Int64 = 1, hermitian::Bool = true)
     Q = rand(χ, χ)
-    χ == 1 ? R = rand(χ, χ) : R = rand(χ, χ, D)
+    D == 1 ? R = rand(χ, χ) : R = rand(χ, χ, D)
 
     if hermitian
         Q = symmetrize(Q)

@@ -86,8 +86,8 @@ function model(::XXZChain, Δ::Real)
         sm = pauli(PMinus)
         sz = 0.5 * pauli(PZ) 
         Q = zeros(2, 2)
-        R = cat(1/√2 * sp, 1/√2 * sm, val * sz)
-        L = cat(1/√2 * sp, 1/√2 * sm, sgn * val * sz)
+        R = cat(1/√2 * sp, 1/√2 * sm, val * sz, dims=3)
+        L = cat(1/√2 * sp, 1/√2 * sm, sgn * val * sz, dims=3)
         P = zeros(2, 2, 3, 3)
         return CMPO(Q, R, L, P)
     end
@@ -212,8 +212,8 @@ struct XXSquareHelical <: AbstractModel end
 function model(::XXSquareHelical, W::Int=1)
     sp = pauli(PPlus)
     sm = pauli(PMinus)
-    Tp = Ising_CMPO(0.5, sp, sp, W)
-    Tm = Ising_CMPO(0.5, sm, sm, W)
+    Tp = _ising_2D_block(0.5, sp, sp, W)
+    Tm = _ising_2D_block(0.5, sm, sm, W)
     return cat(Tp, Tm)
 end
 
@@ -235,8 +235,8 @@ function model(::XXZSquareHelical, Δ::Real, W::Int=1)
     sm = pauli(PMinus)
     sz = 0.5 * pauli(PZ)
 
-    Tp = Ising_CMPO(0.5, sp, sp, W)
-    Tm = Ising_CMPO(0.5, sm, sm, W)
-    Tz = Ising_CMPO(Δ, sz, sz, W)
+    Tp = _ising_2D_block(0.5, sp, sp, W)
+    Tm = _ising_2D_block(0.5, sm, sm, W)
+    Tz = _ising_2D_block(Δ, sz, sz, W)
     return cat(Tp, Tm, Tz)
 end
