@@ -212,12 +212,13 @@ init_cmps       -> initiate a cMPS
 #
 include("core.jl")
 #
-export init_cmps
+export MeraUpdateOptions
+export mera_update
 #
-export log_overlap
-export logfidelity, fidelity
-export project
-export diagQ
+export CompressOptions
+export compress_cmps
+#
+export init_cmps
 
 
 

@@ -82,7 +82,7 @@ function mera_update(ψ₀::CMPS, χ::Integer, β::Real; atol::Float64=1.e-5, bt
     println("Adaptive MERA Update")
     println("step           θ/π                 ΔlnF                 1.0 - F      \n")     
     println("----  -------------------  --------------------   -------------------\n")
-    println(@sprintf "%03i   %.16f   %.10e   %.10e\n" step 1.0 ΔlnF ΔF)
+    println(@sprintf "%03i   %.10e   %.10e   %.10e\n" step 1.0 ΔlnF ΔF)
 
     while step < maxiter
         step += 1   
@@ -104,6 +104,7 @@ function mera_update(ψ₀::CMPS, χ::Integer, β::Real; atol::Float64=1.e-5, bt
                 Li = loss(Pi)
                 if Li > Lc
                     Pn = Pi
+                    Lc = Li
                     proceed = false
                 end
             end     
@@ -111,7 +112,7 @@ function mera_update(ψ₀::CMPS, χ::Integer, β::Real; atol::Float64=1.e-5, bt
 
         ΔF = abs(exp(Lc)/n₀ - 1.0)
         ΔlnF = abs(Lc - Lp)
-        println(@sprintf "%03i   %.16f   %.10e   %.10e\n" step θ/π ΔlnF ΔF)
+        println(@sprintf "%03i   %.10e   %.10e   %.10e\n" step θ/π ΔlnF ΔF)
 
         #Update
         Pc = Pn

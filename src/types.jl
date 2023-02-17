@@ -66,7 +66,7 @@ where `Q` is a `d×d` dimensional matrix, `R` and `L` are `d×d×D` dimensional 
     P::V  
     CMPO{T,S,U,V}(Q::AbstractMatrix{T}, R::AbstractArray{T}, L::AbstractArray{T}, P::AbstractArray{T}) where {T,S,U,V} = new(Q,R,L,P)
 end
-CMPO(Q::AbstractMatrix{T}, R::AbstractArray{T}, L::AbstractArray{T}, P::Array{T}) where {T} = CMPO{T, typeof(Q), typeof(R), typeof(P)}(Q,R,L,P)
+CMPO(Q::AbstractMatrix{T}, R::AbstractArray{T}, L::AbstractArray{T}, P::AbstractArray{T}) where {T} = CMPO{T, typeof(Q), typeof(R), typeof(P)}(Q,R,L,P)
 
 
 #=
