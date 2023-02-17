@@ -1,7 +1,7 @@
 using Test, JuliaCMPO 
 using Random; Random.seed!()
 
-solver = solver_function(processor)
+@show solver = solver_function(processor)
 #=
 ### *CMPS Initiate* 
 =#

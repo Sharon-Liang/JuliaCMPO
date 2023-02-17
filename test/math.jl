@@ -2,11 +2,12 @@ using Test, JuliaCMPO
 using LinearAlgebra
 using Random; Random.seed!()
 
-solver = solver_function(processor)
+@show solver = solver_function(processor)
 
 #=
 ### *Multiplications* : *Otimes* 
 =#
+println("Define otims functions")
 otimes(A::Matrix, B::Matrix) = kron(A,B)
 
 function otimes(A::Matrix{T}, B::Array{T,3}) where T
@@ -63,6 +64,8 @@ function otimes(A::Array{T,4}, B::Array{T,4}) where T
     return res
 end
 
+
+println("Start testing...")
 @testset "otimes" begin
     D1 = 4;  D2 = 2
     a = [randn(D1,D1), randn(D1,D1,D2), randn(D1,D1,D2,D2)]

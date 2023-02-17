@@ -3,6 +3,7 @@ using FiniteDifferences, Zygote
 
 filelist = ["util.jl", "math.jl", "core.jl", "grads.jl"]
 
+
 processor = CPU
 for file in filelist
     @testset "$(processor): $(file)" begin
@@ -14,5 +15,12 @@ end
     include("models.jl")
 end
 
-
-
+#=
+filelist = ["math.jl"]
+processor = GPU
+for file in filelist
+    @testset "$(processor): $(file)" begin
+        include(file)
+    end
+end
+=#

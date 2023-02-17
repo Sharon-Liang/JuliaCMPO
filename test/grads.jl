@@ -6,7 +6,7 @@ using FiniteDifferences, Zygote
 ngradient(f, x) = grad(central_fdm(5, 1), f, x)
 zgradient = Zygote.gradient
 
-solver = solver_function(processor)
+@show solver = solver_function(processor)
 
 #=
 ### *logtrexp* 
@@ -16,8 +16,8 @@ solver = solver_function(processor)
     t = rand()
     f = x -> logtrexp(t, x)
 
-    ngrad = ngradient(f, M)[1]
-    zgrad = zgradient(f, M)[1]
+    ngrad = ngradient(f, solver(M))[1]
+    zgrad = zgradient(f, solver(M))[1]
     @test ngrad ≈ zgrad
 end
 

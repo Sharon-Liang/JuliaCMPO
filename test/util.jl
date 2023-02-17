@@ -1,7 +1,7 @@
 using Test, JuliaCMPO
 using LinearAlgebra
 
-solver = solver_function(processor)
+@show solver = solver_function(processor)
 #=
 ### *logtrexp* 
 =#
