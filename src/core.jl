@@ -79,10 +79,10 @@ function mera_update(ψ₀::CMPS, χ::Integer, β::Real; atol::Float64=1.e-5, bt
     #Calculate the difference of logfidelity between the current step and the previous step
     ΔlnF = abs(Lc - Lp)
     
-    println("Adaptive MERA Update")
-    println("step        θ/π               ΔlnF                1.0 - F      \n")     
-    println("----  ----------------  -----------------   -------------------\n")
-    println(@sprintf "%03i   %.10e   %.10e   %.10e\n" step 1.0 ΔlnF ΔF)
+    println("Adaptive MERA Update\n")
+    println("step        θ/π               ΔlnF                1.0 - F      ")     
+    println("----  ----------------  -----------------   -------------------")
+    println(@sprintf "%03i   %.10e   %.10e   %.10e" step 1.0 ΔlnF ΔF)
 
     while step < maxiter
         step += 1   
@@ -112,7 +112,7 @@ function mera_update(ψ₀::CMPS, χ::Integer, β::Real; atol::Float64=1.e-5, bt
 
         ΔF = abs(exp(Lc)/n₀ - 1.0)
         ΔlnF = abs(Lc - Lp)
-        println(@sprintf "%03i   %.10e   %.10e   %.10e\n" step θ/π ΔlnF ΔF)
+        println(@sprintf "%03i   %.10e   %.10e   %.10e" step θ/π ΔlnF ΔF)
 
         #Update
         Pc = Pn
@@ -196,8 +196,9 @@ function compress_cmps(ψ₀::CMPS, χ::Integer, β::Real, init::Union{Nothing, 
     #calculate final fidelity
     Ff = fidelity(ψ, ψ₀, β, true)
 
-    println(@sprintf "(1 - Fidelity) Change: %.5e -> %.5e" 1-Fi 1-Ff)
     println(res)
+    println(@sprintf "|1 - Fidelity| Change: %.5e -> %.5e\n" 1-Fi 1-Ff)
+    
 
     return ψ
 end

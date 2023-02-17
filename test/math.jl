@@ -7,7 +7,7 @@ using Random; Random.seed!()
 #=
 ### *Multiplications* : *Otimes* 
 =#
-println("Define otims functions")
+println("Define otimes functions")
 otimes(A::Matrix, B::Matrix) = kron(A,B)
 
 function otimes(A::Matrix{T}, B::Array{T,3}) where T
