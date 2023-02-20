@@ -180,7 +180,7 @@ function  power_evaluate(Tₘ::CMPO, bondD::Integer, β::Real, init::Union{Nothi
     end
 
     #initiate cmps
-    pow_step = 0.
+    pow_step = 0
     if init === nothing
         ψr = init_cmps(bondD, Tₘ, β; compress_options) |> diagQ
         ψl = init_cmps(bondD, transpose(Tₘ), β; compress_options) |> diagQ

@@ -31,7 +31,7 @@ end
     bondD = 8
     result_folder = "./test/TFIsingChain_power"
     
-    power_evaluate(Tₘ, bondD, βlist; processor, obsv_functions, result_folder,max_pow_step = 50)
+    power_evaluate(Tₘ, bondD, βlist; processor, obsv_functions, result_folder, max_pow_step = 50)
     Oc = readdlm("./test/TFIsingChain_variation/obsvs.txt", skipstart = 1)
     @test Oc ≈ Oe rtol = 1.e-3
 
@@ -39,7 +39,7 @@ end
     result_folder = "./test/TFIsingChain_power_init"
     init_step = 40
     init = Vector(undef, 2)
-    init[1] = load("/home/sliang/JuliaCode/JuliaCMPO/test/TFIsingChain_variation/cmps_beta_1.000000.jld")[string(init_step)]
+    init[1] = load("test/TFIsingChain_power/cmps_ckpt_beta_1.000000.jld")[string(init_step)]
     init[2] = nothing
     
     power_evaluate(Tₘ, bondD, βlist, init; processor, obsv_functions, result_folder, max_pow_step = 50)
