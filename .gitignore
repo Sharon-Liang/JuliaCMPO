@@ -71,3 +71,9 @@ test/TFIsingChain_variation/cmps_beta_1.000000.jld
 test/TFIsingChain_variation/cmps_beta_1.500000.jld
 test/TFIsingChain_variation/obsvs.txt
 test/TFIsingChain_variation/setups.jld
+test/TFIsingChain_power_init/cmps_beta_1.000000.jld
+test/TFIsingChain_power_init/cmps_beta_1.500000.jld
+test/TFIsingChain_power_init/cmps_ckpt_beta_1.000000.jld
+test/TFIsingChain_power_init/cmps_ckpt_beta_1.500000.jld
+test/TFIsingChain_power_init/obsvs.txt
+test/TFIsingChain_power_init/setups.jld
