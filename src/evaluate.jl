@@ -272,7 +272,7 @@ function  power_evaluate(Tₘ::CMPO, bondD::Integer, βlist::Vector{<:Real}, ini
     for i in eachindex(βlist)
         β = βlist[i]
 
-        ψl, ψr = power_evaluate(Tₘ, bondD, β, init[i]; to_group = 0, processor, compress_options, result_folder, max_pow_step, step_counter)
+        ψl, ψr = power_evaluate(Tₘ, bondD, β, init[i]; to_group = 0, processor, compress_options, result_folder, max_pow_step)
     
         #Calculate thermal dynamic quanties
         for j in eachindex(obsv_functions)
