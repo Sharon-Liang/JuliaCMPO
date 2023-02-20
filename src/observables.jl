@@ -3,7 +3,7 @@
 =#
 
 """ 
-    free_energy(ψl::CMPS, ψr::CMPS, T::CMPO, β::Real)
+    free_energy(ψl::CMPS, ψr::CMPS, Tₘ::CMPO, β::Real)
 
 Calculate the total free_energy:
 ```math
@@ -11,28 +11,28 @@ F = -\\frac{1}{β}lnZ
 ```
 where ``β = 1/T`` is the inverse temperature.
 """
-function free_energy(ψl::CMPS, ψr::CMPS, T::CMPO, β::Real)
-    res = log_overlap(ψl, T * ψr, β) - log_overlap(ψl, ψr, β)
+function free_energy(ψl::CMPS, ψr::CMPS, Tₘ::CMPO, β::Real)
+    res = log_overlap(ψl, Tₘ * ψr, β) - log_overlap(ψl, ψr, β)
     return -res/β
 end
 
-free_energy(ψ::CMPS, T::CMPO, β::Real) = free_energy(ψ, ψ, T, β)
+free_energy(ψ::CMPS, Tₘ::CMPO, β::Real) = free_energy(ψ, ψ, Tₘ, β)
 
 
 
 """
-    thermal_average(Ô::AbstractMatrix, ψl::CMPS, ψr::CMPS, T::CMPO, β::Real)
+    thermal_average(Ô::AbstractMatrix, ψl::CMPS, ψr::CMPS, Tₘ::CMPO, β::Real)
 
-The thermal average of local opeartors ``Ô`` with respect to ``K = ψl * T * ψr``,
+The thermal average of local opeartors ``Ô`` with respect to ``K = ψl * Tₘ * ψr``,
 ```math
     ⟨Ô⟩ = \frac{Tr(Ô e^{-βK})}{Z}
 ```
 
-Note: The input operator ``Ô`` could be with the same physical bond dimension as the cMPO ``T`` or with the same size as ``K``.
+Note: The input operator ``Ô`` could be with the same physical bond dimension as the cMPO ``Tₘ`` or with the same size as ``K``.
 """
-function thermal_average(Ô::AbstractMatrix, ψl::CMPS, ψr::CMPS, T::CMPO, β::Real)
-    K = ψl * T * ψr |> symmetrize
-    if size(Ô) == size(T.Q)
+function thermal_average(Ô::AbstractMatrix, ψl::CMPS, ψr::CMPS, Tₘ::CMPO, β::Real)
+    K = ψl * Tₘ * ψr |> symmetrize
+    if size(Ô) == size(Tₘ.Q)
         eye = oneunit(ψl.Q)
         Ô = eye ⊗ Ô ⊗ eye
     end
@@ -50,7 +50,7 @@ function thermal_average(Ô::AbstractMatrix, ψl::CMPS, ψr::CMPS, T::CMPO, β:
     return num/den   
 end
 
-thermal_average(Ô::AbstractArray, ψ::CMPS, T::CMPO, β::Real) = thermal_average(Ô, ψ, ψ, T, β)
+thermal_average(Ô::AbstractArray, ψ::CMPS, Tₘ::CMPO, β::Real) = thermal_average(Ô, ψ, ψ, Tₘ, β)
 
 
 
@@ -83,52 +83,52 @@ thermal_average(Ô::AbstractArray, ψ::CMPS, β::Real) = thermal_average(Ô, �
 
 
 """
-    energy(ψl::CMPS, ψr::CMPS, T::CMPO, β::Real)
+    energy(ψl::CMPS, ψr::CMPS, Tₘ::CMPO, β::Real)
 
 Calculate the energy density: ``E = -∂lnZ/∂β``.
 """
-function energy(ψl::CMPS, ψr::CMPS, T::CMPO, β::Real)
-    K = ψl * T * ψr 
+function energy(ψl::CMPS, ψr::CMPS, Tₘ::CMPO, β::Real)
+    K = ψl * Tₘ * ψr 
     H = ψl * ψr 
-    res = thermal_average(K, ψl, ψr, T, β) - thermal_average(H, ψl, ψr, β)
+    res = thermal_average(K, ψl, ψr, Tₘ, β) - thermal_average(H, ψl, ψr, β)
     return res
 end
 
-energy(ψ::CMPS, T::CMPO, β::Real) = energy(ψ, ψ, T, β)
+energy(ψ::CMPS, Tₘ::CMPO, β::Real) = energy(ψ, ψ, Tₘ, β)
 
 
 """
-    entropy(ψl::CMPS, ψr::CMPS, T::CMPO, β::Real)
+    entropy(ψl::CMPS, ψr::CMPS, Tₘ::CMPO, β::Real)
 
 Calculate the entropy: ``S = β × (E - F)``.
 """
-function entropy(ψl::CMPS, ψr::CMPS, T::CMPO, β::Real)
-    E = energy(ψl, ψr, T, β)
-    F = free_energy(ψl, ψr, T, β)
+function entropy(ψl::CMPS, ψr::CMPS, Tₘ::CMPO, β::Real)
+    E = energy(ψl, ψr, Tₘ, β)
+    F = free_energy(ψl, ψr, Tₘ, β)
     return β*(E-F)
 end
-entropy(ψ::CMPS, T::CMPO, β::Real) = entropy(ψ, ψ, T, β)
+entropy(ψ::CMPS, Tₘ::CMPO, β::Real) = entropy(ψ, ψ, Tₘ, β)
 
 
 
 """
-    specific_heat(ψl::CMPS, ψr::CMPS, T::CMPO, β::Real)
+    specific_heat(ψl::CMPS, ψr::CMPS, Tₘ::CMPO, β::Real)
 
 Calculate specific heat: ``Cᵥ = -β² ∂E/∂β``
 """
-function specific_heat(ψl::CMPS, ψr::CMPS, T::CMPO, β::Real)
-    K = ψl * T * ψr 
+function specific_heat(ψl::CMPS, ψr::CMPS, Tₘ::CMPO, β::Real)
+    K = ψl * Tₘ * ψr 
     H = ψl * ψr 
 
     K² = K * K
     H² = H * H
 
-   res = thermal_average(K², ψl, ψr, T, β) - thermal_average(K, ψl, ψr, T, β)^2
+   res = thermal_average(K², ψl, ψr, Tₘ, β) - thermal_average(K, ψl, ψr, Tₘ, β)^2
    res -= thermal_average(H², ψl, ψr, β) - thermal_average(H, ψl, ψr, β)^2
 
    return β^2 * res
 end
-specific_heat(ψ::CMPS, T::CMPO, β::Real) = specific_heat(ψ, ψ, T, β)
+specific_heat(ψ::CMPS, Tₘ::CMPO, β::Real) = specific_heat(ψ, ψ, Tₘ, β)
 
 
 
@@ -137,18 +137,18 @@ specific_heat(ψ::CMPS, T::CMPO, β::Real) = specific_heat(ψ, ψ, T, β)
 ### *Correlations*
 =#
 """
-    correlation_2time(τ::Number, Ô₁::AbstractMatrix,Ô₂::AbstractMatrix,ψl::CMPS, ψr::CMPS, T::CMPO, β::Real)
+    correlation_2time(τ::Number, Ô₁::AbstractMatrix,Ô₂::AbstractMatrix,ψl::CMPS, ψr::CMPS, Tₘ::CMPO, β::Real)
 
 Calculate the local two-time correlation functions: ``C(τ) = -G(τ) = ⟨A(τ)B(0)⟩.``
 """
-function correlation_2time(τ::Number, Ô₁::AbstractMatrix,Ô₂::AbstractMatrix, ψl::CMPS, ψr::CMPS, T::CMPO, β::Real)
-    K = ψl * T * ψr  |> symmetrize
+function correlation_2time(τ::Number, Ô₁::AbstractMatrix,Ô₂::AbstractMatrix, ψl::CMPS, ψr::CMPS, Tₘ::CMPO, β::Real)
+    K = ψl * Tₘ * ψr  |> symmetrize
     e, v = eigensolver(K)
 
     e₀ = minimum(e)
     e = e .- e₀
 
-    if size(Ô) == size(T.Q)
+    if size(Ô) == size(Tₘ.Q)
         eye = oneunit(ψl.Q)
         Ô₁ = eye ⊗ Ô₁ ⊗ eye
         Ô₂ = eye ⊗ Ô₂ ⊗ eye
@@ -167,7 +167,7 @@ function correlation_2time(τ::Number, Ô₁::AbstractMatrix,Ô₂::AbstractMa
     return num/den
 end
 
-correlation_2time(τ::Number, Ô₁::AbstractMatrix,Ô₂::AbstractMatrix, ψ::CMPS, T::CMPO, β::Real) = correlation_2time(τ, Ô₁, Ô₂, ψ, ψ, T, β) 
+correlation_2time(τ::Number, Ô₁::AbstractMatrix,Ô₂::AbstractMatrix, ψ::CMPS, Tₘ::CMPO, β::Real) = correlation_2time(τ, Ô₁, Ô₂, ψ, ψ, Tₘ, β) 
 
 
 """
@@ -193,19 +193,19 @@ end
 
 
 """
-    retarded_GF(z::Number, Ô₁::AbstractMatrix,Ô₂::AbstractMatrix, ψl::CMPS, ψr::CMPS, T::CMPO, β::Real, type::OperatorType = Bose)
+    retarded_GF(z::Number, Ô₁::AbstractMatrix,Ô₂::AbstractMatrix, ψl::CMPS, ψr::CMPS, Tₘ::CMPO, β::Real, type::OperatorType = Bose)
 
 Calculate the Lehmann representation of retarded Greens function `G(z)`.
 """
-function retarded_GF(z::Number, Ô₁::AbstractMatrix,Ô₂::AbstractMatrix, ψl::CMPS, ψr::CMPS, T::CMPO, β::Real, type::OperatorType = Bose)
+function retarded_GF(z::Number, Ô₁::AbstractMatrix,Ô₂::AbstractMatrix, ψl::CMPS, ψr::CMPS, Tₘ::CMPO, β::Real, type::OperatorType = Bose)
 
-    K = ψl * T * ψr  |> symmetrize
+    K = ψl * Tₘ * ψr  |> symmetrize
     e, v = eigensolver(K)
 
     e₀ = minimum(e)
     e = e .- e₀
 
-    if size(Ô) == size(T.Q)
+    if size(Ô) == size(Tₘ.Q)
         eye = oneunit(ψl.Q)
         Ô₁ = eye ⊗ Ô₁ ⊗ eye
         Ô₂ = eye ⊗ Ô₂ ⊗ eye
@@ -226,7 +226,7 @@ function retarded_GF(z::Number, Ô₁::AbstractMatrix,Ô₂::AbstractMatrix, �
 end
 
 
-retarded_GF(z::Number, Ô₁::AbstractMatrix,Ô₂::AbstractMatrix, ψ::CMPS, T::CMPO, β::Real, type::OperatorType = Bose) = retarded_GF(z, Ô₁,Ô₂, ψ, ψ, T, β, type)
+retarded_GF(z::Number, Ô₁::AbstractMatrix,Ô₂::AbstractMatrix, ψ::CMPS, Tₘ::CMPO, β::Real, type::OperatorType = Bose) = retarded_GF(z, Ô₁,Ô₂, ψ, ψ, Tₘ, β, type)
 
 
 

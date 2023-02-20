@@ -25,7 +25,7 @@ end
     for m in [model(TFIsingChain(), 1.0), model(TFIsingSquareHelical(), 1.0, 2)], χ in [2^n-3, 2^n]
         
         m = solver(m)
-        ψ = init_cmps(χ, m, β; options=CompressOptions(processor=processor))
+        ψ = init_cmps(χ, m, β; compress_options=CompressOptions(processor=processor))
 
         @test typeof(ψ.Q) <: typeof(m.Q)
         @test size(ψ.Q) == (χ, χ)

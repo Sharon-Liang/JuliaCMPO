@@ -1,4 +1,4 @@
-Zygote.@nograd oneunit
+ChainRulesCore.@non_differentiable oneunit(::Any...)
 
 """
     ChainRules.rrule(::typeof(logtrexp), t::Real, M::AbstractArray)

@@ -167,8 +167,8 @@ Arguments:
 * χ  : Target bond dimension.
 * β  : Inverse temperature.
 """
-function compress_cmps(ψ₀::CMPS, χ::Integer, β::Real, init::Union{Nothing, CMPS} = nothing; options::CompressOptions = CompressOptions())
-    @unpack processor, mera_update_options, optim_options = options
+function compress_cmps(ψ₀::CMPS, χ::Integer, β::Real, init::Union{Nothing, CMPS} = nothing; compress_options::CompressOptions = CompressOptions())
+    @unpack processor, mera_update_options, optim_options = compress_options
 
     #Generate solver function and initiate cMPS accordingly
     @show solver = solver_function(processor)
@@ -227,18 +227,18 @@ end
 
 
 """
-    init_cmps(χ::Integer, o::CMPO, β::Real; options::CompressOptions)
+    init_cmps(χ::Integer, Tₘ::CMPO, β::Real; options::CompressOptions)
 
 Using the boundary of a cMPO to initiate a cMPS with bond dimension `χ` at inverse temperature `β`.
 """
-function init_cmps(χ::Integer, o::CMPO, β::Real; options::CompressOptions = CompressOptions())
-    ψ = CMPS(o.Q, o.R)
+function init_cmps(χ::Integer, Tₘ::CMPO, β::Real; compress_options::CompressOptions = CompressOptions())
+    ψ = CMPS(Tₘ.Q, Tₘ.R)
     while size(ψ.Q, 1) < χ
-        ψ = o * ψ 
+        ψ = Tₘ * ψ 
     end
 
     if size(ψ.Q, 1) > χ 
-        ψ = compress_cmps(ψ, χ, β; options)
+        ψ = compress_cmps(ψ, χ, β; compress_options)
     end
 
     return ψ

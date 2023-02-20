@@ -9,8 +9,8 @@ using CUDA; CUDA.allowscalar(false)
 using Parameters
 using OMEinsum, LinearAlgebra
 using LogExpFunctions
-using Zygote, Optim, ChainRules
-using Printf
+using Zygote, Optim, ChainRules, ChainRulesCore
+using Printf, JLD
 
 
 #=
@@ -330,6 +330,31 @@ export specific_heat
 export correlation_2time
 export retarded_GF
 
+
+
+#=
+### *Includes And Exports* : *evaluate.jl*
+=#
+
+#=
+*Summary* :
+
+evaluate functions.
+
+*Members* :
+
+```text
+variation_evaluate   ->  Evaluate optim cMPS by variational principle.
+power_evaluate       ->  Evaluate optim cMPS by power method.
+#
+```
+=#
+
+#
+include("evaluate.jl")
+#
+export variation_evaluate
+export power_evaluate
 
 
 
