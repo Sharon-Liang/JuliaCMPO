@@ -61,3 +61,13 @@ result_plots/xxmodel-compare-A-different-nevanlinna-D-16-beta-10.00-eta-0.05.pdf
 result_plots/xxmodel-compare-A-different-nevanlinna-D-16-beta-10.00-eta-0.10.pdf
 result_plots/xxmodel-compare-A-different-nevanlinna-D-16-beta-20.00-eta-0.05.pdf
 result_plots/xxmodel-compare-A-different-nevanlinna-D-16-beta-20.00-eta-0.10.pdf
+test/TFIsingChain_power/cmps_beta_1.000000.jld
+test/TFIsingChain_power/cmps_beta_1.500000.jld
+test/TFIsingChain_power/cmps_ckpt_beta_1.000000.jld
+test/TFIsingChain_power/cmps_ckpt_beta_1.500000.jld
+test/TFIsingChain_power/obsvs.txt
+test/TFIsingChain_power/setups.jld
+test/TFIsingChain_variation/cmps_beta_1.000000.jld
+test/TFIsingChain_variation/cmps_beta_1.500000.jld
+test/TFIsingChain_variation/obsvs.txt
+test/TFIsingChain_variation/setups.jld

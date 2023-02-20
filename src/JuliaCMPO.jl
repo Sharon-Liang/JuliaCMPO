@@ -10,7 +10,7 @@ using Parameters
 using OMEinsum, LinearAlgebra
 using LogExpFunctions
 using Zygote, Optim, ChainRules, ChainRulesCore
-using Printf, JLD
+using Printf, DelimitedFiles, JLD 
 
 
 #=
