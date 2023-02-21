@@ -274,8 +274,7 @@ function  power_evaluate(Tₘ::CMPO, bondD::Integer, β::Real, init::Union{Nothi
         ψr, Fr = single_power_step(Tₘ, ψr, bondD, β; compress_options, to_shift)
         ψl, Fl = single_power_step(transpose(Tₘ), ψl, bondD, β; compress_options, to_shift)
 
-        fidelity_list[pow_step, 2] = Fl
-        fidelity_list[pow_step, 3] = Fr
+        fidelity_file[pow_step, :] = [pow_step, 1. - Fl, 1. - Fr]
 
         #save checkpoints
         jldopen(ckpt_file, "r+") do file
@@ -284,9 +283,9 @@ function  power_evaluate(Tₘ::CMPO, bondD::Integer, β::Real, init::Union{Nothi
     end
 
     #save fidelities
-    fidelity_file = @sprintf "%s/fidelity_beta_%f.jld" result_folder β
+    fidelity_file = @sprintf "%s/fidelity_beta_%f.txt" result_folder β
     open(fidelity_file, "w") do file
-        write(file, @sprintf "%-4s %-18s %-18s\n" "step" "F_left" "F_right")
+        write(file, @sprintf "%-6s %-20s %-20s\n" "step" "|1-F_left|" "|1-F_right|")
         writedlm(file, fidelity_list)
     end
 
@@ -320,6 +319,7 @@ function  power_evaluate(Tₘ::CMPO, bondD::Integer, βlist::Vector{<:Real}, ini
     result_folder::String = ".",
     max_pow_step:: Int = 100, 
     to_group::Int = 0,
+    to_shift::Float64 = 0., 
     obsv_functions::Vector{<:Function} = [free_energy, energy, specific_heat, entropy]
     )
 
@@ -346,6 +346,7 @@ function  power_evaluate(Tₘ::CMPO, bondD::Integer, βlist::Vector{<:Real}, ini
         write(file, "compress_options", compress_options)
         write(file, "max_pow_step", max_pow_step)
         write(file, "to_group", to_group)
+        write(file, "to_shift", to_shift)
     end
 
     #Array to store values of observables
@@ -354,7 +355,7 @@ function  power_evaluate(Tₘ::CMPO, bondD::Integer, βlist::Vector{<:Real}, ini
     for i in eachindex(βlist)
         β = βlist[i]
 
-        ψl, ψr = power_evaluate(Tₘ, bondD, β, init[i]; to_group = 0, processor, compress_options, result_folder, max_pow_step)
+        ψl, ψr = power_evaluate(Tₘ, bondD, β, init[i]; to_group = 0, processor, compress_options, result_folder, max_pow_step, to_shift)
     
         #Calculate thermal dynamic quanties
         for j in eachindex(obsv_functions)
