@@ -77,3 +77,15 @@ test/TFIsingChain_power_init/cmps_ckpt_beta_1.000000.jld
 test/TFIsingChain_power_init/cmps_ckpt_beta_1.500000.jld
 test/TFIsingChain_power_init/obsvs.txt
 test/TFIsingChain_power_init/setups.jld
+test/HeisenbergChain_power/cmps_beta_1.000000.jld
+test/HeisenbergChain_power/cmps_beta_2.000000.jld
+test/HeisenbergChain_power/cmps_ckpt_beta_1.000000.jld
+test/HeisenbergChain_power/cmps_ckpt_beta_2.000000.jld
+test/HeisenbergChain_power/obsvs.txt
+test/HeisenbergChain_power/setups.jld
+test/HeisenbergChain_power_group/cmps_beta_1.000000.jld
+test/HeisenbergChain_power_group/cmps_beta_2.000000.jld
+test/HeisenbergChain_power_group/cmps_ckpt_beta_1.000000.jld
+test/HeisenbergChain_power_group/cmps_ckpt_beta_2.000000.jld
+test/HeisenbergChain_power_group/obsvs.txt
+test/HeisenbergChain_power_group/setups.jld
