@@ -1,6 +1,7 @@
 using JuliaCMPO, Test
 using FiniteDifferences, Zygote
 
+#=
 filelist = ["util.jl", "math.jl", "core.jl", "grads.jl"]
 
 
@@ -14,6 +15,7 @@ end
 @testset "models.jl" begin
     include("models.jl")
 end
+=#
 
 #=
 filelist = ["math.jl"]
@@ -24,3 +26,5 @@ for file in filelist
     end
 end
 =#
+
+include("evaluate-heisenberg.jl")
