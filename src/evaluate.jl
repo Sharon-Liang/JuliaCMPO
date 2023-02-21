@@ -175,7 +175,7 @@ function  single_power_step(Tₘ::CMPO, ψ₀::CMPS, bondD::Integer, β::Real;
         
 
         #initiate test cMPS
-        ψ = mera_update(Tₘ * ψ₀, χ, β, mera_update_options)
+        ψ = mera_update(Tₘ * ψ₀, bondD, β, mera_update_options)
 
         #Calculate initial fidelity
         Fi = fidelity(ψ, Tₘ * ψ₀, β, true)
