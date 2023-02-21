@@ -198,7 +198,6 @@ function compress_cmps(ψ₀::CMPS, χ::Integer, β::Real, init::Union{Nothing, 
 
     println(res)
     println(@sprintf "|1 - Fidelity| Change: %.5e -> %.5e\n" 1-Fi 1-Ff)
-    
 
     return ψ
 end

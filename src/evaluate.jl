@@ -142,6 +142,75 @@ end
 ### *Non-Hermitian* : *Power method*
 =#
 """
+    single_power_step(Tₘ::CMPO, ψ₀::CMPS, bondD::Int, β::Real; kwargs...)
+
+Single power step in ``power_evaluate``.  
+
+Arguments:
+* Tₘ    : the cMPO local tensor of the transfer matrix.
+* ψ₀    : the boundary cMPS local tensor.
+* bondD : target bond dimension of the result cMPS.
+* β     : inverse temperature.
+
+
+Keyword Arguments:
+* compress_options : ``CompressOptions`` used when initiating and compressing a cMPS.
+* to_shift         : ``Float64``, if to shift the spectrum of `Tₘ`, `to_shift = 0` means not to shift.
+"""
+function  single_power_step(Tₘ::CMPO, ψ₀::CMPS, bondD::Integer, β::Real; 
+    compress_options::CompressOptions=CompressOptions(), 
+    to_shift::Float64 = 0.
+    )
+    @unpack processor, mera_update_options, optim_options = compress_options
+    solver = solver_function(processor)
+
+    Tₘ = solver(Tₘ)
+    ψ₀ = solver(ψ₀)
+
+    if to_shift == 0.
+        ψ = compress_cmps(Tₘ * ψ₀, bondD, β; compress_options)
+        #calculate final.fidelity
+        Ff = fidelity(ψ, Tₘ * ψ₀, β, true)
+    else
+        
+
+        #initiate test cMPS
+        ψ = mera_update(Tₘ * ψ₀, χ, β, mera_update_options)
+
+        #Calculate initial fidelity
+        Fi = fidelity(ψ, Tₘ * ψ₀, β, true)
+
+        ψ = ψ |> diagQ
+        Qd = convert(Vector, diag(ψ.Q))
+        R  = convert(Array, ψ.R)
+
+        #Generate loss function and its gradient function
+        function loss()
+            ψ = solver(CMPS(diagm(Qd), R))
+            F₁ = fidelity(ψ, Tₘ * ψ₀, β, false)
+            F₂ = to_shift * fidelity(ψ, ψ₀, β, false)
+            N₀ = 0.5 * log_overlap(ψ, ψ, β)
+            return -log(F₁ + F₂) + N₀
+        end
+        p0, f, g! = optim_functions(loss, Params([Qd, R]))
+
+        #Optimize
+        res = Optim.optimize(f, g!, p0, LBFGS(), optim_options)
+
+        ψ = solver(CMPS(diagm(Qd), R))
+        #calculate final fidelity
+        Ff = fidelity(ψ, Tₘ * ψ₀, β, true)
+
+        println(res)
+        println(@sprintf "|1 - Fidelity| Change: %.5e -> %.5e\n" 1-Fi 1-Ff)
+    end
+
+    return ψ, Ff
+end
+
+
+
+"""
     power_evaluate(Tₘ::CMPO, bondD::Int, β::Real[, init=nothing]; kwargs...)
 
 Calculate the dominant eigen cMPS of a cMPO transfer matrix `Tₘ` at temperature `1/β` by power method.
@@ -165,7 +234,8 @@ function  power_evaluate(Tₘ::CMPO, bondD::Integer, β::Real, init::Union{Nothi
     compress_options::CompressOptions=CompressOptions(), 
     result_folder::String = ".",
     max_pow_step:: Int = 100, 
-    to_group::Int = 0
+    to_group::Int = 0,
+    to_shift::Float64 = 0.
     )
 
     solver = solver_function(processor)
@@ -195,17 +265,29 @@ function  power_evaluate(Tₘ::CMPO, bondD::Integer, β::Real, init::Union{Nothi
         write(file, string(pow_step), (ψl, ψr))
     end
 
+    #save fidelity as: step, left, right
+    fidelity_list = zeros(max_pow_step, 3)
     while pow_step < max_pow_step
         pow_step += 1
         println(@sprintf "Power Step = %03i" pow_step)
 
-        ψr = compress_cmps(Tₘ * ψr, bondD, β; compress_options)
-        ψl = compress_cmps(transpose(Tₘ) * ψl, bondD, β; compress_options)
+        ψr, Fr = single_power_step(Tₘ, ψr, bondD, β; compress_options, to_shift)
+        ψl, Fl = single_power_step(transpose(Tₘ), ψl, bondD, β; compress_options, to_shift)
+
+        fidelity_list[pow_step, 2] = Fl
+        fidelity_list[pow_step, 3] = Fr
 
         #save checkpoints
         jldopen(ckpt_file, "r+") do file
             write(file, string(pow_step), (ψl, ψr))
         end
+    end
+
+    #save fidelities
+    fidelity_file = @sprintf "%s/fidelity_beta_%f.jld" result_folder β
+    open(fidelity_file, "w") do file
+        write(file, @sprintf "%-4s %-18s %-18s\n" "step" "F_left" "F_right")
+        writedlm(file, fidelity_list)
     end
 
     return ψl, ψr

@@ -91,3 +91,38 @@ end
         
     @test zgrad ≈ ngrad
 end
+
+
+
+#=
+### *shift_spectrum* 
+=#
+@testset "shift_spectrum" begin
+    β = 2.0
+    χ = 4
+    Tₘ = model(TFIsingChain(), 1.0) |> solver
+
+    to_shift = 1.e-3
+
+    ψ₀ = init_cmps(χ+2) |> solver
+    ψ  = init_cmps(χ) |> diagQ |> solver
+
+    Qd = Vector(diag(ψ.Q))
+    R  = Array(ψ.R)
+
+    pars = Zygote.Params([Qd, R])
+    function loss()
+        ψ = solver(CMPS(diagm(Qd), R))
+        f1 = fidelity(ψ, Tₘ * ψ₀, β, false)
+        f2 = to_shift * fidelity(ψ, ψ₀, β, false)
+
+        return -log(f1 + f2) + 0.5*log_overlap(ψ, ψ, β)
+    end
+
+    p₀, f, g! = optim_functions(loss, pars)
+
+    ngrad = ngradient(f, p₀)[1]
+    zgrad = similar(p₀); g!(zgrad, p₀)
+        
+    @test zgrad ≈ ngrad
+end
