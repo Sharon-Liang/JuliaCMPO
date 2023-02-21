@@ -274,7 +274,7 @@ function  power_evaluate(Tₘ::CMPO, bondD::Integer, β::Real, init::Union{Nothi
         ψr, Fr = single_power_step(Tₘ, ψr, bondD, β; compress_options, to_shift)
         ψl, Fl = single_power_step(transpose(Tₘ), ψl, bondD, β; compress_options, to_shift)
 
-        fidelity_file[pow_step, :] = [pow_step, 1. - Fl, 1. - Fr]
+        fidelity_list[pow_step, :] = [pow_step, 1. - Fl, 1. - Fr]
 
         #save checkpoints
         jldopen(ckpt_file, "r+") do file
