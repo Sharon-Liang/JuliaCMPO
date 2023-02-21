@@ -21,7 +21,6 @@ Oe[2, :] = [2.000000, -0.5385576248164411]
 #=
 ### *HeisenbergChain* : *Power method*
 =#
-#=
 @testset "HeisenbergChain_power" begin
     bondD = 8
     result_folder = "./HeisenbergChain_power"
@@ -42,7 +41,7 @@ end
     Og = readdlm(result_folder*"/obsvs.txt", skipstart = 1)
     @test Og ≈ Oe rtol = 1.e-3
 end
-=#
+
 
 @testset "HeisenbergChain_power_shift" begin
     bondD = 8

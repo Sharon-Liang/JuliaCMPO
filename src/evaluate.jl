@@ -187,10 +187,10 @@ function  single_power_step(Tₘ::CMPO, ψ₀::CMPS, bondD::Integer, β::Real;
         #Generate loss function and its gradient function
         function loss()
             ψ = solver(CMPS(diagm(Qd), R))
-            F₁ = fidelity(ψ, Tₘ * ψ₀, β, false)
-            F₂ = to_shift * fidelity(ψ, ψ₀, β, false)
+            Ol₁ = log_overlap(ψ, Tₘ * ψ₀, β) |> exp
+            Ol₂ = log_overlap(ψ, ψ₀, β) |> exp
             N₀ = 0.5 * log_overlap(ψ, ψ, β)
-            return -log(F₁ + F₂) + N₀
+            return -log(Ol₁ + to_shift * Ol₂) + N₀
         end
         p0, f, g! = optim_functions(loss, Params([Qd, R]))
 

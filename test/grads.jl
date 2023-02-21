@@ -16,9 +16,9 @@ zgradient = Zygote.gradient
     t = rand()
     f = x -> logtrexp(t, x)
 
-    ngrad = ngradient(f, solver(M))[1]
+    ngrad = ngradient(f, M)[1]
     zgrad = zgradient(f, solver(M))[1]
-    @test ngrad ≈ zgrad
+    @test ngrad ≈ zgrad |> Array
 end
 
 
@@ -55,10 +55,10 @@ end
     β = rand()
     χ = 6
     for D = 1:2
-        u = rand(χ, χ-2) |>  solver
+        u = rand(χ, χ-2) 
         ψ₀ = init_cmps(χ, D) |> solver
 
-        loss(u) = logfidelity(project(ψ₀, u), ψ₀, β, false)
+        loss(u) = logfidelity(project(ψ₀, solver(u)), ψ₀, β, false)
 
         ngrad = ngradient(loss, u)[1]
         zgrad = zgradient(loss, u)[1]
@@ -113,10 +113,10 @@ end
     pars = Zygote.Params([Qd, R])
     function loss()
         ψ = solver(CMPS(diagm(Qd), R))
-        f1 = fidelity(ψ, Tₘ * ψ₀, β, false)
-        f2 = to_shift * fidelity(ψ, ψ₀, β, false)
-
-        return -log(f1 + f2) + 0.5*log_overlap(ψ, ψ, β)
+        Ol₁ = log_overlap(ψ, Tₘ * ψ₀, β) |> exp
+        Ol₂ = log_overlap(ψ, ψ₀, β) |> exp
+        N₀ = 0.5 * log_overlap(ψ, ψ, β)
+        return -log(Ol₁ + to_shift * Ol₂) + N₀
     end
 
     p₀, f, g! = optim_functions(loss, pars)

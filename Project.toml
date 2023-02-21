@@ -25,4 +25,5 @@ Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 
 [compat]
-CUDA = "3"
+CUDA = "3.13"
+OMEinsum = "0.6.13"

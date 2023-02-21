@@ -72,7 +72,9 @@ println("Start testing...")
     
     for i in eachindex(a), j in eachindex(a)
         if abs(lastindex(size(a[i]))  - lastindex(size(a[j]))) < 2
-            @test Array(solver(⊗, a[i], a[j])) ≈ otimes(a[i],a[j])
+            val₁ = solver(⊗, a[i], a[j])
+            val₂ = otimes(a[i],a[j]) |> solver
+            @test val₁ ≈ val₂ 
         end
     end
 end
@@ -85,8 +87,8 @@ end
 @testset "multiplications of cmps and cmpo: D-1 = 1" begin
     D = 4
 
-    x = symmetrize(randn(D,D))
-    z = symmetrize(randn(D,D))
+    x = symmetrize(rand(D,D))
+    z = symmetrize(rand(D,D))
     p = zeros(D,D)
                 
     i2 = oneunit(x)
@@ -118,8 +120,8 @@ end
 @testset "multiplications of cmps and cmpo: D-1 > 1" begin
     D = 4
 
-    x = symmetrize(randn(D,D))
-    z = symmetrize(randn(D,D))
+    x = symmetrize(rand(D,D))
+    z = symmetrize(rand(D,D))
     p = zeros(D,D,2,2)
                 
     i2 = oneunit(x)
