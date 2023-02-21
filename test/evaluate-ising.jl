@@ -21,7 +21,7 @@ Oe[2, :] = [1.50, -1.3338698801984272, -1.2073855733208403, 0.1897264603163804]
 =#
 @testset "TFIsingChain_variation" begin
     bondD = 8
-    result_folder = "./test/TFIsingChain_variation"
+    result_folder = "./TFIsingChain_variation"
     
     variation_evaluate(Tₘ, bondD, βlist; processor, obsv_functions, result_folder)
     Oc = readdlm(result_folder*"/obsvs.txt", skipstart = 1)
@@ -36,7 +36,7 @@ end
 =#
 @testset "TFIsingChain_power" begin
     bondD = 8
-    result_folder = "./test/TFIsingChain_power"
+    result_folder = "./TFIsingChain_power"
     
     power_evaluate(Tₘ, bondD, βlist; processor, obsv_functions, result_folder, max_pow_step = 50)
     Oc = readdlm(result_folder*"/obsvs.txt", skipstart = 1)
@@ -48,7 +48,7 @@ end
     init[1] = load(result_folder*"/cmps_ckpt_beta_1.000000.jld")[string(init_step)]
     init[2] = nothing
     
-    new_result_folder = "./test/TFIsingChain_power_init"
+    new_result_folder = "./TFIsingChain_power_init"
     power_evaluate(Tₘ, bondD, βlist, init; processor, obsv_functions, result_folder = new_result_folder, max_pow_step = 50)
     Oc = readdlm(new_result_folder*"/obsvs.txt", skipstart = 1)
     @test Oc ≈ Oe rtol = 1.e-3

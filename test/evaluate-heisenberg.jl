@@ -23,7 +23,7 @@ Oe[2, :] = [2.000000, -0.5385576248164411]
 =#
 @testset "HeisenbergChain_power" begin
     bondD = 8
-    result_folder = "./test/HeisenbergChain_power"
+    result_folder = "./HeisenbergChain_power"
     
     power_evaluate(Tₘ, bondD, βlist; processor, obsv_functions, result_folder, max_pow_step = 50)
     Oc = readdlm(result_folder*"/obsvs.txt", skipstart = 1)
@@ -33,7 +33,7 @@ end
 
 @testset "HeisenbergChain_power_group" begin
     bondD = 8
-    result_folder = "./test/HeisenbergChain_power_group"
+    result_folder = "./HeisenbergChain_power_group"
 
     to_group = 2
     
@@ -45,7 +45,7 @@ end
 
 @testset "HeisenbergChain_power_shift" begin
     bondD = 8
-    result_folder = "./test/HeisenbergChain_power_shift"
+    result_folder = "./HeisenbergChain_power_shift"
     
     to_shift = 1.e-3
     
