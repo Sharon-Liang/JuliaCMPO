@@ -17,14 +17,15 @@ end
 end
 =#
 
-#=
-filelist = ["math.jl"]
+
+
+filelist = ["core.jl"]
 processor = GPU
 for file in filelist
     @testset "$(processor): $(file)" begin
         include(file)
     end
 end
-=#
 
-include("evaluate-heisenberg.jl")
+
+#include("evaluate-heisenberg.jl")

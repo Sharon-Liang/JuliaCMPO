@@ -68,7 +68,7 @@ end
 println("Start testing...")
 @testset "otimes" begin
     D1 = 4;  D2 = 2
-    a = [randn(D1,D1), randn(D1,D1,D2), randn(D1,D1,D2,D2)]
+    a = [rand(D1,D1), rand(D1,D1,D2), rand(D1,D1,D2,D2)]
     
     for i in eachindex(a), j in eachindex(a)
         if abs(lastindex(size(a[i]))  - lastindex(size(a[j]))) < 2
@@ -111,7 +111,8 @@ end
     @test  s*s ≈ solver(ss)         
     @test  o*s ≈ solver(CMPS(osq, osr))
     @test  s*o ≈ solver(CMPS(soq, sor)) 
-    @test  o*o ≈ solver(CMPO(ooq, oor, ool, oop))  
+    @test  o*o ≈ solver(CMPO(ooq, oor, ool, oop))
+    @test  s*o*s ≈ solver(sos)  
 end
 
 @testset "multiplications of cmps and cmpo: D-1 > 1" begin
@@ -148,6 +149,7 @@ end
     @test  o*s ≈ solver(CMPS(osq, osr))
     @test  s*o ≈ solver(CMPS(soq, sor)) 
     @test  o*o ≈ solver(CMPO(ooq, oor, ool, oop))  
+    @test  s*o*s ≈ solver(sos) 
 end
 
 

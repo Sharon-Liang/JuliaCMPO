@@ -171,7 +171,6 @@ function compress_cmps(ψ₀::CMPS, χ::Integer, β::Real, init::Union{Nothing, 
     @unpack processor, mera_update_options, optim_options = compress_options
 
     #Generate solver function and initiate cMPS accordingly
-    @show solver = solver_function(processor)
     ψ₀ = solver(ψ₀)
 
     init === nothing ? ψ = mera_update(ψ₀, χ, β, mera_update_options) : ψ = solver(init)
