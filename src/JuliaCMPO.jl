@@ -346,6 +346,7 @@ evaluate functions.
 ```text
 variation_evaluate   ->  Evaluate optim cMPS by variational principle.
 power_evaluate       ->  Evaluate optim cMPS by power method.
+sigle_power_step     ->  Perform one step of power iteration.
 #
 ```
 =#
