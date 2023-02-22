@@ -40,7 +40,7 @@ end
     
     power_evaluate(Tₘ, bondD, βlist; processor, obsv_functions, result_folder, max_pow_step = 50)
     Oc = readdlm(result_folder*"/obsvs.txt", skipstart = 1)
-    @test Oc ≈ Oe rtol = 1.e-3
+    @test Oc ≈ Oe rtol = 1.e-5
 
     #test start from cMPS
     init_step = 40
@@ -51,6 +51,6 @@ end
     new_result_folder = "./TFIsingChain_power_init"
     power_evaluate(Tₘ, bondD, βlist, init; processor, obsv_functions, result_folder = new_result_folder, max_pow_step = 50)
     Oc = readdlm(new_result_folder*"/obsvs.txt", skipstart = 1)
-    @test Oc ≈ Oe rtol = 1.e-3
+    @test Oc ≈ Oe rtol = 1.e-5
 end
 

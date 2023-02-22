@@ -27,7 +27,7 @@ Oe[2, :] = [2.000000, -0.5385576248164411]
     
     power_evaluate(Tₘ, bondD, βlist; processor, obsv_functions, result_folder, max_pow_step = 50)
     Oc = readdlm(result_folder*"/obsvs.txt", skipstart = 1)
-    @test Oc ≈ Oe rtol = 1.e-3
+    @test Oc ≈ Oe rtol = 1.e-4
 end 
 
 
@@ -39,7 +39,7 @@ end
     
     power_evaluate(Tₘ, bondD, βlist; processor, obsv_functions, result_folder, max_pow_step = 50, to_group)
     Og = readdlm(result_folder*"/obsvs.txt", skipstart = 1)
-    @test Og ≈ Oe rtol = 1.e-3
+    @test Og ≈ Oe rtol = 1.e-4
 end
 
 
@@ -51,5 +51,5 @@ end
     
     power_evaluate(Tₘ, bondD, βlist; processor, obsv_functions, result_folder, max_pow_step = 50, to_shift)
     Os = readdlm(result_folder*"/obsvs.txt", skipstart = 1)
-    @test Os ≈ Oe rtol = 1.e-3
+    @test Os ≈ Oe rtol = 1.e-4
 end

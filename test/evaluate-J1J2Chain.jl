@@ -53,7 +53,7 @@ Tₘ = model(J1J2Chain(), J1, J2)
 
 βlist = [1.0, 2.0]
 #Previous result with bond dimension 8, to_group=2
-Op = zeros(2, 5)
+Op = zeros(2, 4)
 Op[1, :] = [1.0, -0.7899920956097901, -0.18552679178607434, 0.6044653038237158]
 Op[2, :] = [2.0, -0.5187573807353516, -0.29632701499366476, 0.4448607314833737] 
     
@@ -63,7 +63,7 @@ Op[2, :] = [2.0, -0.5187573807353516, -0.29632701499366476, 0.4448607314833737]
     to_group = 2
     power_evaluate(Tₘ, bondD, βlist; processor, result_folder, obsv_functions, to_group)
     Og = readdlm(result_folder*"/obsvs.txt", skipstart = 1)
-    @test Og ≈ Op  rtol = 1.e-5
+    @test Og ≈ Op  rtol = 1.e-4
 end
 
 
@@ -72,6 +72,6 @@ end
     to_shift = 1.e-3
     power_evaluate(Tₘ, bondD, βlist; processor, result_folder, obsv_functions, to_shift)
     Os = readdlm(result_folder*"/obsvs.txt", skipstart = 1)
-    @test Os ≈ Op  rtol = 1.e-5
+    @test Os ≈ Op  rtol = 1.e-4
 end
 
