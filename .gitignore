@@ -71,4 +71,4 @@ test/HeisenbergChain_power_shift
 
 test/J1J2Chain_power_group
 test/J1J2Chain_power_shift
-test/evaluate-J1J2Chain.log
+test/log
