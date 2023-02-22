@@ -11,11 +11,11 @@ const Start_Time = Dates.format(now(), "yyyy-mm-dd HH:MM:SS")
 settings = ArgParseSettings(prog="CMPO: 1D TFIsing model"
 )
 @add_arg_table! settings begin
-    "--J"
+    "--J1"
         arg_type = Float64
         default = 1.0
         help = "Transverse Field Ising σz coupling constant"
-    "--G"
+    "--J2"
         arg_type = Float64
         default = 1.0
         help = "Transverse Field strength: Γ"
@@ -37,7 +37,7 @@ settings = ArgParseSettings(prog="CMPO: 1D TFIsing model"
         help = "cMPS bond dimension"
     "--ResultFolder"
         arg_type = String
-        default = "/data/sliang/JuliaCMPO/TFIsing"
+        default = "/data/sliang/JuliaCMPO/J1J2Chain"
         help = "result folder"
     "--processor"
         arg_type = Int64
@@ -52,8 +52,8 @@ end
 parsed_args = parse_args(settings; as_symbols=true)
 print(parsed_args,"\n")
 
-const J = parsed_args[:J]
-const Γ = parsed_args[:G]
+const J1 = parsed_args[:J1]
+const J2 = parsed_args[:J2]
 const bi = parsed_args[:bi]
 const bf = parsed_args[:bf]
 const bstep = parsed_args[:bstep]
@@ -66,15 +66,15 @@ const processor = Processor(parsed_args[:processor])
 const wid = 1
 
 isdir(ResultFolder) || mkdir(ResultFolder)
-ModelResultFolder = @sprintf "%s/J_%.2f_G_%.2f_wid_%02i_bondD_%02i_%s" ResultFolder J Γ wid bondD tag
+ModelResultFolder = @sprintf "%s/J1_%f_J2_%f_wid_%02i_bondD_%02i_%s" ResultFolder J1 J2 wid bondD tag
 isdir(ModelResultFolder) || mkdir(ModelResultFolder)
    
 #CMPO
-Tₘ = model(TFIsingChain(), Γ, J)
-βlist = [i for i in range(bi, bf, step=bstep)]
+Tₘ = model(J1J2Chain(), J1, J2)
+βlist = 1 ./ [i for i in range(0.03, 0.05, step=0.005)]
 
 @timeit to "evaluate" begin
-    variation_evaluate(Tₘ, bondD, βlist; processor, result_folder = ModelResultFolder)
+    power_evaluate(Tₘ, bondD, βlist; processor, result_folder = ModelResultFolder, to_shift = 1.e-3)
 end
 
 const End_Time = Dates.format(now(), "yyyy-mm-dd HH:MM:SS")
