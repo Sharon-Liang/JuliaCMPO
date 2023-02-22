@@ -168,3 +168,16 @@ end
 end
 
 
+#=
+### *Multiplications* : *Multiply a cMPS by a Number* 
+=#
+@testset "Number * CMPS" begin
+    β = rand()
+    χ = 4
+    s1 = init_cmps(4)
+    for a in [rand(), -rand(), rand(ComplexF64)]
+        @show s2 = *(a, s1, β)
+        val = log_overlap(s1, s2, β) - log_overlap(s1, s1, β)
+        @test exp(val) ≈ abs(a) 
+    end
+end

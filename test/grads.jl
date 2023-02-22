@@ -113,10 +113,14 @@ end
     pars = Zygote.Params([Qd, R])
     function loss()
         ψ = solver(CMPS(diagm(Qd), R))
-        Ol₁ = log_overlap(ψ, Tₘ * ψ₀, β) |> exp
-        Ol₂ = log_overlap(ψ, ψ₀, β) |> exp
+        L₁ = log_overlap(ψ, Tₘ * ψ₀, β) 
+        L₂ = log_overlap(ψ, ψ₀, β) 
+
+        Lmax = max(L₁, L₂)
+        Ol₁ = exp(L₁ - Lmax)
+        Ol₂ = exp(L₂ - Lmax)
         N₀ = 0.5 * log_overlap(ψ, ψ, β)
-        return -log(Ol₁ + to_shift * Ol₂) + N₀
+        return - Lmax - log(Ol₁ + to_shift * Ol₂) + N₀
     end
 
     p₀, f, g! = optim_functions(loss, pars)

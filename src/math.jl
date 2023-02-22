@@ -103,6 +103,27 @@ end
 ### *Properties* : *CMPS* 
 =#
 """
+    *(a::Number, s::CMPS, β::Real)
+
+Calculate ``a|ψ⟩``.
+"""
+function *(a::Number, s::CMPS, β::Real)
+    r = abs(a)
+    θ = angle(a)
+    if θ == 0
+        λ = log(r)/β
+        Q = s.Q + λ * oneunit(s.Q)
+        R = s.R
+    else
+        λ = (log(r) + one(typeof(a))im*θ)/β
+        Q = s.Q + λ * oneunit(s.Q)
+        R = convert(Array{eltype(Q)}, s.R)
+    end
+    return CMPS(Q, R)
+end
+
+
+"""
     log_overlap(ψl, ψr, β)
 
 Calculate ``ln(⟨ψl|ψr⟩)``.
@@ -299,3 +320,5 @@ function Base.cat(os::CMPO...)
     end
     return res
 end
+
+
