@@ -13,3 +13,7 @@ end
 end
 
 
+processor = GPU
+for file in filelist
+    include(file)
+end
