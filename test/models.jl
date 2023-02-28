@@ -64,13 +64,15 @@ end
 end
 
 @testset "adjoint and ishermitian" begin
-    for T in [model(TFIsingChain(), 1.0), model(XXChain()), model(XXZChain(), 1.0)]  
+    for M in [TFIsingChain(1.0, 1.0), XXChain(), XXZChain(1.0)]  
+        T = model(M)
         @test ==(T, T')
         @test ishermitian(T)
     end
 
-    wid = 3
-    for T in [model(TFIsingSquareHelical(), 1.0, wid), model(XXSquareHelical(), wid), model(XXZSquareHelical(), 1.0, wid)]   
+    W = 3
+    for M in [TFIsingSquareHelical(1.0,1.0,W), XXSquareHelical(W), XXZSquareHelical(1.0,W)]   
+        T = model(M)
         @test ==(T, T') == false
         @test ishermitian(T) == false
     end
@@ -80,10 +82,11 @@ end
 @testset "transpose(T²) = transpose(T) * transpose(T)" begin
     #one should compare transfer matrix instead of JuliaCMPO local tensor
     β = 2.0
-    for m in [model(TFIsingChain(), 1.0), model(XXZSquareHelical(), 1.0, 2)]
-        ψ = init_cmps(2, m, β)
-        T1 =  transpose(m * m)
-        T2 =  transpose(m) * transpose(m)
+    for M in [TFIsingChain(1.0,1.0), XXZSquareHelical(1.0, 2)]
+        T = model(M)
+        ψ = init_cmps(2, T, β)
+        T1 =  transpose(T * T)
+        T2 =  transpose(T) * transpose(T)
         @test free_energy(ψ, T1, β) ≈ free_energy(ψ, T2, β)
     end
 end
