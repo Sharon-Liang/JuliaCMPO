@@ -68,7 +68,10 @@ test/TFIsingChain_variation
 test/HeisenbergChain_power
 test/HeisenbergChain_power_group
 test/HeisenbergChain_power_shift
+test/HeisenbergChain_power_shift_new
+test/HeisenbergChain_power_shift_new_continue
 
 test/J1J2Chain_power_group
 test/J1J2Chain_power_shift
 test/log
+test/J1J2Chain_power_shift_J2_0.5
