@@ -1,7 +1,7 @@
 name = "JuliaCMPO"
 uuid = "2d91b1d6-dca2-4794-84f6-99a3d042c297"
 authors = ["Sharon-Liang <liangshuang228@gmail.com>"]
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 ArgParse = "c7e460c6-2fb9-53a9-8c5b-16f535851c63"
