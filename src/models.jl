@@ -25,9 +25,13 @@ model(a::AbstractModel) = "Undefined."
     H = - J ∑ σᶻᵢ σᶻⱼ - Γ ∑ σˣᵢ
 ```
 """
-struct TFIsingChain <: AbstractModel end
+@with_kw struct TFIsingChain{T<:Real} <: AbstractModel 
+    J::T 
+    Γ::T 
+end
 
-function model(::TFIsingChain, Γ::Real, J::Real = 1.0)
+function model(M::TFIsingChain)
+    @unpack J, Γ = M
     Q = Γ*pauli(PX)
     R = √J*pauli(PZ)
     L = √J*pauli(PZ)
@@ -75,9 +79,12 @@ after unitary transformation ``U = exp(iπSʸ)`` on odd sites, the Hamiltoinan b
 ```
 We implement the later form in this package.
 """
-struct XXZChain <: AbstractModel end
+@with_kw struct XXZChain{T<:Real} <: AbstractModel 
+    Δ::T
+end
 
-function model(::XXZChain, Δ::Real) 
+function model(M::XXZChain) 
+    Δ = M.Δ  
     if Δ == 0
         return model(XXmode())
     else
@@ -104,7 +111,10 @@ end
 ```
 where `j = i+1` and `k=i+2`.
 """
-struct J1J2Chain <: AbstractModel end
+@with_kw struct J1J2Chain{T<:Real} <: AbstractModel 
+    J1::T
+    J2::T
+end
 
 
 """
@@ -129,7 +139,8 @@ function _j1_j2_block(J1, J2, p::PauliMatrixName)
 end
 
 
-function model(::J1J2Chain, J1::Real, J2::Real)
+function model(M::J1J2Chain)
+    @unpack J1, J2 = M
     Tx = _j1_j2_block(J1, J2, PX)
     Ty = _j1_j2_block(-J1, -J2, iPY)
     Tz = _j1_j2_block(J1, J2, PZ)
@@ -144,7 +155,7 @@ end
 """
     _ising_2D_block(J::Real, ol::AbstractArray, or::AbstractArray[, W::Int = 1])
 
-Construct CMPO blocks of Hamiltonians with nearst neighbor Ising type interactions on a 2D square lattice cylinder, the width of the cylinder is `W`, and `W=1` corresponding to a Ising Chain. The corresponding quansi 1D Hamiltoinan is:
+Construct CMPO blocks of Hamiltonians with nearst neighbor Ising type interactions on a 2D square lattice cylinder, the Wth of the cylinder is `W`, and `W=1` corresponding to a Ising Chain. The corresponding quansi 1D Hamiltoinan is:
 ```math
     H = - J ∑ σᶻᵢ σᶻⱼ - J ∑ σᶻᵢ σᶻₖ
 ```
@@ -189,9 +200,14 @@ end
 ```
 where `j = i+1` and `k=i+W`.
 """
-struct TFIsingSquareHelical <: AbstractModel end
+struct TFIsingSquareHelical{T<:Real} <: AbstractModel 
+    J::T
+    Γ::T 
+    W::Int
+end
 
-function model(::TFIsingSquareHelical, Γ::Real, W::Int=1, J::Real=1.0)
+function model(M::TFIsingSquareHelical)
+    @unpack J, Γ, W = M
     Q = Γ * pauli(PX)
     T = _ising_2D_block(J, pauli(PZ), pauli(PZ), W)
     return CMPO(Q, T.R, T.L, T.P)
@@ -207,9 +223,12 @@ end
 ```
 where `j = i+1` and `k=i+W`.
 """
-struct XXSquareHelical <: AbstractModel end
+struct XXSquareHelical <: AbstractModel 
+    W::Int
+end
 
-function model(::XXSquareHelical, W::Int=1)
+function model(M::XXSquareHelical)
+    W = M.W
     sp = pauli(PPlus)
     sm = pauli(PMinus)
     Tp = _ising_2D_block(0.5, sp, sp, W)
@@ -228,9 +247,13 @@ end
 ```
 where `j = i+1` and `k=i+W`.
 """
-struct XXZSquareHelical <: AbstractModel end
+struct XXZSquareHelical{T<:Real} <: AbstractModel 
+    Δ::T
+    W::Int
+end
 
-function model(::XXZSquareHelical, Δ::Real, W::Int=1)
+function model(M::XXZSquareHelical)
+    @unpack Δ, W = M
     sp = pauli(PPlus)
     sm = pauli(PMinus)
     sz = 0.5 * pauli(PZ)
